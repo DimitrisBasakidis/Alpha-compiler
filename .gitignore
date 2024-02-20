@@ -57,4 +57,4 @@ flycheck_*.el
 *.o
 
 ## Executables
-translate
+alphac
