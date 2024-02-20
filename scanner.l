@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include "utilities/token_list.h"
 
-#define YY_DECL int alpha_yylex(void *list)
+//#define YY_DECL int alpha_yylex(void *list)
+#define YY_DECL int vaggeli_se_agapo(void *list)
+
 
 #define BUFZ 1024
 
@@ -285,7 +287,8 @@ int main(int argc, char* argv[]){
 
   token_list *list = create_list();
 
-  alpha_yylex(list);
+  //alpha_yylex(list);
+  vaggeli_se_agapo(list);
 
   print_list(list, stdout);
   free_list(list);
