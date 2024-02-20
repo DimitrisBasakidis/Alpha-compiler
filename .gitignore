@@ -24,6 +24,8 @@ DerivedData/
 *.o
 *.out
 *.exe
+*
+!*.*
 
 ## Obj-C/Swift specific
 *.hmap
