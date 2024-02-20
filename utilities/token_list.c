@@ -21,10 +21,10 @@ void print_list(token_list *list, FILE *stream) {
   alpha_token_t *ptr = list->head;
 
   fprintf(stream, "Lexical analyis phase 1\n");
-  fprintf(stream, "line   token number   value type\n");
+  fprintf(stream, "line   \ttoken number  \tvalue type\n");
 
   while (ptr != NULL) {
-    printf("%d\t\t%d\t\t%s\t\t%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type);
+    printf("%d:\t\t#%d\t\t“%s”\t\t%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type);
     ptr = ptr->next;
   }
 }
