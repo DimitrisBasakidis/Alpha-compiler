@@ -21,10 +21,10 @@ void print_list(token_list *list, FILE *stream) {
   alpha_token_t *ptr = list->head;
 
   fprintf(stream, "Lexical analyis phase 1\n");
-  // fprintf(stream, "ptr:\n" );
+  fprintf(stream, "line   token number   value type\n");
 
   while (ptr != NULL) {
-    printf("%d    %d     %s\n", ptr->line, ptr->token_number, ptr->token);
+    printf("%d\t\t%d\t\t%s\t\t%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type);
     ptr = ptr->next;
   }
 }
@@ -46,7 +46,7 @@ int free_list(token_list *list) {
   return TRUE;
 }
 
-int insert(token_list *list, int line, char *token) {
+int insert(token_list *list, int line, char *token, char *type) {
   if (list == NULL) {
     return FALSE;
   }
@@ -60,6 +60,7 @@ int insert(token_list *list, int line, char *token) {
 
   new_token->line = line;
   new_token->token = token;
+  new_token->token_type = type;
   new_token->token_number = ++(list->token_count);
 
   if (head == NULL) {
