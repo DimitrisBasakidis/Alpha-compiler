@@ -288,7 +288,7 @@ int main(int argc, char* argv[]){
   token_list *list = create_list();
 
   //alpha_yylex(list);
-  vaggeli_se_agapo(list);
+  vaggeli_se_agapo(list); //to afinoume mexri na to dei o vaggelis
 
   print_list(list, stdout);
   free_list(list);
