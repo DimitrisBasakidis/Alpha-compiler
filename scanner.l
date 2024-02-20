@@ -263,11 +263,9 @@ whitespace      " \t\n\r"
   char c;
   char *str = malloc(sizeof(char *) * BUFZ);
   unsigned int counter = 0;
-  //printf("\"");
 
   while ((c = input()) != '"') {
     str[counter++] = c;
-    //printf("%c", c);
   }
   printf("str = %s\n", str);  
 }
@@ -280,7 +278,7 @@ int main(int argc, char* argv[]){
 
   if (argc > 1) {
     if (!(yyin = fopen(argv[1], "r"))) {
-      perror("cant open file"); 
+      perror("Cant open file"); 
       return 1;
     }
   }
