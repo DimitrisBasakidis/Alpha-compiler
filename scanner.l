@@ -272,6 +272,10 @@ whitespace      " \t\n\r"
       REALLOC_MEM(token, realloc_size++);
     }
 
+    if (token == NULL) {
+      fprintf(stderr, "Error allocating memory\n");
+    }
+
     if (c == '\\') {
       peak = input();
 
