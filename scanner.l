@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "utilities/token_list.h"
 
@@ -68,8 +69,6 @@ decrement          "--"
 id              [a-zA-Z][a-zA-Z_0-9]*
 integer         [0-9][0-9]*
 real            [0-9]+[.][0-9]+
-whitespace      " \t\n\r"
-
 
 %%
 
@@ -243,8 +242,6 @@ whitespace      " \t\n\r"
   insert(list, yylineno, strdup(yytext), "PUNCTUATION");
 }
 
-
-
 {integer} {
   insert(list, yylineno, strdup(yytext), "INTCONST");
 }
@@ -257,16 +254,18 @@ whitespace      " \t\n\r"
   insert(list, yylineno, strdup(yytext), "IDENT");
 }
 
-"\n" {}
+[ \n\t\r\v\f] {}
 
-{whitespace} {}
-
-"\"" { //add FSM for string  
+"\"" {
   char c, peak, special_char;
   char *token = malloc(sizeof(char *) * BUFSIZE);
   unsigned int counter = 0, realloc_size = 1;
 
-  while ((c = input()) != '"') {
+  while ((c = input()) != EOF) {
+  
+    if (c == '\"' || c == '\0') {
+      break;
+    }
 
     if (counter >= BUFSIZE) {
       REALLOC_MEM(token, realloc_size++);
@@ -314,6 +313,8 @@ whitespace      " \t\n\r"
 
   insert(list, yylineno, token, "STRING");
 }
+
+. {printf("unrecognized token %s in line %d\n", yytext, yylineno);}
 
 
 %%
