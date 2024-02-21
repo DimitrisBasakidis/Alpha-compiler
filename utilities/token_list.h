@@ -9,6 +9,7 @@ typedef struct alpha_token_t {
   int token_number;
   char *token;
   char *token_type;
+  char *token_category;
   struct alpha_token_t *next;
 } alpha_token_t;
 
@@ -18,7 +19,7 @@ typedef struct token_list {
   unsigned int token_count;
 } token_list;
 
-int insert(token_list *list, int line, char *token, char *type); //add some params
+int insert(token_list *list, int line, char *token, char *type, char* category); //add some params
 
 token_list *create_list(void);
 
