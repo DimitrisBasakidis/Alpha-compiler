@@ -74,184 +74,184 @@ real            [0-9]+[.][0-9]+
 
 
 {brk} { 
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "BREAK");
 }
 
 {endl} { 
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "ENDL");
 }
 
 {cont} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "CONTINUE");
 }
 
 {and} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "AND");
 }
 
 {if} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "IF");
 }
 
 {else} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "ELSE");
 }
 
 {while} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "WHILE");
 }
 
 {for} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "FOR");
 }
 
 {func} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "FUNCTION");
 }
 
 {ret} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "RETURN");
 }
 
 {not} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "NOT");
 }
 
 {or} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "OR");
 }
 
 {local} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "LOCAL");
 }
 
 {true} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "TRUE");
 }
 
 {false} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "FALSE");
 }
 
 {nil} {
-  insert(list, yylineno, strdup(yytext), "KEYWORD");
+  insert(list, yylineno, strdup(yytext), "KEYWORD", "NIL");
 }
 
 
 {greater_than} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "GREATER_THAN");
 }
 
 {equal} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "EQUAL");
 }
 
 {assign} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "ASSIGN");
 }
 
 {decrement} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "DECREMENT");
 }
 
 {not_equal} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "NOT_EQUAL");
 }
 
 {minus} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR","MINUS");
 }
 
 {multiply} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR","MULTIPLY");
 }
 
 {modulo} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR","MODULO");
 }
 
 {greater_equal_than} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR","GREATER_EQUAL_THAN");
 }
 
 {plus} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "PLUS");
 }
 
 {less_than} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "LESS_THAN");
 }
 
 {less_equal_than} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "LESS_EQUAL_THAN");
 }
 
 {increment} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "INCREMENT");
 }
 
 {slash} {
-  insert(list, yylineno, strdup(yytext), "OPERATOR");
+  insert(list, yylineno, strdup(yytext), "OPERATOR", "SLASH");
 }
 
 {colon} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "COLON");
 }
 
 {comma} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "COMMA");
 }
 
 {semicolon} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "SEMICOLON");
 }
 
 {double_dot} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "DOUBLE_DOT");
 }
 
 {dot} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION","DOT");
 }
 
 {double_colon} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION","DOUBLE_COLON");
 }
 
 {left_parenthesis} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION","LEFT_PARENTHESIS");
 }
 
 {right_parenthesis} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_PARENTHESIS");
 }
 
 {left_brk} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "LEFT_BRACKET");
 }
 
 {right_brk} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_BRACKET");
 }
 
 {left_sqr_brk} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "LEFT_SQUARE_BRACKET");
 }
 
 {right_sqr_brk} {
-  insert(list, yylineno, strdup(yytext), "PUNCTUATION");
+  insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_SQUARE_BRACKET");
 }
 
 {integer} {
-  insert(list, yylineno, strdup(yytext), "INTCONST");
+  insert(list, yylineno, strdup(yytext), "INTCONST", "INTEGER");
 }
 
 {real} {
-  insert(list, yylineno, strdup(yytext), "REALCONST");
+  insert(list, yylineno, strdup(yytext), "REALCONST", strdup(yytext));
 }
 
 {id} {
-  insert(list, yylineno, strdup(yytext), "IDENT");
+  insert(list, yylineno, strdup(yytext), "IDENT", strdup(yytext));
 }
 
 [ \n\t\r\v\f] {}
@@ -311,7 +311,7 @@ real            [0-9]+[.][0-9]+
     token[counter++] = c;
   }
 
-  insert(list, yylineno, token, "STRING");
+  insert(list, yylineno, token, "STRING", token);
 }
 
 . {printf("unrecognized token %s in line %d\n", yytext, yylineno);}
