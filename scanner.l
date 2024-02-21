@@ -274,6 +274,7 @@ whitespace      " \t\n\r"
 
     if (c == '\\') {
       peak = input();
+
       switch (peak) {
         case 'n':
           special_char = '\n';
@@ -299,6 +300,7 @@ whitespace      " \t\n\r"
           token[counter++] = c;
           special_char = peak;
       }
+
       token[counter++] = special_char;
       continue;
     }
