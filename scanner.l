@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include "utilities/token_list.h"
 
-//#define YY_DECL int alpha_yylex(void *list)
-#define YY_DECL int vaggeli_se_agapo(void *list)
+#define YY_DECL int alpha_yylex(void *list)
 
+#define BUFSIZE 1024
 
-#define BUFZ 1024
+#define REALLOC_MEM(token, size) \
+  token = (char *) realloc(token, sizeof(char) * BUFSIZE * size)
 
 %}
 
@@ -46,7 +47,6 @@ semicolon          ";"
 dot                "."
 double_colon       "::"
 double_dot         ".."
-
 
 /* OPERATORS */
 assign             "="
@@ -262,14 +262,51 @@ whitespace      " \t\n\r"
 {whitespace} {}
 
 "\"" { //add FSM for string  
-  char c;
-  char *str = malloc(sizeof(char *) * BUFZ);
-  unsigned int counter = 0;
+  char c, peak, special_char;
+  char *token = malloc(sizeof(char *) * BUFSIZE);
+  unsigned int counter = 0, realloc_size = 1;
 
   while ((c = input()) != '"') {
-    str[counter++] = c;
+
+    if (counter >= BUFSIZE) {
+      REALLOC_MEM(token, realloc_size++);
+    }
+
+    if (c == '\\') {
+      peak = input();
+      switch (peak) {
+        case 'n':
+          special_char = '\n';
+          break;
+
+        case 't':
+          special_char = '\t';
+          break;
+
+        case 'r':
+          special_char = '\r';
+          break;
+
+        case '\\':
+          special_char = '\\';
+          break;
+
+        case '\"':
+          special_char = '\"';
+          break;
+
+        default:
+          token[counter++] = c;
+          special_char = peak;
+      }
+      token[counter++] = special_char;
+      continue;
+    }
+
+    token[counter++] = c;
   }
-  printf("str = %s\n", str);  
+
+  insert(list, yylineno, token, "STRING");
 }
 
 
@@ -287,8 +324,7 @@ int main(int argc, char* argv[]){
 
   token_list *list = create_list();
 
-  //alpha_yylex(list);
-  vaggeli_se_agapo(list); //to afinoume mexri na to dei o vaggelis
+  alpha_yylex(list);
 
   print_list(list, stdout);
   free_list(list);
