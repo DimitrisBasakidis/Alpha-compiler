@@ -1188,6 +1188,7 @@ YY_RULE_SETUP
 
     if (c == '\\') {
       peak = input();
+
       switch (peak) {
         case 'n':
           special_char = '\n';
@@ -1213,6 +1214,7 @@ YY_RULE_SETUP
           token[counter++] = c;
           special_char = peak;
       }
+
       token[counter++] = special_char;
       continue;
     }
@@ -1225,10 +1227,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 313 "scanner.l"
+#line 315 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1232 "scanner.c"
+#line 1234 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2245,7 +2247,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 313 "scanner.l"
+#line 315 "scanner.l"
 
 
 int main(int argc, char* argv[]){
