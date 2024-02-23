@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "utilities/token_list.h"
+#include "utilities/comment_stack.h"
 
 #define YY_DECL int alpha_yylex(void *list)
 
@@ -314,8 +316,52 @@ real            [0-9]+[.][0-9]+
   insert(list, yylineno, token, "STRING", token);
 }
 
-. {printf("unrecognized token %s in line %d\n", yytext, yylineno);}
+"//" {
+  char c;
+  while((c=input())!= EOF){
+    if (c == '\n' || c == '\0') {
+     break;
+    }
+  }
+  insert(list,yylineno,"","COMMENT", "LINE COMMENT");
+}
 
+"/*" {
+  char c, prev_c;
+  stack_t *stack = create_stack();
+  stack_t *temp = create_stack();
+
+  stack = insert_comment(stack, yylineno, 0);
+
+  while((c=input())!= EOF){
+
+    if (is_empty(stack)) break;
+
+    if (c == '*' && prev_c == '/') {
+      stack = insert_comment(stack, yylineno, 0);
+    } else if (prev_c == '*' && c == '/') {
+      comment_t *comment = pop_comment(stack, yylineno, 0);
+      temp = insert_comment(temp, comment->start_line, yylineno);
+    }
+
+    prev_c = c;
+  }
+
+  while (!is_empty(temp)) {
+    char tmp[128];
+    comment_t *comment = pop_comment(temp, 1, 1);
+    sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
+    // printf("%s\n", tmp);
+    insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
+    // printf("comment from %d, to %d\n", comment->start_line, comment->end_line);
+  }
+} 
+
+. {
+   print_list(list,stdout);
+   printf("unrecognized token %s in line %d\n", yytext, yylineno);
+   exit(0);
+   }
 
 %%
 
