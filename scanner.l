@@ -328,8 +328,8 @@ real            [0-9]+[.][0-9]+
 
 "/*" {
   char c, prev_c;
-  stack_t *stack = create_stack();
-  stack_t *temp = create_stack();
+  comment_stack *stack = create_stack();
+  comment_stack *temp = create_stack();
 
   stack = insert_comment(stack, yylineno, 0);
 

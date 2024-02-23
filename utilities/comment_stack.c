@@ -2,18 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-stack_t *create_stack(void) {
-    stack_t *new_stack = malloc(sizeof(struct stack_t));
+comment_stack *create_stack(void) {
+    comment_stack *new_stack = malloc(sizeof(struct comment_stack));
     new_stack->top = NULL;
 
     return new_stack;
 }
 
-int is_empty(stack_t* stack) {
+int is_empty(comment_stack* stack) {
     return stack->top == NULL;
 }
 
-stack_t *insert_comment(stack_t* stack, unsigned int start_line, unsigned int end_line) {
+comment_stack *insert_comment(comment_stack* stack, unsigned int start_line, unsigned int end_line) {
     comment_t* new_comment = (comment_t*)malloc(sizeof(comment_t));
     if (new_comment == NULL) {
         fprintf(stderr, "Memory allocation error\n");
@@ -25,9 +25,11 @@ stack_t *insert_comment(stack_t* stack, unsigned int start_line, unsigned int en
     new_comment->next = stack->top;
 
     stack->top = new_comment;
+
+    return stack;
 }
 
-comment_t* pop_comment(stack_t* stack, unsigned int end_line, int flag) {
+comment_t* pop_comment(comment_stack* stack, unsigned int end_line, int flag) {
     comment_t* comment = NULL;
 
     if (is_empty(stack)) {
@@ -46,12 +48,12 @@ comment_t* pop_comment(stack_t* stack, unsigned int end_line, int flag) {
     return comment;
 }
 
-void free_stack(stack_t* stack) {
+void free_stack(comment_stack* stack) {
     free(stack);
 }
 
 // int main() {
-//     stack_t *stack;
+//     comment_stack *stack;
 //     stack = create_stack(stack);
 
 //     stack = insert_comment(stack, 1);
