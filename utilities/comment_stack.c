@@ -34,7 +34,7 @@ comment_t* pop_comment(comment_stack* stack, unsigned int end_line, int flag) {
 
     if (is_empty(stack)) {
         fprintf(stderr, "Stack underflow\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
     comment = stack->top;

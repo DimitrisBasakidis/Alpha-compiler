@@ -10,6 +10,17 @@
 
 #define BUFSIZE 1024
 
+#define TRUE    0
+#define FALSE   1
+
+#define FOUND_SPECIAL_CHAR    (c == '\\')
+
+#define STRING_NOT_CLOSING    (c == 0)
+#define STRING_CLOSING        (c == '\"' || c == '\0')
+
+#define OPENING_BLOCK_COMMENT (c == '*' && prev_c == '/')
+#define CLOSING_BLOCK_COMMENT (prev_c == '*' && c == '/')
+
 #define REALLOC_MEM(token, size) \
   token = (char *) realloc(token, sizeof(char) * BUFSIZE * size)
 
@@ -139,7 +150,6 @@ real            [0-9]+[.][0-9]+
   insert(list, yylineno, strdup(yytext), "KEYWORD", "NIL");
 }
 
-
 {greater_than} {
   insert(list, yylineno, strdup(yytext), "OPERATOR", "GREATER_THAN");
 }
@@ -265,7 +275,7 @@ real            [0-9]+[.][0-9]+
 
   while ((c = input()) != EOF) {
   
-    if (c == '\"' || c == '\0') {
+    if (STRING_CLOSING) {
       break;
     }
 
@@ -277,7 +287,7 @@ real            [0-9]+[.][0-9]+
       fprintf(stderr, "Error allocating memory\n");
     }
 
-    if (c == '\\') {
+    if (FOUND_SPECIAL_CHAR) {
       peak = input();
 
       switch (peak) {
@@ -313,6 +323,12 @@ real            [0-9]+[.][0-9]+
     token[counter++] = c;
   }
 
+  if (STRING_NOT_CLOSING) {
+    print_list(list, stderr);
+    fprintf(stderr, "%d:\t\t#%d\t\t“%s”\t\tERROR STRING DOENS'T CLOSE\n", yylineno, ((token_list *)list)->token_count + 1, token);
+    exit(0);
+  }
+
   insert(list, yylineno, token, "STRING", token);
 }
 
@@ -328,38 +344,48 @@ real            [0-9]+[.][0-9]+
 
 "/*" {
   char c, prev_c;
-  comment_stack *stack = create_stack();
+  int flag = TRUE;
   comment_stack *temp = create_stack();
+  comment_stack *stack = create_stack();
 
   stack = insert_comment(stack, yylineno, 0);
 
   while((c=input())!= EOF){
 
-    if (is_empty(stack)) break;
+    if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break;
 
-    if (c == '*' && prev_c == '/') {
+    if (OPENING_BLOCK_COMMENT) {
       stack = insert_comment(stack, yylineno, 0);
-    } else if (prev_c == '*' && c == '/') {
+    
+    } else if (CLOSING_BLOCK_COMMENT) {
       comment_t *comment = pop_comment(stack, yylineno, 0);
       temp = insert_comment(temp, comment->start_line, yylineno);
+    } 
+    printf("%c, %d", c, prev_c);
+    if (is_empty(stack)) {
+      break;
     }
 
     prev_c = c;
+  }
+
+  if (!is_empty(stack)) {
+    print_list((token_list *)list, stderr);
+    fprintf(stderr, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
+    exit(0);
   }
 
   while (!is_empty(temp)) {
     char tmp[128];
     comment_t *comment = pop_comment(temp, 1, 1);
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
-    // printf("%s\n", tmp);
     insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
-    // printf("comment from %d, to %d\n", comment->start_line, comment->end_line);
   }
 } 
 
 . {
-   print_list(list,stdout);
-   printf("unrecognized token %s in line %d\n", yytext, yylineno);
+   print_list(list,stderr);
+   fprintf(stderr, "unrecognized token %s in line %d\n", yytext, yylineno);
    exit(0);
    }
 
@@ -381,5 +407,5 @@ int main(int argc, char* argv[]){
 
   print_list(list, stdout);
   free_list(list);
-  return  0;
+  return 0;
 }
