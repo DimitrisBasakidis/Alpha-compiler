@@ -343,8 +343,8 @@ real            [0-9]+[.][0-9]+
 }
 
 "/*" {
+
   char c, prev_c;
-  int flag = TRUE;
   comment_stack *temp = create_stack();
   comment_stack *stack = create_stack();
 
@@ -352,20 +352,18 @@ real            [0-9]+[.][0-9]+
 
   while((c=input())!= EOF){
 
-    if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break;
+    if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break; 
 
     if (OPENING_BLOCK_COMMENT) {
       stack = insert_comment(stack, yylineno, 0);
-    
     } else if (CLOSING_BLOCK_COMMENT) {
       comment_t *comment = pop_comment(stack, yylineno, 0);
       temp = insert_comment(temp, comment->start_line, yylineno);
     } 
-    printf("%c, %d", c, prev_c);
+
     if (is_empty(stack)) {
       break;
     }
-
     prev_c = c;
   }
 
@@ -381,6 +379,7 @@ real            [0-9]+[.][0-9]+
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
     insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
   }
+  printf("\n");
 } 
 
 . {
@@ -404,7 +403,7 @@ int main(int argc, char* argv[]){
   token_list *list = create_list();
 
   alpha_yylex(list);
-
+ 
   print_list(list, stdout);
   free_list(list);
   return 0;

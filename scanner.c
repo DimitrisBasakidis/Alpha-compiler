@@ -1260,8 +1260,8 @@ case 49:
 YY_RULE_SETUP
 #line 345 "scanner.l"
 {
+
   char c, prev_c;
-  int flag = TRUE;
   comment_stack *temp = create_stack();
   comment_stack *stack = create_stack();
 
@@ -1269,20 +1269,18 @@ YY_RULE_SETUP
 
   while((c=input())!= EOF){
 
-    if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break;
+    if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break; 
 
     if (OPENING_BLOCK_COMMENT) {
       stack = insert_comment(stack, yylineno, 0);
-    
     } else if (CLOSING_BLOCK_COMMENT) {
       comment_t *comment = pop_comment(stack, yylineno, 0);
       temp = insert_comment(temp, comment->start_line, yylineno);
     } 
-    printf("%c, %d", c, prev_c);
+
     if (is_empty(stack)) {
       break;
     }
-
     prev_c = c;
   }
 
@@ -1298,11 +1296,12 @@ YY_RULE_SETUP
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
     insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
   }
+  printf("\n");
 } 
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 386 "scanner.l"
+#line 385 "scanner.l"
 {
    print_list(list,stderr);
    fprintf(stderr, "unrecognized token %s in line %d\n", yytext, yylineno);
@@ -1311,10 +1310,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 392 "scanner.l"
+#line 391 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1318 "scanner.c"
+#line 1317 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2331,7 +2330,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 392 "scanner.l"
+#line 391 "scanner.l"
 
 
 int main(int argc, char* argv[]){
@@ -2347,7 +2346,7 @@ int main(int argc, char* argv[]){
   token_list *list = create_list();
 
   alpha_yylex(list);
-
+ 
   print_list(list, stdout);
   free_list(list);
   return 0;
