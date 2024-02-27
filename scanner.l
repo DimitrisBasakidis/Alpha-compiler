@@ -345,6 +345,7 @@ real            [0-9]+[.][0-9]+
 "/*" {
 
   char c, prev_c;
+  int flag = FALSE, flagc = FALSE;
   comment_stack *temp = create_stack();
   comment_stack *stack = create_stack();
 
@@ -354,12 +355,17 @@ real            [0-9]+[.][0-9]+
 
     if ((!is_empty(stack)) && (c == prev_c) && (c == 0)) break; 
 
-    if (OPENING_BLOCK_COMMENT) {
+    if (OPENING_BLOCK_COMMENT && flag == FALSE && flagc == FALSE) {
+      flag = TRUE;
       stack = insert_comment(stack, yylineno, 0);
-    } else if (CLOSING_BLOCK_COMMENT) {
+    } else if (CLOSING_BLOCK_COMMENT && flagc == FALSE && flag == FALSE) {
+      flagc = TRUE;
       comment_t *comment = pop_comment(stack, yylineno, 0);
       temp = insert_comment(temp, comment->start_line, yylineno);
-    } 
+    } else {
+      flag = FALSE;
+      flagc = FALSE;
+    }
 
     if (is_empty(stack)) {
       break;
