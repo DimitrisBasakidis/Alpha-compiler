@@ -6,7 +6,7 @@
 #include "utilities/token_list.h"
 #include "utilities/comment_stack.h"
 
-#define YY_DECL int alpha_yylex(void *list)
+#define YY_DECL int alpha_yylex(void *list, FILE *output)
 
 #define BUFSIZE 1024
 
@@ -324,8 +324,8 @@ real            [0-9]+[.][0-9]+
   }
 
   if (STRING_NOT_CLOSING) {
-    print_list(list, stderr);
-    fprintf(stderr, "%d:\t\t#%d\t\t“%s”\t\tERROR STRING DOENS'T CLOSE\n", yylineno, ((token_list *)list)->token_count + 1, token);
+    print_list(list, output);
+    fprintf(output, "%d:\t\t#%d\t\t“%s”\t\tERROR STRING DOENS'T CLOSE\n", yylineno, ((token_list *)list)->token_count + 1, token);
     exit(0);
   }
 
@@ -374,8 +374,8 @@ real            [0-9]+[.][0-9]+
   }
 
   if (!is_empty(stack)) {
-    print_list((token_list *)list, stderr);
-    fprintf(stderr, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
+    print_list((token_list *)list, output);
+    fprintf(output, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
     exit(0);
   }
 
@@ -385,12 +385,11 @@ real            [0-9]+[.][0-9]+
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
     insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
   }
-  printf("\n");
 } 
 
 . {
-   print_list(list,stderr);
-   fprintf(stderr, "unrecognized token %s in line %d\n", yytext, yylineno);
+   print_list(list, output);
+   fprintf(output, "unrecognized token %s in line %d\n", yytext, yylineno);
    exit(0);
    }
 
@@ -406,11 +405,19 @@ int main(int argc, char* argv[]){
     }
   }
 
+  if (argc > 2) {
+    if (!(file = fopen(argv[2], "w"))) {
+      perror("Cannot open output file");
+      fclose(file);
+      return 1;
+    }
+  }
+
   token_list *list = create_list();
 
-  alpha_yylex(list);
+  alpha_yylex(list, (argc > 2) ? file : stdout);
  
-  print_list(list, stdout);
+  print_list(list, (argc > 2) ? file : stdout);
   free_list(list);
   return 0;
 }

@@ -545,7 +545,7 @@ char *yytext;
 #include "utilities/token_list.h"
 #include "utilities/comment_stack.h"
 
-#define YY_DECL int alpha_yylex(void *list)
+#define YY_DECL int alpha_yylex(void *list, FILE *output)
 
 #define BUFSIZE 1024
 
@@ -1236,8 +1236,8 @@ YY_RULE_SETUP
   }
 
   if (STRING_NOT_CLOSING) {
-    print_list(list, stderr);
-    fprintf(stderr, "%d:\t\t#%d\t\t“%s”\t\tERROR STRING DOENS'T CLOSE\n", yylineno, ((token_list *)list)->token_count + 1, token);
+    print_list(list, output);
+    fprintf(output, "%d:\t\t#%d\t\t“%s”\t\tERROR STRING DOENS'T CLOSE\n", yylineno, ((token_list *)list)->token_count + 1, token);
     exit(0);
   }
 
@@ -1292,8 +1292,8 @@ YY_RULE_SETUP
   }
 
   if (!is_empty(stack)) {
-    print_list((token_list *)list, stderr);
-    fprintf(stderr, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
+    print_list((token_list *)list, output);
+    fprintf(output, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
     exit(0);
   }
 
@@ -1303,24 +1303,23 @@ YY_RULE_SETUP
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
     insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
   }
-  printf("\n");
 } 
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 391 "scanner.l"
+#line 390 "scanner.l"
 {
-   print_list(list,stderr);
-   fprintf(stderr, "unrecognized token %s in line %d\n", yytext, yylineno);
+   print_list(list, output);
+   fprintf(output, "unrecognized token %s in line %d\n", yytext, yylineno);
    exit(0);
    }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 397 "scanner.l"
+#line 396 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1323 "scanner.c"
+#line 1322 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2337,7 +2336,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 397 "scanner.l"
+#line 396 "scanner.l"
 
 
 int main(int argc, char* argv[]){
@@ -2350,11 +2349,19 @@ int main(int argc, char* argv[]){
     }
   }
 
+  if (argc > 2) {
+    if (!(file = fopen(argv[2], "w"))) {
+      perror("Cannot open output file");
+      fclose(file);
+      return 1;
+    }
+  }
+
   token_list *list = create_list();
 
-  alpha_yylex(list);
+  alpha_yylex(list, (argc > 2) ? file : stdout);
  
-  print_list(list, stdout);
+  print_list(list, (argc > 2) ? file : stdout);
   free_list(list);
   return 0;
 }

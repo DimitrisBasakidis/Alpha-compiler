@@ -28,11 +28,11 @@ void print_list(token_list *list, FILE *stream) {
   while (ptr != NULL) {
     if (strcmp(ptr->token_type, "PUNCTUATION") == 0 || strcmp(ptr->token_type, "KEYWORD") == 0 || strcmp(ptr->token_type, "OPERATOR") == 0 || strcmp(ptr->token_type, "COMMENT") == 0) {
       category = "enumerated";
-      printf("%d:\t\t#%d\t\t“%s”\t\t%s\t\t%s  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
+      fprintf(stream, "%d:\t\t#%d\t\t“%s”\t\t%s\t\t%s  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
 
     } else if (strcmp(ptr->token_type, "IDENT") == 0 || strcmp(ptr->token_type, "STRING") == 0) {
       category = "char *";
-      printf("%d:\t\t#%d\t\t“%s”\t\t%s\t\t“%s”  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
+      fprintf(stream, "%d:\t\t#%d\t\t“%s”\t\t%s\t\t“%s”  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
 
     }  
     ptr = ptr->next;
