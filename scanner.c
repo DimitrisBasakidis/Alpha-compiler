@@ -1154,19 +1154,20 @@ case 43:
 YY_RULE_SETUP
 #line 257 "scanner.l"
 {
+  printf("goes\n");
   insert(list, yylineno, strdup(yytext), "INTCONST", "INTEGER");
 }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 261 "scanner.l"
+#line 262 "scanner.l"
 {
   insert(list, yylineno, strdup(yytext), "REALCONST", strdup(yytext));
 }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 265 "scanner.l"
+#line 266 "scanner.l"
 {
   insert(list, yylineno, strdup(yytext), "IDENT", strdup(yytext));
 }
@@ -1174,12 +1175,12 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 269 "scanner.l"
+#line 270 "scanner.l"
 {}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 271 "scanner.l"
+#line 272 "scanner.l"
 {
   char c, peak, special_char;
   char *token = malloc(sizeof(char *) * BUFSIZE);
@@ -1246,7 +1247,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 335 "scanner.l"
+#line 336 "scanner.l"
 {
   char c;
   while((c=input())!= EOF){
@@ -1259,7 +1260,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 345 "scanner.l"
+#line 346 "scanner.l"
 {
 
   char c, prev_c;
@@ -1307,7 +1308,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 390 "scanner.l"
+#line 391 "scanner.l"
 {
    print_list(list, output);
    fprintf(output, "unrecognized token %s in line %d\n", yytext, yylineno);
@@ -1316,10 +1317,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 396 "scanner.l"
+#line 397 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1322 "scanner.c"
+#line 1323 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2336,7 +2337,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 396 "scanner.l"
+#line 397 "scanner.l"
 
 
 int main(int argc, char* argv[]){

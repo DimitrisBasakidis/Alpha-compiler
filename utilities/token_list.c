@@ -34,7 +34,16 @@ void print_list(token_list *list, FILE *stream) {
       category = "char *";
       fprintf(stream, "%d:\t\t#%d\t\t“%s”\t\t%s\t\t“%s”  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
 
-    }  
+    }  else if (strcmp(ptr->token_type, "INTCONST") == 0) {
+      category = "INTCONST";
+      fprintf(stream, "%d:\t\t#%d\t\t“%s”\t\t%s\t\t%s  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
+
+    } else if (strcmp(ptr->token_type, "REALCONST") == 0) {
+      category = "REALCONST";
+      fprintf(stream, "%d:\t\t#%d\t\t“%s”\t\t%s\t\t%s  <-%s\n", ptr->line, ptr->token_number, ptr->token, ptr->token_type,ptr->token_category, category);
+
+    }
+
     ptr = ptr->next;
   }
 }

@@ -255,6 +255,7 @@ real            [0-9]+[.][0-9]+
 }
 
 {integer} {
+  printf("goes\n");
   insert(list, yylineno, strdup(yytext), "INTCONST", "INTEGER");
 }
 
@@ -375,7 +376,7 @@ real            [0-9]+[.][0-9]+
 
   if (!is_empty(stack)) {
     print_list((token_list *)list, output);
-    fprintf(output, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1);
+    fprintf(output, "%d:\t\t#%d\t\tERROR: NOT ALL BLOCK COMMENTS CLOSING\n", yylineno, ((token_list *)list)->token_count + 1); //line not correct
     exit(0);
   }
 

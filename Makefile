@@ -7,7 +7,7 @@ scanner: flex
 	gcc utilities/token_list.c -c
 	gcc utilities/comment_stack.c -c
 	gcc scanner.c  token_list.o comment_stack.o -o alphac
-	./alphac ../test.txt   
+	# ./alphac ../test.txt   
 
 clean:
-	rm -f scanner.c token_list.o alphac
+	rm -f scanner.c *.o alphac
