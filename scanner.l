@@ -255,8 +255,9 @@ real            [0-9]+[.][0-9]+
 }
 
 {integer} {
-  printf("goes\n");
+  yylval.int_val = atoi(yytext); 
   insert(list, yylineno, strdup(yytext), "INTCONST", "INTEGER");
+  return INTEGER;
 }
 
 {real} {
@@ -264,7 +265,9 @@ real            [0-9]+[.][0-9]+
 }
 
 {id} {
+  yylval.id = strdup(yytext);
   insert(list, yylineno, strdup(yytext), "IDENT", strdup(yytext));
+  return ID;
 }
 
 [ \n\t\r\v\f] {}
