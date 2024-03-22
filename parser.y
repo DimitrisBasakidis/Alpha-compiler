@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utilities/structs.h"
+
 int yylex(void);
 int yyerror(const char *error_msg);
 
@@ -20,7 +22,7 @@ extern FILE *yyin;
 }
 
 %token <int_val>  INTEGER
-%token <id>       ID STRING
+%token <str_val>  ID STRING
 %token <real_val> REAL
 
 %right ASSIGN
@@ -37,16 +39,20 @@ extern FILE *yyin;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <int_val> expr assignexpr term
+%type <int_val> expr term assignexpr
+//%type <expr_token> 
 %type <str_val> lvalue
 %type <str_val> member primary call objectdef funcdef const idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
 
 %%
 
 
-program: program stmt {;}
-       | stmt {;}
+program: statements {;}
        ;
+
+statements: statements stmt {;}
+          |
+          ;
 
 
 stmt: expr SEMICOLON {;}
@@ -58,6 +64,7 @@ stmt: expr SEMICOLON {;}
       | CONTINUE SEMICOLON {;}
       | block {;}
       | funcdef {;}
+      | SEMICOLON {;}
       ;
 
 expr: assignexpr {;}
@@ -65,25 +72,32 @@ expr: assignexpr {;}
     | expr MINUS expr { $$ = $1 - $3; }
     | expr SLASH expr { $$ = $1 / $3; }
     | expr MULTIPLY expr { $$ = $1 * $3; }
-    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { $$ = $2; }
-    | MINUS expr  %prec UMINUS { $$ = -$2; }
-    | term {;}
+    | expr MODULO expr { $$ = $1 % $3; }
+    | expr GREATER_THAN expr { $$ = $1 > $3; }
+    | expr GREATER_EQUAL expr { $$ = $1 >= $3; }
+    | expr LESSER_THAN expr { $$ = $1 < $3; }
+    | expr LESSER_EQUAL expr { $$ = $1 <= $3; }
+    | expr EQUAL expr { $$ = $1 == $3; }
+    | expr NOT_EQUAL expr { $$ = $1 != $3; }
+    | expr AND expr { $$ = $1 && $3; }
+    | expr OR expr { $$ = $1 || $3; }
+     | term {;}
     ;
 
-op: PLUS | MINUS | MULTIPLY | SLASH | MODULO | GREATER_THAN | GREATER_EQUAL | LESSER_THAN | LESSER_EQUAL | EQUAL | NOT_EQUAL | AND | OR
- ;
+//op: PLUS | MINUS | MULTIPLY | SLASH | MODULO | GREATER_THAN | GREATER_EQUAL | LESSER_THAN | LESSER_EQUAL | EQUAL | NOT_EQUAL | AND | OR
+ //;
 
-term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
-    | MINUS expr {;}
-    | NOT expr {;}
+term:  LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { $$ = $2; }
+    | MINUS expr  %prec UMINUS { $$ = -$2; }
     | INCREMENT lvalue {;}
+    | NOT expr {;}
     | lvalue INCREMENT {;}
     | DECREMENT lvalue {;}
     | lvalue DECREMENT {;}
     | primary {;}
     ; 
 
-assignexpr: lvalue ASSIGN expr {printf("%s = %p\n", $1, $3); } // segmentation fault  because $3 is on a temp buffer and its freed after it leaves the rule
+assignexpr: lvalue ASSIGN expr {printf("%s = %d\n", $1, $3); } 
           ;
 
 primary: lvalue
@@ -117,11 +131,11 @@ callsuffix: normcall {;}
 normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;} 
         ;
 
-methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
           ;
 
 elist: expr {;}
-     | expr COMMA elist {;}
+     | elist COMMA expr {;}
      {;}
      ;
 
@@ -130,37 +144,63 @@ objectdef: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {;}
          ;
 
 indexed: indexedelem {;}
-       | indexedelem COMMA indexed {;}
+       | indexed COMMA indexedelem {;}
        {;}
        ;
 
 indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
-block: LEFT_BRACKET stmt RIGHT_BRACKET {;}
-     | LEFT_BRACKET RIGHT_BRACKET {;}
+block: LEFT_BRACKET statements RIGHT_BRACKET {;}
      ;
+ 
+func_args: LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {;}
 
-funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
-       | FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS block {;}
+funcname: ID {;}
+        | {;}
+        ;
+
+func_prefix: FUNCTION funcname {;}
+           ;
+
+func_body: block {;}
+        ;          
+
+funcdef: func_prefix func_args func_body {;}
        ;
 
-const: INTEGER 
-     | REAL 
-     | STRING { printf("t: %p, %p\n",yyval.str_val, $$);} 
-     | NIL 
-     | TRUE_KW 
-     | FALSE_KW
+/* funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
+       | FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS block {;}
+       ;
+*/
+
+const: INTEGER  { printf("int %d\n", yyval.int_val);} 
+     | REAL { printf("real %f\n", yyval.real_val);} 
+     | STRING { printf("str %s\n",yyval.str_val);} 
+     | NIL {;} 
+     | TRUE_KW {;}
+     | FALSE_KW {;}
      ;
 
 idlist: ID {;}
-      | COMMA ID idlist {;}
+      | idlist COMMA ID {;}
       {;}
       ;
 
-ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
+if_stmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
+       ;
+
+if_else_stmt: ELSE {;}
+            ;
+
+ifstmt: if_stmt stmt {;}
+      | ifstmt if_else_stmt stmt {;}
+      ;
+
+/*ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
       ;
+*/
 
 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
          ;
