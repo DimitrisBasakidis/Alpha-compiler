@@ -10,7 +10,7 @@ scanner: flex yacc
 	./alphac ../test.txt   
 
 yacc:
-	bison --yacc --defines --output=parser.c parser.y
+	bison --yacc --defines --output=parser.c parser.y -v
 
 clean:
 	rm -f scanner.c *.o alphac

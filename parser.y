@@ -81,16 +81,10 @@ expr: assignexpr {;}
     | expr NOT_EQUAL expr { $$ = $1 != $3; }
     | expr AND expr { $$ = $1 && $3; }
     | expr OR expr { $$ = $1 || $3; }
-     | term {;}
-    ;
+    | term {;}
 
-//op: PLUS | MINUS | MULTIPLY | SLASH | MODULO | GREATER_THAN | GREATER_EQUAL | LESSER_THAN | LESSER_EQUAL | EQUAL | NOT_EQUAL | AND | OR
- //;
-
-term:  LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { $$ = $2; }
-    | MINUS expr  %prec UMINUS { $$ = -$2; }
+term:  NOT expr {;}
     | INCREMENT lvalue {;}
-    | NOT expr {;}
     | lvalue INCREMENT {;}
     | DECREMENT lvalue {;}
     | lvalue DECREMENT {;}
@@ -135,7 +129,7 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
           ;
 
 elist: expr {;}
-     | elist COMMA expr {;}
+     | expr COMMA elist {;}
      {;}
      ;
 
@@ -144,35 +138,20 @@ objectdef: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {;}
          ;
 
 indexed: indexedelem {;}
-       | indexed COMMA indexedelem {;}
+       | indexedelem COMMA indexed {;}
        {;}
        ;
 
 indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
-block: LEFT_BRACKET statements RIGHT_BRACKET {;}
+block: LEFT_BRACKET stmt RIGHT_BRACKET {;}
+     | LEFT_BRACKET RIGHT_BRACKET {;}
      ;
- 
-func_args: LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {;}
 
-funcname: ID {;}
-        | {;}
-        ;
-
-func_prefix: FUNCTION funcname {;}
-           ;
-
-func_body: block {;}
-        ;          
-
-funcdef: func_prefix func_args func_body {;}
-       ;
-
-/* funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
+funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
        | FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS block {;}
        ;
-*/
 
 const: INTEGER  { printf("int %d\n", yyval.int_val);} 
      | REAL { printf("real %f\n", yyval.real_val);} 
@@ -183,24 +162,13 @@ const: INTEGER  { printf("int %d\n", yyval.int_val);}
      ;
 
 idlist: ID {;}
-      | idlist COMMA ID {;}
+      | COMMA ID idlist {;}
       {;}
       ;
 
-if_stmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
-       ;
-
-if_else_stmt: ELSE {;}
-            ;
-
-ifstmt: if_stmt stmt {;}
-      | ifstmt if_else_stmt stmt {;}
-      ;
-
-/*ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
+ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
       ;
-*/
 
 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
          ;
@@ -208,8 +176,8 @@ whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
 forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist SEMICOLON RIGHT_PARENTHESIS stmt {;}
        ;
 
-returnstmt: RETURN_KW {;}
-          | RETURN_KW expr {;}
+returnstmt: RETURN_KW SEMICOLON {;}
+          | RETURN_KW expr SEMICOLON {;}
           ;
 
 %%
