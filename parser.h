@@ -166,7 +166,7 @@ union YYSTYPE
 #line 16 "parser.y"
 
   int int_val;
-  char* id;
+  char *str_val;
   float real_val;
 
 #line 173 "parser.h"

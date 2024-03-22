@@ -305,12 +305,13 @@ real            [0-9]+[.][0-9]+
 }
 
 {real} {
+  yylval.real_val = atoi(yytext); 
   //insert(list, yylineno, strdup(yytext), "REALCONST", strdup(yytext));
   return REAL;
 }
 
 {id} {
-  yylval.id = strdup(yytext);
+  yylval.str_val = strdup(yytext);
   //insert(list, yylineno, strdup(yytext), "IDENT", strdup(yytext));
   return ID;
 }
@@ -379,6 +380,8 @@ real            [0-9]+[.][0-9]+
   }
 
   //insert(list, yylineno, token, "STRING", token);
+  yylval.str_val = strdup(token);
+  return STRING;
 }
 
 "//" {
