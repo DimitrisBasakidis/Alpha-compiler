@@ -56,51 +56,52 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     INTEGER = 258,                 /* INTEGER  */
     ID = 259,                      /* ID  */
-    REAL = 260,                    /* REAL  */
-    ASSIGN = 261,                  /* ASSIGN  */
-    OR = 262,                      /* OR  */
-    AND = 263,                     /* AND  */
-    EQUAL = 264,                   /* EQUAL  */
-    NOT_EQUAL = 265,               /* NOT_EQUAL  */
-    GREATER_THAN = 266,            /* GREATER_THAN  */
-    GREATER_EQUAL = 267,           /* GREATER_EQUAL  */
-    LESSER_THAN = 268,             /* LESSER_THAN  */
-    LESSER_EQUAL = 269,            /* LESSER_EQUAL  */
-    LOWER_THAN_ELSE = 270,         /* LOWER_THAN_ELSE  */
-    PLUS = 271,                    /* PLUS  */
-    MINUS = 272,                   /* MINUS  */
-    MULTIPLY = 273,                /* MULTIPLY  */
-    SLASH = 274,                   /* SLASH  */
-    MODULO = 275,                  /* MODULO  */
-    UMINUS = 276,                  /* UMINUS  */
-    NOT = 277,                     /* NOT  */
-    INCREMENT = 278,               /* INCREMENT  */
-    DECREMENT = 279,               /* DECREMENT  */
-    DOT = 280,                     /* DOT  */
-    DOUBLE_DOT = 281,              /* DOUBLE_DOT  */
-    LEFT_SQUARE_BRACKET = 282,     /* LEFT_SQUARE_BRACKET  */
-    RIGHT_SQUARE_BRACKET = 283,    /* RIGHT_SQUARE_BRACKET  */
-    LEFT_PARENTHESIS = 284,        /* LEFT_PARENTHESIS  */
-    RIGHT_PARENTHESIS = 285,       /* RIGHT_PARENTHESIS  */
-    SEMICOLON = 286,               /* SEMICOLON  */
-    LEFT_BRACKET = 287,            /* LEFT_BRACKET  */
-    RIGHT_BRACKET = 288,           /* RIGHT_BRACKET  */
-    COMMA = 289,                   /* COMMA  */
-    COLON = 290,                   /* COLON  */
-    DOUBLE_COLON = 291,            /* DOUBLE_COLON  */
-    IF = 292,                      /* IF  */
-    ELSE = 293,                    /* ELSE  */
-    WHILE = 294,                   /* WHILE  */
-    FOR = 295,                     /* FOR  */
-    FUNCTION = 296,                /* FUNCTION  */
-    RETURN_KW = 297,               /* RETURN_KW  */
-    BRK = 298,                     /* BRK  */
-    CONTINUE = 299,                /* CONTINUE  */
-    LOCAL = 300,                   /* LOCAL  */
-    TRUE_KW = 301,                 /* TRUE_KW  */
-    FALSE_KW = 302,                /* FALSE_KW  */
-    ENDL = 303,                    /* ENDL  */
-    NIL = 304                      /* NIL  */
+    STRING = 260,                  /* STRING  */
+    REAL = 261,                    /* REAL  */
+    ASSIGN = 262,                  /* ASSIGN  */
+    OR = 263,                      /* OR  */
+    AND = 264,                     /* AND  */
+    EQUAL = 265,                   /* EQUAL  */
+    NOT_EQUAL = 266,               /* NOT_EQUAL  */
+    GREATER_THAN = 267,            /* GREATER_THAN  */
+    GREATER_EQUAL = 268,           /* GREATER_EQUAL  */
+    LESSER_THAN = 269,             /* LESSER_THAN  */
+    LESSER_EQUAL = 270,            /* LESSER_EQUAL  */
+    LOWER_THAN_ELSE = 271,         /* LOWER_THAN_ELSE  */
+    PLUS = 272,                    /* PLUS  */
+    MINUS = 273,                   /* MINUS  */
+    MULTIPLY = 274,                /* MULTIPLY  */
+    SLASH = 275,                   /* SLASH  */
+    MODULO = 276,                  /* MODULO  */
+    UMINUS = 277,                  /* UMINUS  */
+    NOT = 278,                     /* NOT  */
+    INCREMENT = 279,               /* INCREMENT  */
+    DECREMENT = 280,               /* DECREMENT  */
+    DOT = 281,                     /* DOT  */
+    DOUBLE_DOT = 282,              /* DOUBLE_DOT  */
+    LEFT_SQUARE_BRACKET = 283,     /* LEFT_SQUARE_BRACKET  */
+    RIGHT_SQUARE_BRACKET = 284,    /* RIGHT_SQUARE_BRACKET  */
+    LEFT_PARENTHESIS = 285,        /* LEFT_PARENTHESIS  */
+    RIGHT_PARENTHESIS = 286,       /* RIGHT_PARENTHESIS  */
+    SEMICOLON = 287,               /* SEMICOLON  */
+    LEFT_BRACKET = 288,            /* LEFT_BRACKET  */
+    RIGHT_BRACKET = 289,           /* RIGHT_BRACKET  */
+    COMMA = 290,                   /* COMMA  */
+    COLON = 291,                   /* COLON  */
+    DOUBLE_COLON = 292,            /* DOUBLE_COLON  */
+    IF = 293,                      /* IF  */
+    ELSE = 294,                    /* ELSE  */
+    WHILE = 295,                   /* WHILE  */
+    FOR = 296,                     /* FOR  */
+    FUNCTION = 297,                /* FUNCTION  */
+    RETURN_KW = 298,               /* RETURN_KW  */
+    BRK = 299,                     /* BRK  */
+    CONTINUE = 300,                /* CONTINUE  */
+    LOCAL = 301,                   /* LOCAL  */
+    TRUE_KW = 302,                 /* TRUE_KW  */
+    FALSE_KW = 303,                /* FALSE_KW  */
+    ENDL = 304,                    /* ENDL  */
+    NIL = 305                      /* NIL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -111,51 +112,52 @@ extern int yydebug;
 #define YYUNDEF 257
 #define INTEGER 258
 #define ID 259
-#define REAL 260
-#define ASSIGN 261
-#define OR 262
-#define AND 263
-#define EQUAL 264
-#define NOT_EQUAL 265
-#define GREATER_THAN 266
-#define GREATER_EQUAL 267
-#define LESSER_THAN 268
-#define LESSER_EQUAL 269
-#define LOWER_THAN_ELSE 270
-#define PLUS 271
-#define MINUS 272
-#define MULTIPLY 273
-#define SLASH 274
-#define MODULO 275
-#define UMINUS 276
-#define NOT 277
-#define INCREMENT 278
-#define DECREMENT 279
-#define DOT 280
-#define DOUBLE_DOT 281
-#define LEFT_SQUARE_BRACKET 282
-#define RIGHT_SQUARE_BRACKET 283
-#define LEFT_PARENTHESIS 284
-#define RIGHT_PARENTHESIS 285
-#define SEMICOLON 286
-#define LEFT_BRACKET 287
-#define RIGHT_BRACKET 288
-#define COMMA 289
-#define COLON 290
-#define DOUBLE_COLON 291
-#define IF 292
-#define ELSE 293
-#define WHILE 294
-#define FOR 295
-#define FUNCTION 296
-#define RETURN_KW 297
-#define BRK 298
-#define CONTINUE 299
-#define LOCAL 300
-#define TRUE_KW 301
-#define FALSE_KW 302
-#define ENDL 303
-#define NIL 304
+#define STRING 260
+#define REAL 261
+#define ASSIGN 262
+#define OR 263
+#define AND 264
+#define EQUAL 265
+#define NOT_EQUAL 266
+#define GREATER_THAN 267
+#define GREATER_EQUAL 268
+#define LESSER_THAN 269
+#define LESSER_EQUAL 270
+#define LOWER_THAN_ELSE 271
+#define PLUS 272
+#define MINUS 273
+#define MULTIPLY 274
+#define SLASH 275
+#define MODULO 276
+#define UMINUS 277
+#define NOT 278
+#define INCREMENT 279
+#define DECREMENT 280
+#define DOT 281
+#define DOUBLE_DOT 282
+#define LEFT_SQUARE_BRACKET 283
+#define RIGHT_SQUARE_BRACKET 284
+#define LEFT_PARENTHESIS 285
+#define RIGHT_PARENTHESIS 286
+#define SEMICOLON 287
+#define LEFT_BRACKET 288
+#define RIGHT_BRACKET 289
+#define COMMA 290
+#define COLON 291
+#define DOUBLE_COLON 292
+#define IF 293
+#define ELSE 294
+#define WHILE 295
+#define FOR 296
+#define FUNCTION 297
+#define RETURN_KW 298
+#define BRK 299
+#define CONTINUE 300
+#define LOCAL 301
+#define TRUE_KW 302
+#define FALSE_KW 303
+#define ENDL 304
+#define NIL 305
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -167,7 +169,7 @@ union YYSTYPE
   char* id;
   float real_val;
 
-#line 171 "parser.h"
+#line 173 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

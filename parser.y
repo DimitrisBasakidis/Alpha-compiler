@@ -20,13 +20,8 @@ extern FILE *yyin;
 }
 
 %token <int_val>  INTEGER
-%token <id>       ID
+%token <id>       ID STRING
 %token <real_val> REAL
-
-%right '='
-%left  '+' '-'
-%left  '*' '/'
-%left '(' ')'
 
 %right ASSIGN
 %left OR
@@ -41,25 +36,28 @@ extern FILE *yyin;
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
+
 %type <int_val>   expression
 
 %%
 
 
 program:
-        expressions {;}
-        | {;}
-       ;
-
+      expressions {;}
+      | {;}
+      ;
+ 
 expressions:
       expressions expr {;}
       | expr {;}
       ;
 
-expr: expression SEMICOLON {printf("result : %d\n", $1);}
+expr: expression SEMICOLON {
+  printf("result : %d\n", $1);
+  }
 
 expression: INTEGER { $$ = $1; }
-          // | ID      { }
+          | ID  ASSIGN expression { printf("%s = %d\n", $1, $3);}
           | expression PLUS expression { $$ = $1 + $3; }
           | expression MINUS expression { $$ = $1 - $3; }
           | expression SLASH expression { $$ = $1 / $3; }
