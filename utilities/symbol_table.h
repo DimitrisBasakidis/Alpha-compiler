@@ -4,14 +4,17 @@
 #define SIZE 1024
 #define HASH_MULTIPLIER 65599
 
+#define ACTIVE   1
+#define INACTIVE 0
+
 typedef struct Variable {
-    const char *name;
+    char *name;
     unsigned int scope;
     unsigned int line;
 } Variable;
 
 typedef struct Function {
-    const char *name;
+    char *name;
     //arg list
     unsigned int scope;
     unsigned int line;
@@ -25,11 +28,18 @@ enum SymbolType  {
 typedef struct SymbolTableEntry {
     int isActive;
     union {
-        Variable  *varVal;
-        Function  *funcVal;
+        Variable *varVal;
+        Function *funcVal;
     } value;
-    enum SymbolType  type;
+    enum SymbolType type;
+    struct SymbolTableEntry *next;
+    struct SymbolTableEntry *snext;
+    unsigned int hash_value;
 } SymbolTableEntry;
+
+// typedef struct scopeList {
+//   SymbolTableEntry *head;  
+// } scopeList;
 
 typedef struct SymTable {
     unsigned int count;
@@ -39,6 +49,8 @@ typedef struct SymTable {
 SymTable *create_table(void);
 
 void free_table(SymTable *table);
+
+SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line, enum SymbolType type, int status);
 
 int insert(SymTable *table, SymbolTableEntry *entry);
 
