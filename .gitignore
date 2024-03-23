@@ -60,3 +60,6 @@ flycheck_*.el
 
 ## Executables
 alphac
+
+parser.output
+
