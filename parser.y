@@ -19,6 +19,7 @@ extern FILE *yyin;
   int int_val;
   char *str_val;
   float real_val;
+  struct expr_t* expression;
 }
 
 %token <int_val>  INTEGER
@@ -39,7 +40,8 @@ extern FILE *yyin;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <int_val> expr term assignexpr
+%type <int_val> term 
+%type <expression> expr stmt assignexpr
 //%type <expr_token> 
 %type <str_val> lvalue
 %type <str_val> member primary call objectdef funcdef const idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
@@ -47,7 +49,7 @@ extern FILE *yyin;
 %%
 
 
-program: statements {;}
+program: statements {printf("My program:: \n");}
        ;
 
 statements: statements stmt {;}
@@ -55,7 +57,7 @@ statements: statements stmt {;}
           ;
 
 
-stmt: expr SEMICOLON {;}
+stmt: expr SEMICOLON {printf("Stmt::%s \n",$1);}
       | ifstmt {;}
       | whilestmt {;}
       | forstmt {;}
@@ -67,20 +69,20 @@ stmt: expr SEMICOLON {;}
       | SEMICOLON {;}
       ;
 
-expr: assignexpr {;}
-    | expr PLUS expr { $$ = $1 + $3; }
-    | expr MINUS expr { $$ = $1 - $3; }
-    | expr SLASH expr { $$ = $1 / $3; }
-    | expr MULTIPLY expr { $$ = $1 * $3; }
-    | expr MODULO expr { $$ = $1 % $3; }
-    | expr GREATER_THAN expr { $$ = $1 > $3; }
-    | expr GREATER_EQUAL expr { $$ = $1 >= $3; }
-    | expr LESSER_THAN expr { $$ = $1 < $3; }
-    | expr LESSER_EQUAL expr { $$ = $1 <= $3; }
-    | expr EQUAL expr { $$ = $1 == $3; }
-    | expr NOT_EQUAL expr { $$ = $1 != $3; }
-    | expr AND expr { $$ = $1 && $3; }
-    | expr OR expr { $$ = $1 || $3; }
+expr: assignexpr {printf("Expr :: %s\n", $$);}
+    | expr PLUS expr {;}
+    | expr MINUS expr {;}
+    | expr SLASH expr {;}
+    | expr MULTIPLY expr {;}
+    | expr MODULO expr {;}
+    | expr GREATER_THAN expr {;}
+    | expr GREATER_EQUAL expr {;}
+    | expr LESSER_THAN expr {;}
+    | expr LESSER_EQUAL expr {;}
+    | expr EQUAL expr {;}
+    | expr NOT_EQUAL expr {;}
+    | expr AND expr {;}
+    | expr OR expr {;}
     | term {;}
 
 term:  NOT expr {;}
@@ -91,17 +93,17 @@ term:  NOT expr {;}
     | primary {;}
     ; 
 
-assignexpr: lvalue ASSIGN expr {printf("%s = %d\n", $1, $3); } 
+assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %s\n", $$); } 
           ;
 
-primary: lvalue
+primary: lvalue {printf("Primary :: %s\n",$1);}
       | call {;}
       | objectdef {;}
       | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
       | const {;}
       ;
 
-lvalue: ID {;}
+lvalue: ID {printf("ID :: %s\n", $$);}
       | LOCAL ID {;}
       | DOUBLE_COLON ID {;}
       | member {;}
