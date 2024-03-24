@@ -81,8 +81,7 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
 }
 
 int insert(SymTable *symtable, SymbolTableEntry *entry) {
-  if (table == NULL) return FALSE;
-
+  if (symtable == NULL) return FALSE;
 
 
   if (symtable->table[entry->hash_value] != NULL) {
@@ -92,7 +91,28 @@ int insert(SymTable *symtable, SymbolTableEntry *entry) {
   symtable->table[entry->hash_value] = entry;
  
 
-  
+ return TRUE; 
+}
+
+void print_hash(SymTable *table) {
+  for (int i = 0; i < SIZE; i++) {
+    if (table->table[i] == NULL) continue;
+    
+    SymbolTableEntry *ptr = table->table[i];
+    printf("bucket %d\n", i);
+    while (ptr != NULL) {
+
+      if (ptr->type == GLOBAL || ptr->type == LOCAL) {
+        printf("%s, %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
+      } else {
+        printf("%s, %d, %d, %d, %d, %p, %p, %d\n", ptr->value.funcVal->name, ptr->value.funcVal->scope, ptr->value.funcVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
+      }
+
+      ptr = ptr->next;
+
+    } 
+
+  }
 }
 
 
@@ -106,10 +126,16 @@ int main(int argc, char *argv[])
   printf("%s, %d, %d, %d, %d, %p, %p, %d\n", node->value.varVal->name, node->value.varVal->scope, node->value.varVal->line, node->type, node->isActive, node->next, node->snext, node->hash_value);
 
   SymbolTableEntry *node2 = create_node("func", 0, 18, USERFUNC, ACTIVE);
-  printf("%s, %d, %d, %d, %d, %p, %p, %d\n", node2->value.varVal->name, node2->value.varVal->scope, node2->value.varVal->line, node2->type, node2->isActive, node2->next, node2->snext, node2->hash_value);
+  printf("%s, %d, %d, %d, %d, %p, %p, %d\n", node2->value.funcVal->name, node2->value.funcVal->scope, node2->value.funcVal->line, node2->type, node2->isActive, node2->next, node2->snext, node2->hash_value);
 
   SymbolTableEntry *node3 = create_node("lempesis", 1, 2, LIBFUNC, INACTIVE);
-  printf("%s, %d, %d, %d, %d, %p, %p, %d\n", node3->value.varVal->name, node3->value.varVal->scope, node3->value.varVal->line, node3->type, node3->isActive, node3->next, node->snext, node3->hash_value);
+  printf("%s, %d, %d, %d, %d, %p, %p, %d\n\n", node3->value.funcVal->name, node3->value.funcVal->scope, node3->value.funcVal->line, node3->type, node3->isActive, node3->next, node->snext, node3->hash_value);
+
+  insert(table, node);
+  insert(table, node2);
+  insert(table, node3);
+
+  print_hash(table);
 
   free_table(table);
 
