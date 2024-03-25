@@ -197,7 +197,8 @@ scopeLists *create_scope_lists(void) {
   scopeLists *new_lists = malloc(sizeof(struct scopeLists));
    
   new_lists->max_scope = SCOPE_SIZE;
-    new_lists->slist = malloc(sizeof(SymbolTableEntry));
+  new_lists->slist = malloc(SCOPE_SIZE * sizeof(SymbolTableEntry *));
+    // new_lists->slist = malloc(sizeof(struct SymbolTableEntry ));
 
   for (int i = 0; i < SCOPE_SIZE; i++) {
     new_lists->slist[i] = NULL;
@@ -212,6 +213,7 @@ void expand_lists(scopeLists **scope_list) {
   scopeLists *list = *scope_list;
 
   list->max_scope *= 2;
+  SymbolTableEntry **new_slist = realloc(list->slist, list->max_scope * sizeof(SymbolTableEntry *));
 
   for (int i = list->max_scope / 2; i < list->max_scope; i++) {
     list->slist[i] = NULL;
