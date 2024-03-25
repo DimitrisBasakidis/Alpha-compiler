@@ -213,7 +213,7 @@ void expand_lists(scopeLists **scope_list) {
   scopeLists *list = *scope_list;
 
   list->max_scope *= 2;
-  SymbolTableEntry **new_slist = realloc(list->slist, list->max_scope * sizeof(SymbolTableEntry *));
+  list->slist = realloc(list->slist, list->max_scope * sizeof(SymbolTableEntry *));
 
   for (int i = list->max_scope / 2; i < list->max_scope; i++) {
     list->slist[i] = NULL;
