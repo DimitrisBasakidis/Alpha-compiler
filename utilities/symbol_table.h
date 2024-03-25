@@ -1,6 +1,8 @@
 #ifndef SYMBOL_TABLE
 #define SYMBOL_TABLE
 
+#define SCOPE_SIZE 5
+
 #define SIZE 1024
 #define HASH_MULTIPLIER 65599
 
@@ -40,9 +42,10 @@ typedef struct SymbolTableEntry {
     unsigned int hash_value;
 } SymbolTableEntry;
 
-// typedef struct scopeList {
-//   SymbolTableEntry *head;  
-// } scopeList;
+typedef struct scopeLists {
+  unsigned int max_scope;
+  SymbolTableEntry **slist;   //slist[0];
+} scopeLists;
 
 typedef struct SymTable {
     unsigned int count;
@@ -50,6 +53,8 @@ typedef struct SymTable {
 } SymTable;
 
 SymTable *create_table(void);
+
+scopeLists *create_scope_lists(void);
 
 void free_table(SymTable *table);
 
@@ -59,8 +64,12 @@ int lookup(SymTable *symtable, char *token, enum SymbolType type);
 
 int insert_symbol(SymTable *table, SymbolTableEntry *entry);
 
-void add_lib_func(SymTable *table);
+int insert_to_scope(scopeLists *scope_list, SymbolTableEntry *token, unsigned int scope);
 
-void print_hash(SymTable*symtable);
+void print_scopes(scopeLists *scope_list);
+
+void add_lib_func(SymTable *table, scopeLists *lists);
+
+void print_hash(SymTable *symtable);
 
 #endif

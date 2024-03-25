@@ -17,6 +17,7 @@ extern char *yytext;
 extern FILE *yyin;
 
 SymTable *symtable;
+scopeLists *lists;
 size_t nfuncs = 0U;
 
 %}
@@ -112,18 +113,24 @@ primary: lvalue {}
       | const {;}
       ;
 
-lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-              insert_symbol(symtable, create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR)) {
+              SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+              insert_symbol(symtable, node);
+              insert_to_scope(lists, node, scope);
              } else printf("found id %s\n", $1);
 
            } 
       | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-                    insert_symbol(symtable, create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                    SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+                    insert_symbol(symtable, node);
+                    insert_to_scope(lists, node, scope);
                    } else printf("found local id %s\n", $2);
                  }
 
       | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-                           insert_symbol(symtable, create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                            SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+                            insert_symbol(symtable, node);
+                            insert_to_scope(lists, node, scope);
                           } else printf("found double colon id %s\n", $2);
                         }
       | member {;}
@@ -183,7 +190,9 @@ fname: ID { $$ = $1;}
         ;
 
 func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC) == FALSE) {
-                           insert_symbol(symtable, create_node($2, scope, yylineno, USERFUNC, ACTIVE));
+                            SymbolTableEntry *node = create_node($2, scope, yylineno, USERFUNC, ACTIVE);;
+                            insert_symbol(symtable, node);
+                            insert_to_scope(lists, node, scope);
                           } else printf("found func id %s\n", $2);
                         }
        ;
@@ -200,18 +209,13 @@ const: INTEGER  { printf("int %d scope %d\n", yyval.int_val, scope);}
      | FALSE_KW {;}
      ;
 
-
 idlist: ID {;}
       | ID COMMA idlist {;}
       ;
 
-
 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {/**/} %prec LOWER_THAN_ELSE
       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
       ;
-
-
-
 
 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
          ;
@@ -240,12 +244,15 @@ int main(int argc, char **argv) {
     }
   }
 
+  lists = create_scope_lists();
+  
   symtable = create_table();
 
-  add_lib_func(symtable);
+  add_lib_func(symtable, lists);
   yyparse();
   
-  print_hash(symtable);
+//  print_hash(symtable);
+print_scopes(lists);
 
   free_table(symtable);
 

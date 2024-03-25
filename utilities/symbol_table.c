@@ -139,32 +139,132 @@ void print_hash(SymTable *table) {
 }
 
 
-void add_lib_func(SymTable *symtable) {
+void add_lib_func(SymTable *symtable, scopeLists *lists) {
   if (symtable == NULL) return;
-  
-  insert_symbol(symtable, create_node("sin", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("cos", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("sqrt", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("strtonum", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("typeof", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("argument", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("totalarguments", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("objectcopy", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("objectotalmembers", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("objectmemberkeys", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("input", 0, 0, LIBFUNC, ACTIVE));
-  insert_symbol(symtable, create_node("print", 0, 0, LIBFUNC, ACTIVE));
 
+  SymbolTableEntry *node = NULL;
+
+  node = create_node("print", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("input", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("objectmemberkeys", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("objectotalmembers", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("objectcopy", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("totalarguments", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("argument", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("typeof", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("strtonum", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("sqrt", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("cos", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
+
+  node = create_node("sin", 0, 0, LIBFUNC, ACTIVE);
+  insert_symbol(symtable, node);
+  insert_to_scope(lists, node, 0);
 }
+
+scopeLists *create_scope_lists(void) {
+  scopeLists *new_lists = malloc(sizeof(struct scopeLists));
+   
+  new_lists->max_scope = SCOPE_SIZE;
+    new_lists->slist = malloc(sizeof(SymbolTableEntry));
+
+  for (int i = 0; i < SCOPE_SIZE; i++) {
+    new_lists->slist[i] = NULL;
+  }
+
+  return new_lists;
+}
+
+void expand_lists(scopeLists **scope_list) {
+  if (scope_list == NULL) return;
+
+  scopeLists *list = *scope_list;
+
+  list->max_scope *= 2;
+
+  for (int i = list->max_scope / 2; i < list->max_scope; i++) {
+    list->slist[i] = NULL;
+  }
+}
+
+int insert_to_scope(scopeLists *scope_list, SymbolTableEntry *token, unsigned int scope) {
+  if (scope_list == NULL) return FALSE;
+
+
+  if (scope >= scope_list->max_scope) {
+    printf("expanding \n");
+    expand_lists(&scope_list);
+  }
+
+  if (scope_list->slist[scope] != NULL) {
+    SymbolTableEntry *ptr = scope_list->slist[scope];
+    while (ptr->snext != NULL) ptr = ptr->snext;
+    ptr->snext = token;
+  } else scope_list->slist[scope] = token;
+
+  return TRUE;
+}
+
+void print_scopes(scopeLists *scope_list) {
+  for (int i = 0; i < scope_list->max_scope; i++) {
+    SymbolTableEntry *ptr = scope_list->slist[i]; 
+    if (ptr == NULL) continue;
+
+    printf("-----------     Scope #%d     -----------\n", i);
+
+    while (ptr != NULL) {
+      if (ptr->type == GLOBALVAR || ptr->type == LOCALVAR) {
+        
+        // printf("\"%s\", %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
+        printf("\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
+      } else {
+        printf("\"%s\" [%s function] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->type == USERFUNC) ? "user" : "library", ptr->value.varVal->line, ptr->value.varVal->scope);
+      }
+      ptr = ptr->snext;
+    }
+  }
+}
+
 
 
 
 // int main(int argc, char *argv[])
 // {
 //   printf("peos\n");
-//   SymTable *table = create_table();
-//
-//   SymbolTableEntry *node = create_node("x", 2, 2, GLOBAL, ACTIVE);
+//   // SymTable *table = create_table();
+//   //
+//   SymbolTableEntry *node = create_node("x", 2, 2, GLOBALVAR, ACTIVE);
 //   printf("%s, %d, %d, %d, %d, %p, %p, %d\n", node->value.varVal->name, node->value.varVal->scope, node->value.varVal->line, node->type, node->isActive, node->next, node->snext, node->hash_value);
 //
 //   SymbolTableEntry *node2 = create_node("func", 0, 18, USERFUNC, ACTIVE);
@@ -173,13 +273,33 @@ void add_lib_func(SymTable *symtable) {
 //   SymbolTableEntry *node3 = create_node("lempesis", 1, 2, LIBFUNC, INACTIVE);
 //   printf("%s, %d, %d, %d, %d, %p, %p, %d\n\n", node3->value.funcVal->name, node3->value.funcVal->scope, node3->value.funcVal->line, node3->type, node3->isActive, node3->next, node->snext, node3->hash_value);
 //
-//   insert(table, node);
-//   insert(table, node2);
-//   insert(table, node3);
 //
-//   print_hash(table);
+//   SymbolTableEntry *node4 = create_node("str", 9, 9, LIBFUNC, INACTIVE);
+//   SymbolTableEntry *node5 = create_node("l", 3, 3, LIBFUNC, INACTIVE);
+//   SymbolTableEntry *node8 = create_node("d", 3, 1, LIBFUNC, INACTIVE);
+//   SymbolTableEntry *node6 = create_node("r", 4, 4, LIBFUNC, INACTIVE);
+//   SymbolTableEntry *node7 = create_node("var", 5, 5, LIBFUNC, INACTIVE);
+//   //
+//   // insert_symbol(table, node);
+//   // insert_symbol(table, node2);
+//   // insert_symbol(table, node3);
+//   //
+//   // print_hash(table);
+//   //
+//   // free_table(table);
+//   //
+//   scopeLists *lists = create_scope_lists();
 //
-//   free_table(table);
+//   insert_to_scope(lists, node, 2);
+//   insert_to_scope(lists, node2, 0);
+//   insert_to_scope(lists, node3, 1);
+//    insert_to_scope(lists, node5, 3);
+//   insert_to_scope(lists, node6, 4);
+//   insert_to_scope(lists, node7, 5);
+//   insert_to_scope(lists, node4, 9);
+//   insert_to_scope(lists, node8, 3);
+//
+//   print_scopes(lists);
 //
 //   return EXIT_SUCCESS;
 // }

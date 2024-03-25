@@ -87,10 +87,11 @@ extern char *yytext;
 extern FILE *yyin;
 
 SymTable *symtable;
+scopeLists *lists;
 size_t nfuncs = 0U;
 
 
-#line 94 "parser.c"
+#line 95 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -591,16 +592,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    58,    58,    61,    62,    66,    67,    68,    69,    70,
-      71,    72,    73,    74,    75,    78,    79,    80,    81,    82,
-      83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      94,    95,    96,    97,    98,    99,   100,   101,   105,   108,
-     109,   110,   111,   112,   115,   120,   125,   129,   132,   133,
-     134,   135,   138,   139,   140,   143,   144,   147,   150,   153,
-     154,   154,   158,   159,   162,   163,   163,   167,   171,   171,
-     172,   172,   175,   176,   185,   191,   192,   195,   196,   197,
-     198,   199,   200,   204,   205,   209,   210,   216,   219,   222,
-     223
+       0,    59,    59,    62,    63,    67,    68,    69,    70,    71,
+      72,    73,    74,    75,    76,    79,    80,    81,    82,    83,
+      84,    85,    86,    87,    88,    89,    90,    91,    92,    93,
+      95,    96,    97,    98,    99,   100,   101,   102,   106,   109,
+     110,   111,   112,   113,   116,   123,   130,   136,   139,   140,
+     141,   142,   145,   146,   147,   150,   151,   154,   157,   160,
+     161,   161,   165,   166,   169,   170,   170,   174,   178,   178,
+     179,   179,   182,   183,   192,   200,   201,   204,   205,   206,
+     207,   208,   209,   212,   213,   216,   217,   220,   223,   226,
+     227
 };
 #endif
 
@@ -1353,437 +1354,443 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: statements  */
-#line 58 "parser.y"
+#line 59 "parser.y"
                     {}
-#line 1359 "parser.c"
+#line 1360 "parser.c"
     break;
 
   case 3: /* statements: statements stmt  */
-#line 61 "parser.y"
+#line 62 "parser.y"
                             {;}
-#line 1365 "parser.c"
+#line 1366 "parser.c"
     break;
 
   case 5: /* stmt: expr SEMICOLON  */
-#line 66 "parser.y"
+#line 67 "parser.y"
                      {}
-#line 1371 "parser.c"
+#line 1372 "parser.c"
     break;
 
   case 6: /* stmt: ifstmt  */
-#line 67 "parser.y"
+#line 68 "parser.y"
                {}
-#line 1377 "parser.c"
+#line 1378 "parser.c"
     break;
 
   case 7: /* stmt: whilestmt  */
-#line 68 "parser.y"
+#line 69 "parser.y"
                   {}
-#line 1383 "parser.c"
+#line 1384 "parser.c"
     break;
 
   case 8: /* stmt: forstmt  */
-#line 69 "parser.y"
+#line 70 "parser.y"
                 {}
-#line 1389 "parser.c"
+#line 1390 "parser.c"
     break;
 
   case 9: /* stmt: returnstmt  */
-#line 70 "parser.y"
+#line 71 "parser.y"
                    {}
-#line 1395 "parser.c"
+#line 1396 "parser.c"
     break;
 
   case 10: /* stmt: BRK SEMICOLON  */
-#line 71 "parser.y"
+#line 72 "parser.y"
                       {}
-#line 1401 "parser.c"
+#line 1402 "parser.c"
     break;
 
   case 11: /* stmt: CONTINUE SEMICOLON  */
-#line 72 "parser.y"
+#line 73 "parser.y"
                            {}
-#line 1407 "parser.c"
+#line 1408 "parser.c"
     break;
 
   case 12: /* stmt: block  */
-#line 73 "parser.y"
+#line 74 "parser.y"
               {}
-#line 1413 "parser.c"
+#line 1414 "parser.c"
     break;
 
   case 13: /* stmt: funcdef  */
-#line 74 "parser.y"
+#line 75 "parser.y"
                 {}
-#line 1419 "parser.c"
+#line 1420 "parser.c"
     break;
 
   case 14: /* stmt: SEMICOLON  */
-#line 75 "parser.y"
+#line 76 "parser.y"
                   {}
-#line 1425 "parser.c"
+#line 1426 "parser.c"
     break;
 
   case 15: /* expr: assignexpr  */
-#line 78 "parser.y"
+#line 79 "parser.y"
                  {}
-#line 1431 "parser.c"
+#line 1432 "parser.c"
     break;
 
   case 16: /* expr: expr PLUS expr  */
-#line 79 "parser.y"
+#line 80 "parser.y"
                      {;}
-#line 1437 "parser.c"
+#line 1438 "parser.c"
     break;
 
   case 17: /* expr: expr MINUS expr  */
-#line 80 "parser.y"
+#line 81 "parser.y"
                       {;}
-#line 1443 "parser.c"
+#line 1444 "parser.c"
     break;
 
   case 18: /* expr: expr SLASH expr  */
-#line 81 "parser.y"
+#line 82 "parser.y"
                       {;}
-#line 1449 "parser.c"
+#line 1450 "parser.c"
     break;
 
   case 19: /* expr: expr MULTIPLY expr  */
-#line 82 "parser.y"
+#line 83 "parser.y"
                          {;}
-#line 1455 "parser.c"
+#line 1456 "parser.c"
     break;
 
   case 20: /* expr: expr MODULO expr  */
-#line 83 "parser.y"
+#line 84 "parser.y"
                        {;}
-#line 1461 "parser.c"
+#line 1462 "parser.c"
     break;
 
   case 21: /* expr: expr GREATER_THAN expr  */
-#line 84 "parser.y"
+#line 85 "parser.y"
                              {;}
-#line 1467 "parser.c"
+#line 1468 "parser.c"
     break;
 
   case 22: /* expr: expr GREATER_EQUAL expr  */
-#line 85 "parser.y"
+#line 86 "parser.y"
                               {;}
-#line 1473 "parser.c"
+#line 1474 "parser.c"
     break;
 
   case 23: /* expr: expr LESSER_THAN expr  */
-#line 86 "parser.y"
+#line 87 "parser.y"
                             {;}
-#line 1479 "parser.c"
+#line 1480 "parser.c"
     break;
 
   case 24: /* expr: expr LESSER_EQUAL expr  */
-#line 87 "parser.y"
+#line 88 "parser.y"
                              {;}
-#line 1485 "parser.c"
+#line 1486 "parser.c"
     break;
 
   case 25: /* expr: expr EQUAL expr  */
-#line 88 "parser.y"
+#line 89 "parser.y"
                       {;}
-#line 1491 "parser.c"
+#line 1492 "parser.c"
     break;
 
   case 26: /* expr: expr NOT_EQUAL expr  */
-#line 89 "parser.y"
+#line 90 "parser.y"
                           {;}
-#line 1497 "parser.c"
+#line 1498 "parser.c"
     break;
 
   case 27: /* expr: expr AND expr  */
-#line 90 "parser.y"
+#line 91 "parser.y"
                     {;}
-#line 1503 "parser.c"
+#line 1504 "parser.c"
     break;
 
   case 28: /* expr: expr OR expr  */
-#line 91 "parser.y"
+#line 92 "parser.y"
                    {;}
-#line 1509 "parser.c"
+#line 1510 "parser.c"
     break;
 
   case 29: /* expr: term  */
-#line 92 "parser.y"
+#line 93 "parser.y"
            {;}
-#line 1515 "parser.c"
+#line 1516 "parser.c"
     break;
 
   case 30: /* term: NOT expr  */
-#line 94 "parser.y"
+#line 95 "parser.y"
                 {;}
-#line 1521 "parser.c"
+#line 1522 "parser.c"
     break;
 
   case 31: /* term: MINUS expr  */
-#line 95 "parser.y"
+#line 96 "parser.y"
                  {;}
-#line 1527 "parser.c"
+#line 1528 "parser.c"
     break;
 
   case 32: /* term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS  */
-#line 96 "parser.y"
+#line 97 "parser.y"
                                               {;}
-#line 1533 "parser.c"
+#line 1534 "parser.c"
     break;
 
   case 33: /* term: INCREMENT lvalue  */
-#line 97 "parser.y"
+#line 98 "parser.y"
                        {;}
-#line 1539 "parser.c"
+#line 1540 "parser.c"
     break;
 
   case 34: /* term: lvalue INCREMENT  */
-#line 98 "parser.y"
+#line 99 "parser.y"
                        {;}
-#line 1545 "parser.c"
+#line 1546 "parser.c"
     break;
 
   case 35: /* term: DECREMENT lvalue  */
-#line 99 "parser.y"
+#line 100 "parser.y"
                        {;}
-#line 1551 "parser.c"
+#line 1552 "parser.c"
     break;
 
   case 36: /* term: lvalue DECREMENT  */
-#line 100 "parser.y"
+#line 101 "parser.y"
                        {;}
-#line 1557 "parser.c"
+#line 1558 "parser.c"
     break;
 
   case 37: /* term: primary  */
-#line 101 "parser.y"
+#line 102 "parser.y"
               {;}
-#line 1563 "parser.c"
+#line 1564 "parser.c"
     break;
 
   case 38: /* assignexpr: lvalue ASSIGN expr  */
-#line 105 "parser.y"
+#line 106 "parser.y"
                                {}
-#line 1569 "parser.c"
+#line 1570 "parser.c"
     break;
 
   case 39: /* primary: lvalue  */
-#line 108 "parser.y"
+#line 109 "parser.y"
                 {}
-#line 1575 "parser.c"
+#line 1576 "parser.c"
     break;
 
   case 40: /* primary: call  */
-#line 109 "parser.y"
+#line 110 "parser.y"
              {;}
-#line 1581 "parser.c"
+#line 1582 "parser.c"
     break;
 
   case 41: /* primary: objectdef  */
-#line 110 "parser.y"
+#line 111 "parser.y"
                   {;}
-#line 1587 "parser.c"
+#line 1588 "parser.c"
     break;
 
   case 42: /* primary: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS  */
-#line 111 "parser.y"
+#line 112 "parser.y"
                                                    {;}
-#line 1593 "parser.c"
+#line 1594 "parser.c"
     break;
 
   case 43: /* primary: const  */
-#line 112 "parser.y"
+#line 113 "parser.y"
               {;}
-#line 1599 "parser.c"
+#line 1600 "parser.c"
     break;
 
   case 44: /* lvalue: ID  */
-#line 115 "parser.y"
-           { if (lookup(symtable, (yyvsp[0].str_val), (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-              insert_symbol(symtable, create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+#line 116 "parser.y"
+           { if (lookup(symtable, (yyvsp[0].str_val), (scope == 0) ? GLOBALVAR : LOCALVAR)) {
+              SymbolTableEntry *node = create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+              insert_symbol(symtable, node);
+              insert_to_scope(lists, node, scope);
              } else printf("found id %s\n", (yyvsp[0].str_val));
 
            }
-#line 1609 "parser.c"
+#line 1612 "parser.c"
     break;
 
   case 45: /* lvalue: LOCAL ID  */
-#line 120 "parser.y"
+#line 123 "parser.y"
                  { if (lookup(symtable, (yyvsp[0].str_val), (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-                    insert_symbol(symtable, create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                    SymbolTableEntry *node = create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+                    insert_symbol(symtable, node);
+                    insert_to_scope(lists, node, scope);
                    } else printf("found local id %s\n", (yyvsp[0].str_val));
                  }
-#line 1618 "parser.c"
+#line 1623 "parser.c"
     break;
 
   case 46: /* lvalue: DOUBLE_COLON ID  */
-#line 125 "parser.y"
+#line 130 "parser.y"
                         { if (lookup(symtable, (yyvsp[0].str_val), (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
-                           insert_symbol(symtable, create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                            SymbolTableEntry *node = create_node((yyvsp[0].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+                            insert_symbol(symtable, node);
+                            insert_to_scope(lists, node, scope);
                           } else printf("found double colon id %s\n", (yyvsp[0].str_val));
                         }
-#line 1627 "parser.c"
+#line 1634 "parser.c"
     break;
 
   case 47: /* lvalue: member  */
-#line 129 "parser.y"
+#line 136 "parser.y"
                {;}
-#line 1633 "parser.c"
+#line 1640 "parser.c"
     break;
 
   case 48: /* member: lvalue DOT ID  */
-#line 132 "parser.y"
+#line 139 "parser.y"
                       {;}
-#line 1639 "parser.c"
+#line 1646 "parser.c"
     break;
 
   case 49: /* member: lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET  */
-#line 133 "parser.y"
+#line 140 "parser.y"
                                                              {;}
-#line 1645 "parser.c"
+#line 1652 "parser.c"
     break;
 
   case 50: /* member: call DOT ID  */
-#line 134 "parser.y"
+#line 141 "parser.y"
                     {;}
-#line 1651 "parser.c"
+#line 1658 "parser.c"
     break;
 
   case 51: /* member: call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET  */
-#line 135 "parser.y"
+#line 142 "parser.y"
                                                            {;}
-#line 1657 "parser.c"
+#line 1664 "parser.c"
     break;
 
   case 52: /* call: call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  */
-#line 138 "parser.y"
+#line 145 "parser.y"
                                                     {;}
-#line 1663 "parser.c"
+#line 1670 "parser.c"
     break;
 
   case 53: /* call: lvalue callsuffix  */
-#line 139 "parser.y"
+#line 146 "parser.y"
                           {;}
-#line 1669 "parser.c"
+#line 1676 "parser.c"
     break;
 
   case 54: /* call: LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  */
-#line 140 "parser.y"
+#line 147 "parser.y"
                                                                                             {;}
-#line 1675 "parser.c"
+#line 1682 "parser.c"
     break;
 
   case 55: /* callsuffix: normcall  */
-#line 143 "parser.y"
+#line 150 "parser.y"
                      {;}
-#line 1681 "parser.c"
+#line 1688 "parser.c"
     break;
 
   case 56: /* callsuffix: methodcall  */
-#line 144 "parser.y"
+#line 151 "parser.y"
                        {;}
-#line 1687 "parser.c"
+#line 1694 "parser.c"
     break;
 
   case 57: /* normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  */
-#line 147 "parser.y"
+#line 154 "parser.y"
                                                    {;}
-#line 1693 "parser.c"
+#line 1700 "parser.c"
     break;
 
   case 58: /* methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS  */
-#line 150 "parser.y"
+#line 157 "parser.y"
                                                                    {;}
-#line 1699 "parser.c"
+#line 1706 "parser.c"
     break;
 
   case 59: /* elist: expr  */
-#line 153 "parser.y"
+#line 160 "parser.y"
             {;}
-#line 1705 "parser.c"
+#line 1712 "parser.c"
     break;
 
   case 60: /* $@1: %empty  */
-#line 154 "parser.y"
+#line 161 "parser.y"
                         {;}
-#line 1711 "parser.c"
+#line 1718 "parser.c"
     break;
 
   case 61: /* elist: expr COMMA elist $@1  */
-#line 155 "parser.y"
+#line 162 "parser.y"
      {;}
-#line 1717 "parser.c"
+#line 1724 "parser.c"
     break;
 
   case 62: /* objectdef: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET  */
-#line 158 "parser.y"
+#line 165 "parser.y"
                                                           {;}
-#line 1723 "parser.c"
+#line 1730 "parser.c"
     break;
 
   case 63: /* objectdef: LEFT_SQUARE_BRACKET indexed RIGHT_SQUARE_BRACKET  */
-#line 159 "parser.y"
+#line 166 "parser.y"
                                                             {;}
-#line 1729 "parser.c"
+#line 1736 "parser.c"
     break;
 
   case 64: /* indexed: indexedelem  */
-#line 162 "parser.y"
+#line 169 "parser.y"
                      {;}
-#line 1735 "parser.c"
+#line 1742 "parser.c"
     break;
 
   case 65: /* $@2: %empty  */
-#line 163 "parser.y"
+#line 170 "parser.y"
                                    {;}
-#line 1741 "parser.c"
+#line 1748 "parser.c"
     break;
 
   case 66: /* indexed: indexedelem COMMA indexed $@2  */
-#line 164 "parser.y"
+#line 171 "parser.y"
        {;}
-#line 1747 "parser.c"
+#line 1754 "parser.c"
     break;
 
   case 67: /* indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET  */
-#line 167 "parser.y"
+#line 174 "parser.y"
                                                         {;}
-#line 1753 "parser.c"
+#line 1760 "parser.c"
     break;
 
   case 68: /* $@3: %empty  */
-#line 171 "parser.y"
+#line 178 "parser.y"
                     {scope++;}
-#line 1759 "parser.c"
+#line 1766 "parser.c"
     break;
 
   case 69: /* block: LEFT_BRACKET $@3 statements RIGHT_BRACKET  */
-#line 171 "parser.y"
+#line 178 "parser.y"
                                                         {scope--;}
-#line 1765 "parser.c"
+#line 1772 "parser.c"
     break;
 
   case 70: /* $@4: %empty  */
-#line 172 "parser.y"
+#line 179 "parser.y"
                     {scope++;}
-#line 1771 "parser.c"
+#line 1778 "parser.c"
     break;
 
   case 71: /* block: LEFT_BRACKET $@4 RIGHT_BRACKET  */
-#line 172 "parser.y"
+#line 179 "parser.y"
                                              {scope--;}
-#line 1777 "parser.c"
+#line 1784 "parser.c"
     break;
 
   case 72: /* fname: ID  */
-#line 175 "parser.y"
+#line 182 "parser.y"
           { (yyval.str_val) = (yyvsp[0].str_val);}
-#line 1783 "parser.c"
+#line 1790 "parser.c"
     break;
 
   case 73: /* fname: %empty  */
-#line 176 "parser.y"
+#line 183 "parser.y"
           {
           unsigned int count = 0, n = nfuncs;
           while (n != 0) { n /= 10; count++;}
@@ -1791,116 +1798,118 @@ yyreduce:
           sprintf(temp , "_func_%u", (unsigned int) nfuncs++);
           (yyval.str_val) = temp;
           }
-#line 1795 "parser.c"
+#line 1802 "parser.c"
     break;
 
   case 74: /* func_id: FUNCTION fname  */
-#line 185 "parser.y"
+#line 192 "parser.y"
                        {if (lookup(symtable, (yyvsp[0].str_val), USERFUNC) == FALSE) {
-                           insert_symbol(symtable, create_node((yyvsp[0].str_val), scope, yylineno, USERFUNC, ACTIVE));
+                            SymbolTableEntry *node = create_node((yyvsp[0].str_val), scope, yylineno, USERFUNC, ACTIVE);;
+                            insert_symbol(symtable, node);
+                            insert_to_scope(lists, node, scope);
                           } else printf("found func id %s\n", (yyvsp[0].str_val));
                         }
-#line 1804 "parser.c"
+#line 1813 "parser.c"
     break;
 
   case 75: /* funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block  */
-#line 191 "parser.y"
+#line 200 "parser.y"
                                                                  {;}
-#line 1810 "parser.c"
+#line 1819 "parser.c"
     break;
 
   case 76: /* funcdef: func_id LEFT_PARENTHESIS RIGHT_PARENTHESIS block  */
-#line 192 "parser.y"
+#line 201 "parser.y"
                                                           {;}
-#line 1816 "parser.c"
+#line 1825 "parser.c"
     break;
 
   case 77: /* const: INTEGER  */
-#line 195 "parser.y"
+#line 204 "parser.y"
                 { printf("int %d scope %d\n", yyval.int_val, scope);}
-#line 1822 "parser.c"
+#line 1831 "parser.c"
     break;
 
   case 78: /* const: REAL  */
-#line 196 "parser.y"
+#line 205 "parser.y"
             { printf("real %f scope %d\n", yyval.real_val, scope);}
-#line 1828 "parser.c"
+#line 1837 "parser.c"
     break;
 
   case 79: /* const: STRING  */
-#line 197 "parser.y"
+#line 206 "parser.y"
               { printf("str %s scope %d\n",yyval.str_val, scope);}
-#line 1834 "parser.c"
+#line 1843 "parser.c"
     break;
 
   case 80: /* const: NIL  */
-#line 198 "parser.y"
+#line 207 "parser.y"
            {;}
-#line 1840 "parser.c"
+#line 1849 "parser.c"
     break;
 
   case 81: /* const: TRUE_KW  */
-#line 199 "parser.y"
+#line 208 "parser.y"
                {;}
-#line 1846 "parser.c"
+#line 1855 "parser.c"
     break;
 
   case 82: /* const: FALSE_KW  */
-#line 200 "parser.y"
+#line 209 "parser.y"
                 {;}
-#line 1852 "parser.c"
+#line 1861 "parser.c"
     break;
 
   case 83: /* idlist: ID  */
-#line 204 "parser.y"
+#line 212 "parser.y"
            {;}
-#line 1858 "parser.c"
+#line 1867 "parser.c"
     break;
 
   case 84: /* idlist: ID COMMA idlist  */
-#line 205 "parser.y"
+#line 213 "parser.y"
                         {;}
-#line 1864 "parser.c"
+#line 1873 "parser.c"
     break;
 
   case 85: /* ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt  */
-#line 209 "parser.y"
+#line 216 "parser.y"
                                                         {/**/}
-#line 1870 "parser.c"
+#line 1879 "parser.c"
     break;
 
   case 86: /* ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt  */
-#line 210 "parser.y"
+#line 217 "parser.y"
                                                                   {;}
-#line 1876 "parser.c"
+#line 1885 "parser.c"
     break;
 
   case 87: /* whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt  */
-#line 216 "parser.y"
+#line 220 "parser.y"
                                                               {;}
-#line 1882 "parser.c"
+#line 1891 "parser.c"
     break;
 
   case 88: /* forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt  */
-#line 219 "parser.y"
+#line 223 "parser.y"
                                                                                           {;}
-#line 1888 "parser.c"
+#line 1897 "parser.c"
     break;
 
   case 89: /* returnstmt: RETURN_KW SEMICOLON  */
-#line 222 "parser.y"
+#line 226 "parser.y"
                                 {;}
-#line 1894 "parser.c"
+#line 1903 "parser.c"
     break;
 
   case 90: /* returnstmt: RETURN_KW expr SEMICOLON  */
-#line 223 "parser.y"
+#line 227 "parser.y"
                                      {;}
-#line 1900 "parser.c"
+#line 1909 "parser.c"
     break;
 
 
-#line 1904 "parser.c"
+#line 1913 "parser.c"
 
       default: break;
     }
@@ -2093,7 +2102,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 226 "parser.y"
+#line 230 "parser.y"
 
 
 int yyerror(const char *error_msg) {
@@ -2111,12 +2120,15 @@ int main(int argc, char **argv) {
     }
   }
 
+  lists = create_scope_lists();
+  
   symtable = create_table();
 
-  add_lib_func(symtable);
+  add_lib_func(symtable, lists);
   yyparse();
   
-  print_hash(symtable);
+//  print_hash(symtable);
+print_scopes(lists);
 
   free_table(symtable);
 
