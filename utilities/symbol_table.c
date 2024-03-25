@@ -119,7 +119,7 @@ void print_hash(SymTable *table) {
 
 int main(int argc, char *argv[])
 {
-
+  printf("peos\n");
   SymTable *table = create_table();
 
   SymbolTableEntry *node = create_node("x", 2, 2, GLOBAL, ACTIVE);
