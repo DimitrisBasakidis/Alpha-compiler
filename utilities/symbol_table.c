@@ -241,6 +241,7 @@ void print_scopes(scopeLists *scope_list) {
     SymbolTableEntry *ptr = scope_list->slist[i]; 
     if (ptr == NULL) continue;
 
+    if (i > 0) printf("\n");
     printf("-----------     Scope #%d     -----------\n", i);
 
     while (ptr != NULL) {
