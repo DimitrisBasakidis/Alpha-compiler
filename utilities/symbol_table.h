@@ -55,6 +55,12 @@ void free_table(SymTable *table);
 
 SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line, enum SymbolType type, int status);
 
+int lookup(SymTable *symtable, char *token, enum SymbolType type);
+
 int insert_symbol(SymTable *table, SymbolTableEntry *entry);
+
+void add_lib_func(SymTable *table);
+
+void print_hash(SymTable*symtable);
 
 #endif

@@ -17,6 +17,7 @@ extern char *yytext;
 extern FILE *yyin;
 
 SymTable *symtable;
+size_t nfuncs = 0U;
 
 %}
 
@@ -48,13 +49,13 @@ SymTable *symtable;
 %type <int_val> term 
 %type <expression> expr stmt assignexpr
 //%type <expr_token> 
-%type <str_val> lvalue
+%type <str_val> lvalue fname
 %type <str_val> member primary call objectdef funcdef const idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
 
 %%
 
 
-program: statements {printf("My program:: \n");}
+program: statements {}
        ;
 
 statements: statements stmt {;}
@@ -62,19 +63,19 @@ statements: statements stmt {;}
           ;
 
 
-stmt: expr SEMICOLON {printf("Stmt::%p \n",$1);}
-      | ifstmt {printf("found ifstmt %p\n", yyval.str_val);}
-      | whilestmt {printf("found whilestmt\n");}
-      | forstmt {printf("found forstmt\n");}
-      | returnstmt {printf("found returnstmt\n");}
-      | BRK SEMICOLON {printf("found brk stmt\n");}
-      | CONTINUE SEMICOLON {printf("found continuestmt\n");}
-      | block {printf("found block\n");}
-      | funcdef {printf("found funcdef\n");}
-      | SEMICOLON {printf("found semicolon\n");}
+stmt: expr SEMICOLON {}
+      | ifstmt {}
+      | whilestmt {}
+      | forstmt {}
+      | returnstmt {}
+      | BRK SEMICOLON {}
+      | CONTINUE SEMICOLON {}
+      | block {}
+      | funcdef {}
+      | SEMICOLON {}
       ;
 
-expr: assignexpr {printf("Expr :: %p\n", $$);}
+expr: assignexpr {}
     | expr PLUS expr {;}
     | expr MINUS expr {;}
     | expr SLASH expr {;}
@@ -101,19 +102,30 @@ term:  NOT expr {;}
 
     ; 
 
-assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %s \n", $$); insert_symbol(symtable, create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE)); } 
+assignexpr: lvalue ASSIGN expr {} 
           ;
 
-primary: lvalue {printf("Primary :: %p\n",$1);}
+primary: lvalue {}
       | call {;}
       | objectdef {;}
       | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
       | const {;}
       ;
 
-lvalue: ID {printf("ID :: %p scope %d\n", $$, scope);}
-      | LOCAL ID {;}
-      | DOUBLE_COLON ID {;}
+lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
+              insert_symbol(symtable, create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+             } else printf("found id %s\n", $1);
+
+           } 
+      | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
+                    insert_symbol(symtable, create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                   } else printf("found local id %s\n", $2);
+                 }
+
+      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
+                           insert_symbol(symtable, create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+                          } else printf("found double colon id %s\n", $2);
+                        }
       | member {;}
       ;
       
@@ -155,13 +167,29 @@ indexed: indexedelem {;}
 indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
+
 block: LEFT_BRACKET {scope++;} statements RIGHT_BRACKET {scope--;}
      | LEFT_BRACKET {scope++;} RIGHT_BRACKET {scope--;}
-
      ;
 
-funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
-       | FUNCTION ID LEFT_PARENTHESIS RIGHT_PARENTHESIS block {;}
+fname: ID { $$ = $1;}
+        | {
+          unsigned int count = 0, n = nfuncs;
+          while (n != 0) { n /= 10; count++;}
+          char *temp = malloc(sizeof(char) * nfuncs + 6);
+          sprintf(temp , "_func_%u", (unsigned int) nfuncs++);
+          $$ = temp;
+          }
+        ;
+
+func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC) == FALSE) {
+                           insert_symbol(symtable, create_node($2, scope, yylineno, USERFUNC, ACTIVE));
+                          } else printf("found func id %s\n", $2);
+                        }
+       ;
+
+funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
+       | func_id LEFT_PARENTHESIS RIGHT_PARENTHESIS block {;}
        ;
 
 const: INTEGER  { printf("int %d scope %d\n", yyval.int_val, scope);} 
@@ -214,6 +242,7 @@ int main(int argc, char **argv) {
 
   symtable = create_table();
 
+  add_lib_func(symtable);
   yyparse();
   
   print_hash(symtable);

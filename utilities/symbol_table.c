@@ -89,13 +89,32 @@ int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
   }
 
   symtable->table[entry->hash_value] = entry;
- 
+  
 
  return TRUE; 
 }
 
-int lookup(SymTable *symtable, char *token) {
+int lookup(SymTable *symtable, char *token, enum SymbolType type) {
+  if (symtable == NULL) return FALSE;
 
+  int index = hash(token);
+  SymbolTableEntry *ptr = symtable->table[index];
+
+  if (symtable->table[index] != NULL) {
+    while(ptr != NULL) {
+      // printf("inside lookup %s\n",(type == GLOBALVAR || type == LOCALVAR) ? 
+      //     ptr->value.varVal->name : 
+      //     ptr->value.funcVal->name );
+      if (strncmp((type == GLOBALVAR || type == LOCALVAR) ? 
+          ptr->value.varVal->name : 
+          ptr->value.funcVal->name, 
+          token, strlen(token)) == 0) {
+        return TRUE;
+      }
+    }
+  }
+  
+  return FALSE;
 }
 
 void print_hash(SymTable *table) {
@@ -117,6 +136,25 @@ void print_hash(SymTable *table) {
     } 
 
   }
+}
+
+
+void add_lib_func(SymTable *symtable) {
+  if (symtable == NULL) return;
+  
+  insert_symbol(symtable, create_node("sin", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("cos", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("sqrt", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("strtonum", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("typeof", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("argument", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("totalarguments", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("objectcopy", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("objectotalmembers", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("objectmemberkeys", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("input", 0, 0, LIBFUNC, ACTIVE));
+  insert_symbol(symtable, create_node("print", 0, 0, LIBFUNC, ACTIVE));
+
 }
 
 
