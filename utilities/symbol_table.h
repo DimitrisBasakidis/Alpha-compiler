@@ -7,6 +7,9 @@
 #define ACTIVE   1
 #define INACTIVE 0
 
+#define TRUE  0
+#define FALSE 1
+
 typedef struct Variable {
     char *name;
     unsigned int scope;

@@ -1361,8 +1361,8 @@ YY_RULE_SETUP
 #line 442 "scanner.l"
 {
    //print_list(list, output);
-   //fprintf(output, "unrecognized token %s in line %d\n", yytext, yylineno);
-   exit(0);
+   fprintf(stdout, "unrecognized token %s in line %d\n", yytext, yylineno);
+   exit(-1);
    }
 	YY_BREAK
 case 51:
