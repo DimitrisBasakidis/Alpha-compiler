@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utilities/symbol_table.h"
 #include "utilities/structs.h"
 
 int yylex(void);
@@ -14,6 +15,8 @@ int scope = 0;
 extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
+
+SymTable *symtable;
 
 %}
 
@@ -89,6 +92,7 @@ expr: assignexpr {printf("Expr :: %p\n", $$);}
 
 term:  NOT expr {;}
     | MINUS expr {;}
+    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
     | INCREMENT lvalue {;}
     | lvalue INCREMENT {;}
     | DECREMENT lvalue {;}
@@ -97,7 +101,7 @@ term:  NOT expr {;}
 
     ; 
 
-assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %p\n", $$); } 
+assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %s \n", $$); insert_symbol(symtable, create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE)); } 
           ;
 
 primary: lvalue {printf("Primary :: %p\n",$1);}
@@ -200,6 +204,7 @@ int yyerror(const char *error_msg) {
 }
 
 int main(int argc, char **argv) {
+
   if (argc > 1) {
     if (!(yyin = fopen(argv[1], "r"))) {
       perror("Cant open file"); 
@@ -207,7 +212,13 @@ int main(int argc, char **argv) {
     }
   }
 
+  symtable = create_table();
+
   yyparse();
+  
+  print_hash(symtable);
+
+  free_table(symtable);
 
   return 0;
 }
