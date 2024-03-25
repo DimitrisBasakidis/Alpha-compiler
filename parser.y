@@ -55,23 +55,23 @@ program: statements {printf("My program:: \n");}
        ;
 
 statements: statements stmt {;}
-          |
+          | stmt
           ;
 
 
-stmt: expr SEMICOLON {printf("Stmt::%s \n",$1);}
-      | ifstmt {;}
-      | whilestmt {;}
-      | forstmt {;}
-      | returnstmt {;}
-      | BRK SEMICOLON {;}
-      | CONTINUE SEMICOLON {;}
-      | block {;}
-      | funcdef {;}
-      | SEMICOLON {;}
+stmt: expr SEMICOLON {printf("Stmt::%p \n",$1);}
+      | ifstmt {printf("found ifstmt %p\n", yyval.str_val);}
+      | whilestmt {printf("found whilestmt\n");}
+      | forstmt {printf("found forstmt\n");}
+      | returnstmt {printf("found returnstmt\n");}
+      | BRK SEMICOLON {printf("found brk stmt\n");}
+      | CONTINUE SEMICOLON {printf("found continuestmt\n");}
+      | block {printf("found block\n");}
+      | funcdef {printf("found funcdef\n");}
+      | SEMICOLON {printf("found semicolon\n");}
       ;
 
-expr: assignexpr {printf("Expr :: %s\n", $$);}
+expr: assignexpr {printf("Expr :: %p\n", $$);}
     | expr PLUS expr {;}
     | expr MINUS expr {;}
     | expr SLASH expr {;}
@@ -88,24 +88,26 @@ expr: assignexpr {printf("Expr :: %s\n", $$);}
     | term {;}
 
 term:  NOT expr {;}
+    | MINUS expr {;}
     | INCREMENT lvalue {;}
     | lvalue INCREMENT {;}
     | DECREMENT lvalue {;}
     | lvalue DECREMENT {;}
     | primary {;}
+
     ; 
 
-assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %s\n", $$); } 
+assignexpr: lvalue ASSIGN expr {printf("Assign expr :: %p\n", $$); } 
           ;
 
-primary: lvalue {printf("Primary :: %s\n",$1);}
+primary: lvalue {printf("Primary :: %p\n",$1);}
       | call {;}
       | objectdef {;}
       | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
       | const {;}
       ;
 
-lvalue: ID {printf("ID :: %s scope %d\n", $$, scope);}
+lvalue: ID {printf("ID :: %p scope %d\n", $$, scope);}
       | LOCAL ID {;}
       | DOUBLE_COLON ID {;}
       | member {;}
@@ -149,8 +151,9 @@ indexed: indexedelem {;}
 indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
-block: LEFT_BRACKET {scope++;} stmt RIGHT_BRACKET {scope--;}
+block: LEFT_BRACKET {scope++;} statements RIGHT_BRACKET {scope--;}
      | LEFT_BRACKET {scope++;} RIGHT_BRACKET {scope--;}
+
      ;
 
 funcdef: FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {;}
@@ -171,8 +174,8 @@ idlist: ID {;}
       ;
 
 
-ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {} %prec LOWER_THAN_ELSE
-      | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS ELSE stmt {;}
+ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {/**/} %prec LOWER_THAN_ELSE
+      | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
       ;
 
 
@@ -181,7 +184,7 @@ ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {} %prec LOWER_THAN_ELSE
 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {;}
          ;
 
-forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist SEMICOLON RIGHT_PARENTHESIS stmt {;}
+forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt {;}
        ;
 
 returnstmt: RETURN_KW SEMICOLON {;}
