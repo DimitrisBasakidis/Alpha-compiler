@@ -108,8 +108,8 @@ int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int s
           token, strlen(token)) == TRUE) {
 
 
-        if (flag == LOCAL_KW && ptr->value.varVal->scope < scope) return FALSE;
-        if (flag == LOCAL_FUNC && ptr->value.funcVal->scope < scope) return FALSE;
+        if (flag == LOCAL_KW && ptr->value.varVal->scope < scope && type == LOCALVAR) return FALSE;
+        if (flag == LOCAL_FUNC && ptr->value.funcVal->scope < scope && type == USERFUNC) return FALSE;
             // if (type == GLOBALVAR || type == LOCALVAR) {
             //   return (ptr->value.varVal->scope == scope) ? TRUE : FALSE;
             // } else {

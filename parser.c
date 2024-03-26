@@ -1903,8 +1903,8 @@ yyreduce:
 #line 130 "parser.y"
     { if (lookup(symtable, (yyvsp[(2) - (2)].str_val), (scope == 0) ? GLOBALVAR : LOCALVAR, scope, NO_KW) == FALSE) {
                             SymbolTableEntry *node = create_node((yyvsp[(2) - (2)].str_val), scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
-                            insert_symbol(symtable, node);
-                            insert_to_scope(lists, node, scope);
+                            //insert_symbol(symtable, node);
+                            //§insert_to_scope(lists, node, scope);
                           } else printf("found double colon id %s\n", (yyvsp[(2) - (2)].str_val));
                         }
     break;
@@ -2388,4 +2388,18 @@ print_scopes(lists);
 
   return 0;
 }
+
+/* x = 2;
+function foo() {
+  function foo(bar) {
+    local foo = 2;
+    return bar + foo;
+  }
+  {
+    local foo = [{foo:[{foo:foo}]}];
+    foo.foo..foo(::foo);
+  }
+  x = (function(){});
+}
+*/
 

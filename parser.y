@@ -129,8 +129,8 @@ lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope
 
       | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, NO_KW) == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
-                            insert_symbol(symtable, node);
-                            insert_to_scope(lists, node, scope);
+                            //insert_symbol(symtable, node);
+                            //§insert_to_scope(lists, node, scope);
                           } else printf("found double colon id %s\n", $2);
                         }
       | member {;}
