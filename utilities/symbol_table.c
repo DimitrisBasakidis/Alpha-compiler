@@ -94,7 +94,7 @@ int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
  return TRUE; 
 }
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type) {
+int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope) {
   if (symtable == NULL) return FALSE;
 
   int index = hash(token);
@@ -102,13 +102,22 @@ int lookup(SymTable *symtable, char *token, enum SymbolType type) {
 
   if (symtable->table[index] != NULL) {
     while(ptr != NULL) {
-      // printf("inside lookup %s\n",(type == GLOBALVAR || type == LOCALVAR) ? 
-      //     ptr->value.varVal->name : 
-      //     ptr->value.funcVal->name );
       if (strncmp((type == GLOBALVAR || type == LOCALVAR) ? 
           ptr->value.varVal->name : 
           ptr->value.funcVal->name, 
           token, strlen(token)) == 0) {
+            // if (type == GLOBALVAR || type == LOCALVAR) {
+            //   return (ptr->value.varVal->scope == scope) ? TRUE : FALSE;
+            // } else {
+            //   return (ptr->value.funcVal->scope == scope) ? TRUE : FALSE;
+            // }
+            int statement;
+            (type == GLOBALVAR || type == LOCALVAR) ? 
+              (statement = (ptr->value.varVal->scope >= scope && ptr->isActive == ACTIVE && ptr->value.varVal->scope > 0) ? TRUE : FALSE) :
+              (statement = (ptr->value.funcVal->scope >= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE);
+              printf("statement: %s %d is active : %d, scope %d\n",token, statement, ptr->isActive == ACTIVE, ptr->value.varVal->scope);
+              // statement = (ptr->isActive == ACTIVE) ? statement : !statement;
+              return statement;
         return TRUE;
       }
     }
@@ -197,7 +206,7 @@ scopeLists *create_scope_lists(void) {
   scopeLists *new_lists = malloc(sizeof(struct scopeLists));
    
   new_lists->max_scope = SCOPE_SIZE;
-  new_lists->slist = malloc(SCOPE_SIZE * sizeof(SymbolTableEntry *));
+  new_lists->slist = malloc(SCOPE_SIZE * sizeof(SymbolTableEntry));
     // new_lists->slist = malloc(sizeof(struct SymbolTableEntry ));
 
   for (int i = 0; i < SCOPE_SIZE; i++) {
@@ -213,7 +222,7 @@ void expand_lists(scopeLists **scope_list) {
   scopeLists *list = *scope_list;
 
   list->max_scope *= 2;
-  list->slist = realloc(list->slist, list->max_scope * sizeof(SymbolTableEntry *));
+  list->slist = realloc(list->slist, list->max_scope * sizeof(SymbolTableEntry));
 
   for (int i = list->max_scope / 2; i < list->max_scope; i++) {
     list->slist[i] = NULL;
@@ -259,7 +268,20 @@ void print_scopes(scopeLists *scope_list) {
   }
 }
 
-
+int hide_scope(scopeLists *scope_list, int scope_to_hide){
+  if(scope_list == NULL || scope_to_hide == 0){
+    return FALSE;
+  }
+  if(scope_list->slist[scope_to_hide] == NULL){
+    return FALSE;
+  }
+  SymbolTableEntry *ptr = scope_list->slist[scope_to_hide];
+  while(ptr != NULL){
+    ptr->isActive = INACTIVE;
+    ptr = ptr->snext;
+  }
+  return TRUE;
+}
 
 
 // int main(int argc, char *argv[])
