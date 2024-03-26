@@ -113,21 +113,21 @@ primary: lvalue {}
       | const {;}
       ;
 
-lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR)) {
+lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
               SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
               insert_symbol(symtable, node);
               insert_to_scope(lists, node, scope);
              } else printf("found id %s\n", $1);
 
            } 
-      | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
+      | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
                     SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
                     insert_symbol(symtable, node);
                     insert_to_scope(lists, node, scope);
                    } else printf("found local id %s\n", $2);
                  }
 
-      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR) == FALSE) {
+      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
                             insert_symbol(symtable, node);
                             insert_to_scope(lists, node, scope);
@@ -175,8 +175,8 @@ indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
 
-block: LEFT_BRACKET {scope++;} statements RIGHT_BRACKET {scope--;}
-     | LEFT_BRACKET {scope++;} RIGHT_BRACKET {scope--;}
+block: LEFT_BRACKET {scope++;} statements RIGHT_BRACKET {hide_scope(lists, scope--);}
+     | LEFT_BRACKET {scope++;} RIGHT_BRACKET {hide_scope(lists, scope--);}
      ;
 
 fname: ID { $$ = $1;}
@@ -189,7 +189,7 @@ fname: ID { $$ = $1;}
           }
         ;
 
-func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC) == FALSE) {
+func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC, scope) == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, USERFUNC, ACTIVE);;
                             insert_symbol(symtable, node);
                             insert_to_scope(lists, node, scope);
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
   add_lib_func(symtable, lists);
   yyparse();
   
-//  print_hash(symtable);
+// print_hash(symtable);
 print_scopes(lists);
 
   free_table(symtable);

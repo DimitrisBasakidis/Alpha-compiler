@@ -60,7 +60,7 @@ void free_table(SymTable *table);
 
 SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line, enum SymbolType type, int status);
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type);
+int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope);
 
 int insert_symbol(SymTable *table, SymbolTableEntry *entry);
 
@@ -71,5 +71,7 @@ void print_scopes(scopeLists *scope_list);
 void add_lib_func(SymTable *table, scopeLists *lists);
 
 void print_hash(SymTable *symtable);
+
+int hide_scope(scopeLists *scope_list, int scope_to_hide);
 
 #endif
