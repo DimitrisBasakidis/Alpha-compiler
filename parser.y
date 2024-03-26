@@ -113,21 +113,21 @@ primary: lvalue {}
       | const {;}
       ;
 
-lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
+lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, NO_KW) == FALSE) {
               SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
               insert_symbol(symtable, node);
               insert_to_scope(lists, node, scope);
              } else printf("found id %s\n", $1);
 
            } 
-      | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
+      | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, LOCAL_KW) == FALSE) {
                     SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
                     insert_symbol(symtable, node);
                     insert_to_scope(lists, node, scope);
                    } else printf("found local id %s\n", $2);
                  }
 
-      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope) == FALSE) {
+      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, NO_KW) == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
                             insert_symbol(symtable, node);
                             insert_to_scope(lists, node, scope);
@@ -189,7 +189,7 @@ fname: ID { $$ = $1;}
           }
         ;
 
-func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC, scope) == FALSE) {
+func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC, scope, (scope == 0) ? FUNC : LOCAL_FUNC) == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, USERFUNC, ACTIVE);;
                             insert_symbol(symtable, node);
                             insert_to_scope(lists, node, scope);
@@ -258,3 +258,17 @@ print_scopes(lists);
 
   return 0;
 }
+
+/* x = 2;
+function foo() {
+  function foo(bar) {
+    local foo = 2;
+    return bar + foo;
+  }
+  {
+    local foo = [{foo:[{foo:foo}]}];
+    foo.foo..foo(::foo);
+  }
+  x = (function(){});
+}
+*/

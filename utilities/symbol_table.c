@@ -50,7 +50,7 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
     case GLOBALVAR:
     case LOCALVAR:
       new_entry->value.varVal = malloc(sizeof(struct Variable));
-      new_entry->value.varVal->name = malloc(sizeof(char) * length);
+      new_entry->value.varVal->name = malloc(sizeof(char) * length + 1);
       strncpy(new_entry->value.varVal->name, name, length);
       new_entry->value.varVal->scope = scope;
       new_entry->value.varVal->line = line;
@@ -63,7 +63,7 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
     case LIBFUNC:
     case USERFUNC:
       new_entry->value.funcVal = malloc(sizeof(struct Function));
-      new_entry->value.funcVal->name = malloc(sizeof(char) * length);
+      new_entry->value.funcVal->name = malloc(sizeof(char) * length + 1);
       strncpy(new_entry->value.funcVal->name, name, length);
       new_entry->value.funcVal->scope = scope;
       new_entry->value.funcVal->line = line;
@@ -94,7 +94,7 @@ int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
  return TRUE; 
 }
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope) {
+int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope, enum varFlag flag) {
   if (symtable == NULL) return FALSE;
 
   int index = hash(token);
@@ -105,7 +105,11 @@ int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int s
       if (strncmp((type == GLOBALVAR || type == LOCALVAR) ? 
           ptr->value.varVal->name : 
           ptr->value.funcVal->name, 
-          token, strlen(token)) == 0) {
+          token, strlen(token)) == TRUE) {
+
+
+        if (flag == LOCAL_KW && ptr->value.varVal->scope < scope) return FALSE;
+        if (flag == LOCAL_FUNC && ptr->value.funcVal->scope < scope) return FALSE;
             // if (type == GLOBALVAR || type == LOCALVAR) {
             //   return (ptr->value.varVal->scope == scope) ? TRUE : FALSE;
             // } else {
@@ -113,10 +117,9 @@ int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int s
             // }
             int statement;
             (type == GLOBALVAR || type == LOCALVAR) ? 
-              (statement = (ptr->value.varVal->scope >= scope && ptr->isActive == ACTIVE && ptr->value.varVal->scope > 0) ? TRUE : FALSE) :
-              (statement = (ptr->value.funcVal->scope >= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE);
+              (statement = (ptr->value.varVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE) :
+              (statement = (ptr->value.funcVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE);
               printf("statement: %s %d is active : %d, scope %d\n",token, statement, ptr->isActive == ACTIVE, ptr->value.varVal->scope);
-              // statement = (ptr->isActive == ACTIVE) ? statement : !statement;
               return statement;
         return TRUE;
       }

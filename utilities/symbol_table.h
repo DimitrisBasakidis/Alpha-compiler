@@ -25,6 +25,10 @@ typedef struct Function {
     unsigned int line;
 } Function;
 
+enum varFlag {
+  NO_KW, LOCAL_KW, FUNC, LOCAL_FUNC
+};
+
 enum SymbolType  {
     GLOBALVAR, LOCALVAR, FORMAL,
     USERFUNC, LIBFUNC
@@ -60,7 +64,7 @@ void free_table(SymTable *table);
 
 SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line, enum SymbolType type, int status);
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope);
+int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope, enum varFlag flag);
 
 int insert_symbol(SymTable *table, SymbolTableEntry *entry);
 
