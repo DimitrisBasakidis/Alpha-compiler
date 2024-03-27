@@ -29,6 +29,10 @@ enum varFlag {
   NO_KW, LOCAL_KW, FUNC, LOCAL_FUNC
 };
 
+enum errorFlags {
+    IS_LIBFUNC = 2
+};
+
 enum SymbolType  {
     GLOBALVAR, LOCALVAR, FORMAL,
     USERFUNC, LIBFUNC
@@ -70,6 +74,8 @@ int insert_symbol(SymTable *table, SymbolTableEntry *entry);
 
 int insert_to_scope(scopeLists *scope_list, SymbolTableEntry *token, unsigned int scope);
 
+int exists_in_scope(SymbolTableEntry *head, char *token);
+
 void print_scopes(scopeLists *scope_list);
 
 void add_lib_func(SymTable *table, scopeLists *lists);
@@ -77,5 +83,7 @@ void add_lib_func(SymTable *table, scopeLists *lists);
 void print_hash(SymTable *symtable);
 
 int hide_scope(scopeLists *scope_list, int scope_to_hide);
+
+int find_scope_from_hash(SymTable *symtable, char* token);
 
 #endif

@@ -103,7 +103,23 @@ term:  NOT expr {;}
 
     ; 
 
-assignexpr: lvalue ASSIGN expr {} 
+assignexpr: lvalue ASSIGN expr { printf(" lvalue ::%s\n", $1);int s = find_scope_from_hash(symtable,$1); 
+                                    printf("Scope returned :: %d\n", s);
+                                  if(s!=-1){
+                                    int flag = exists_in_scope(lists->slist[s],$1) ;
+                                    printf("flag :: %d\n", flag);
+                                    if(flag == USERFUNC){
+                                    printf("Error assigning value to a function symbol(%s)\n", $1);
+                                    exit(0);
+                                    }
+                                  }else{
+                                    int flag = exists_in_scope(lists->slist[0],$1);
+                                    if(flag == LIBFUNC){
+                                      printf("Error assigning value to a function symbol(%s)\n", $1);
+                                      exit(0);
+                                    }
+                                  }  
+                                } 
           ;
 
 primary: lvalue {}
@@ -117,24 +133,47 @@ lvalue: ID { if (lookup(symtable, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope
               SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
               insert_symbol(symtable, node);
               insert_to_scope(lists, node, scope);
-             } else printf("found id %s\n", $1);
-
+             } else{
+                if(exists_in_scope(lists->slist[scope],$1) != FALSE){  // an exoume redefinition sto idio scope
+                  printf("Found redefinition in same scope\n");
+                  exit(0);
+                }
+             }
+              $$ = $1;
            } 
+
       | LOCAL ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, LOCAL_KW) == FALSE) {
                     SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
                     insert_symbol(symtable, node);
                     insert_to_scope(lists, node, scope);
                    } else printf("found local id %s\n", $2);
+                   $$= $2;
                  }
 
-      | DOUBLE_COLON ID { if (lookup(symtable, $2, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, NO_KW) == FALSE) {
-                            SymbolTableEntry *node = create_node($2, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
-                            //insert_symbol(symtable, node);
-                            //§insert_to_scope(lists, node, scope);
-                          } else printf("found double colon id %s\n", $2);
+      | DOUBLE_COLON ID { 
+        // int flag = lookup(symtable, $2, GLOBALVAR, 0, NO_KW);
+        //                 if (flag == FALSE) {
+        //                   printf("\033[31m");
+        //                     printf("global var %s doesnt exist\n", $2);
+
+        //                    printf("\033[0m");
+        //                   //  exit(0);
+        //                 } else printf("found double colon id %s\n", $2);
+               int flag = exists_in_scope(lists->slist[0], $2);  // AN EINAI GLOBAL VARIABLE OLA KALA ALLIWS TYPWNOYME ERROR(KANONAS DOUBLE COLON)
+               if (flag == FALSE) {
+                printf("Error symbol %s is not a global or library symbol\n", $2);
+                exit(0);
+               }else if (flag == GLOBALVAR) {
+                printf("flag is global var name %s\n", $2);
+               } else if (flag == USERFUNC) {
+                printf("flag is userfunc in scope %d name %s\n", flag, $2);
+               } else if (flag == LIBFUNC) {
+                printf("flag is lib func in scope %d name %s\n", flag, $2);
+               }
+                $$ = $2;
                         }
       | member {;}
-      ;
+      
       
 member: lvalue DOT ID {;}
       | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
@@ -159,6 +198,7 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
 
 elist: expr {;}
      | expr COMMA elist {;}
+     |
      {;}
      ;
 
@@ -189,11 +229,15 @@ fname: ID { $$ = $1;}
           }
         ;
 
-func_id: FUNCTION fname{if (lookup(symtable, $2, USERFUNC, scope, (scope == 0) ? FUNC : LOCAL_FUNC) == FALSE) {
+func_id: FUNCTION fname{ int flag = lookup(symtable, $2, USERFUNC, scope, (scope == 0) ? FUNC : LOCAL_FUNC);
+                        printf("flag %d\n", flag);
+                         if (flag == FALSE) {
                             SymbolTableEntry *node = create_node($2, scope, yylineno, USERFUNC, ACTIVE);;
                             insert_symbol(symtable, node);
                             insert_to_scope(lists, node, scope);
-                          } else printf("found func id %s\n", $2);
+                          } else if (flag == LOCALVAR) {
+                            
+                          }
                         }
        ;
 
@@ -209,8 +253,13 @@ const: INTEGER  { printf("int %d scope %d\n", yyval.int_val, scope);}
      | FALSE_KW {;}
      ;
 
-idlist: ID {;}
-      | ID COMMA idlist {;}
+idlist_id: ID { SymbolTableEntry *node = create_node($1, scope + 1, yylineno, FORMAL, ACTIVE);
+                insert_symbol(symtable, node);
+                insert_to_scope(lists, node, scope + 1);
+};
+
+idlist: idlist_id {;}
+      | idlist_id COMMA idlist {;}
       ;
 
 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {/**/} %prec LOWER_THAN_ELSE
