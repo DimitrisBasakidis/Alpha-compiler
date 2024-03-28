@@ -211,8 +211,12 @@ SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enu
     break;
   
   case SCOPE:
-    ptr = lists->slist[scope];
+    // scope = (lookup_lib_func(token) == TRUE) ? 0 : scope;
+
+    ptr = lists->slist[(lookup_lib_func(token) == TRUE) ? 0 : scope];
+    
     while (ptr != NULL) {
+
       if (strncmp((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
             ptr->value.varVal->name : 
             ptr->value.funcVal->name, 
@@ -225,7 +229,6 @@ SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enu
         {
           return (ptr->isActive == ACTIVE) ? ptr : NULL; 
         }
-
         ptr = ptr->snext;
       } 
     break;

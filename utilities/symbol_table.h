@@ -32,10 +32,6 @@ enum varFlag {
   NO_KW, LOCAL_KW, FUNC, LOCAL_FUNC
 };
 
-enum errorFlags {
-    IS_LIBFUNC = 2
-};
-
 enum SymbolType  {
     GLOBALVAR, LOCALVAR, FORMAL,
     USERFUNC, LIBFUNC
