@@ -373,7 +373,7 @@ void print_scopes(scopeLists *scope_list) {
       if (ptr->type == GLOBALVAR || ptr->type == LOCALVAR) {
         
         // printf("\"%s\", %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
-        printf("\"%s\" [%s variable] (line %d) (scope %d) %d\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope,ptr->isActive);
+        printf("\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
       } else if (ptr->type == FORMAL) {
         printf("\"%s\" [formal argument] (line %d) (scope %d)\n", ptr->value.varVal->name, ptr->value.varVal->line, ptr->value.varVal->scope);
       } else {
@@ -400,6 +400,7 @@ int hide_scope(scopeLists *scope_list, int scope_to_hide){
 }
 
 SymbolTableEntry *is_func(scopeLists *lists, char *token, int start_scope) {
+  SymbolTableEntry *ret = NULL;
   if (token == NULL || lists == NULL) return NULL;
 
   for (int i = start_scope; i >= 0; i--) {
@@ -411,13 +412,13 @@ SymbolTableEntry *is_func(scopeLists *lists, char *token, int start_scope) {
         strlen(token) == 
         strlen(ptr->value.funcVal->name)) 
         {
-          if (ptr || ptr->type == USERFUNC || ptr->type == LIBFUNC) return ptr;  
+          if (ptr || ptr->type == USERFUNC || ptr->type == LIBFUNC) ret = ptr;  
         }
         ptr = ptr->snext;
     }
   }
 
-  return NULL;
+  return ret;
 }
 
 

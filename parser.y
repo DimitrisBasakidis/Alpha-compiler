@@ -192,8 +192,8 @@ assignexpr: lvalue ASSIGN expr {
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
   } else {
-    printf("FUNC IN BETWEEN :: %d , %d, %d %d\n", func_in_between, entry->value.varVal->scope ,scope,from_func_call);
-   if((func_in_between == 1  || entry->value.varVal->scope >= scope)){
+    printf("FUNC IN BETWEEN ::%s %d , %d, %d %d %d\n", $1,func_in_between, entry->value.varVal->scope ,scope,from_func_call, yylineno);
+   if((func_in_between >= 1  || entry->value.varVal->scope >= scope)){
     printf("here %d %d\n",entry->value.varVal->scope, scope);
     switch (entry->type) {
       case LOCALVAR:
@@ -284,7 +284,7 @@ primary: lvalue {
 | call { 
 
     entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-
+    printf("entry %p, token %s, line %d\n", entry, $1, yylineno);
     SymbolTableEntry *temp = NULL;
     if (entry == NULL) {
         printf("calling undefined function " );
@@ -301,6 +301,7 @@ primary: lvalue {
       case GLOBALVAR:
 
         temp = is_func(lists, $1, scope);
+        printf("is func %s %d\n", $1, temp->type);
         // printf("temp scope %d %d\n", temp->value.funcVal->scope, scope);
         if (temp != NULL && temp->value.funcVal->scope <= scope) break;
         printf("calling %s variable as a function ", (entry->type == LOCALVAR) ? "local" : "global");
@@ -390,10 +391,10 @@ callsuffix: normcall {;}
           | methodcall {;}
           ;
 
-normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {printf("here %d\n", yylineno);} 
+normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;} 
         ;
 
-methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {printf("here444 %d\n", yylineno);}
+methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
           ;
 
 elist: expr {;}
