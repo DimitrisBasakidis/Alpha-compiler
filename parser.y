@@ -109,9 +109,9 @@ term:  NOT expr {;}
 assignexpr: lvalue ASSIGN expr { 
   entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
   if (entry == NULL) {
-    // SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
-    // insert_symbol(symtable, node);
-    // insert_to_scope(lists, node, scope);
+    SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+    insert_symbol(symtable, node);
+    insert_to_scope(lists, node, scope);
     
   } else {
     switch (entry->type) {
