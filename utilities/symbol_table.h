@@ -6,6 +6,9 @@
 #define SIZE 1024
 #define HASH_MULTIPLIER 65599
 
+#define HASH  0
+#define SCOPE 1
+
 #define ACTIVE   1
 #define INACTIVE 0
 
@@ -68,7 +71,7 @@ void free_table(SymTable *table);
 
 SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line, enum SymbolType type, int status);
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope, enum varFlag flag);
+SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enum SymbolType type, int scope, int flag);
 
 int insert_symbol(SymTable *table, SymbolTableEntry *entry);
 
@@ -79,6 +82,8 @@ int exists_in_scope(SymbolTableEntry *head, char *token);
 void print_scopes(scopeLists *scope_list);
 
 void add_lib_func(SymTable *table, scopeLists *lists);
+
+int lookup_lib_func(char *token);
 
 void print_hash(SymTable *symtable);
 
