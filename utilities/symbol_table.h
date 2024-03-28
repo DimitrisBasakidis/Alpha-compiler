@@ -83,6 +83,8 @@ int lookup_lib_func(char *token);
 
 void print_hash(SymTable *symtable);
 
+SymbolTableEntry *is_func(scopeLists *lists, char *token, int start_scope);
+
 int hide_scope(scopeLists *scope_list, int scope_to_hide);
 
 int find_scope_from_hash(SymTable *symtable, char* token);

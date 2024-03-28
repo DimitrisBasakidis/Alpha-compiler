@@ -204,14 +204,14 @@ SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enu
             ptr->value.varVal->name : 
             ptr->value.funcVal->name)) 
         {
-          return (ptr->isActive == ACTIVE) ? ptr : NULL; 
+          if (ptr->isActive) return ptr;
+          //return (ptr->isActive == ACTIVE) ? ptr : NULL; 
         } 
         ptr = ptr->next;
       } 
     break;
   
   case SCOPE:
-    // scope = (lookup_lib_func(token) == TRUE) ? 0 : scope;
 
     ptr = lists->slist[(lookup_lib_func(token) == TRUE) ? 0 : scope];
     
@@ -373,7 +373,7 @@ void print_scopes(scopeLists *scope_list) {
       if (ptr->type == GLOBALVAR || ptr->type == LOCALVAR) {
         
         // printf("\"%s\", %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
-        printf("\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
+        printf("\"%s\" [%s variable] (line %d) (scope %d) %d\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope,ptr->isActive);
       } else if (ptr->type == FORMAL) {
         printf("\"%s\" [formal argument] (line %d) (scope %d)\n", ptr->value.varVal->name, ptr->value.varVal->line, ptr->value.varVal->scope);
       } else {
@@ -397,6 +397,27 @@ int hide_scope(scopeLists *scope_list, int scope_to_hide){
     ptr = ptr->snext;
   }
   return TRUE;
+}
+
+SymbolTableEntry *is_func(scopeLists *lists, char *token, int start_scope) {
+  if (token == NULL || lists == NULL) return NULL;
+
+  for (int i = start_scope; i >= 0; i--) {
+    SymbolTableEntry *ptr = lists->slist[i];
+    while (ptr != NULL) {
+      if (strncmp(ptr->value.funcVal->name, 
+        token, strlen(token)) == TRUE 
+        && 
+        strlen(token) == 
+        strlen(ptr->value.funcVal->name)) 
+        {
+          if (ptr || ptr->type == USERFUNC || ptr->type == LIBFUNC) return ptr;  
+        }
+        ptr = ptr->snext;
+    }
+  }
+
+  return NULL;
 }
 
 
