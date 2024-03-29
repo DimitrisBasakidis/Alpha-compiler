@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *lib_func_arr[12] = {"print", "input", "ojectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
+
 SymTable *create_table(void) {
     SymTable *new_table = malloc(sizeof(struct SymTable));
 
@@ -45,10 +47,10 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
 
   if (new_entry == NULL) return NULL;
 
-
   switch (type) {
     case GLOBALVAR:
     case LOCALVAR:
+    case FORMAL:
       new_entry->value.varVal = malloc(sizeof(struct Variable));
       new_entry->value.varVal->name = malloc(sizeof(char) * length + 1);
       strncpy(new_entry->value.varVal->name, name, length);
@@ -56,8 +58,6 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
       new_entry->value.varVal->line = line;
       new_entry->hash_value = hash(new_entry->value.varVal->name);
 
-      break;
-    case FORMAL:
       break;
 
     case LIBFUNC:
@@ -80,6 +80,14 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
   return new_entry;
 }
 
+int lookup_lib_func(char *token) {
+  for (int i = 0; i < 12; i++) {
+    if (strncmp(lib_func_arr[i], token, strlen(token)) == TRUE && (strlen(token) == strlen(lib_func_arr[i]))) return TRUE;
+  }
+
+  return FALSE;
+}
+
 int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
   if (symtable == NULL) return FALSE;
 
@@ -90,43 +98,146 @@ int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
 
   symtable->table[entry->hash_value] = entry;
   
-
  return TRUE; 
 }
 
-int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope, enum varFlag flag) {
-  if (symtable == NULL) return FALSE;
+// int exists_in_scope(SymbolTableEntry *head, char *token) {
+//   if (head == NULL) return FALSE;
+//   int flag;
+//   SymbolTableEntry *ptr = head;
 
-  int index = hash(token);
-  SymbolTableEntry *ptr = symtable->table[index];
+//   while (ptr != NULL) {
 
-  if (symtable->table[index] != NULL) {
-    while(ptr != NULL) {
-      if (strncmp((type == GLOBALVAR || type == LOCALVAR) ? 
-          ptr->value.varVal->name : 
-          ptr->value.funcVal->name, 
-          token, strlen(token)) == TRUE) {
+//     flag = (ptr->type == USERFUNC || ptr->type == LIBFUNC) ? 1 : 0;
 
+//     if (flag == 1){
+//       if(!strncmp(ptr->value.funcVal->name,token,strlen(token)))
+//         return ptr->type;
+//     }else{
+//         if(!strncmp(ptr->value.varVal->name,token,strlen(token)))
+//         return ptr->type;
+//     }
+//     ptr = ptr->snext;
+//   }
+//   return FALSE;
+// }
 
-        if (flag == LOCAL_KW && ptr->value.varVal->scope < scope && type == LOCALVAR) return FALSE;
-        if (flag == LOCAL_FUNC && ptr->value.funcVal->scope < scope && type == USERFUNC) return FALSE;
-            // if (type == GLOBALVAR || type == LOCALVAR) {
-            //   return (ptr->value.varVal->scope == scope) ? TRUE : FALSE;
-            // } else {
-            //   return (ptr->value.funcVal->scope == scope) ? TRUE : FALSE;
-            // }
-            int statement;
-            (type == GLOBALVAR || type == LOCALVAR) ? 
-              (statement = (ptr->value.varVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE) :
-              (statement = (ptr->value.funcVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE);
-              printf("statement: %s %d is active : %d, scope %d\n",token, statement, ptr->isActive == ACTIVE, ptr->value.varVal->scope);
-              return statement;
-        return TRUE;
-      }
-    }
-  }
+// int find_scope_from_hash(SymTable *symtable, char* token){
+//   if (symtable == NULL) return FALSE;
+//   int index = hash(token);
+//   SymbolTableEntry *ptr = symtable->table[index];
+//   if(symtable->table[index] == NULL){
+//     printf("hi\n");
+//     return -1;
+//   }
+//   while(ptr!=NULL){
+//     if(ptr->type == USERFUNC || ptr->type == LIBFUNC){
+//       if(strcmp(token,ptr->value.funcVal->name) == 0){
+//         return ptr->value.funcVal->scope;
+//       }
+//     }else{
+//       if(strcmp(token,ptr->value.varVal->name) == 0){
+//         return ptr->value.varVal->scope;
+//       }
+//     }
+//     ptr = ptr->next;
+//   }
+//   return -1;
   
-  return FALSE;
+// }
+
+// int lookup(SymTable *symtable, char *token, enum SymbolType type, unsigned int scope, enum varFlag flag) {
+//   if (symtable == NULL) return FALSE;
+
+//   int index = hash(token);
+//   SymbolTableEntry *ptr = symtable->table[index];
+
+//   if (lookup_lib_func(token) == TRUE) return IS_LIBFUNC;
+
+//   if (symtable->table[index] != NULL) {
+//     while(ptr != NULL) {
+//       if (strncmp((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
+//           ptr->value.varVal->name : 
+//           ptr->value.funcVal->name, 
+//           token, strlen(token)) == TRUE) {
+            
+//           printf("TYPE %d name %s\n",type , token);
+      
+//         if (flag == LOCAL_KW && ptr->value.varVal->scope < scope && type == LOCALVAR) return FALSE;
+//         if (flag == LOCAL_FUNC && ptr->value.funcVal->scope < scope && type == USERFUNC) return FALSE;
+
+//         int statement;
+//         (type == GLOBALVAR || type == LOCALVAR) ? 
+//           (statement = (ptr->value.varVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE) :
+//           (statement = (ptr->value.funcVal->scope <= scope && ptr->isActive == ACTIVE) ? TRUE : FALSE);
+//           printf("statement: %s %d is active : %d, scope %d type %d\n",token, statement, ptr->isActive == ACTIVE, ptr->value.varVal->scope, ptr->type);
+//           return statement;
+//         return TRUE;
+//       }
+//     }
+//   }
+  
+//   return FALSE;
+// }
+
+// SymbolTableEntry *lookup_scope()
+
+SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enum SymbolType type, int scope, int flag) {
+  if (symtable == NULL) return NULL;
+  SymbolTableEntry *ptr = NULL;
+
+  switch (flag) {
+
+  case HASH:
+
+    int index = (lookup_lib_func(token) == TRUE) ? 0 : hash(token);
+    ptr = symtable->table[index];
+
+    while (ptr != NULL) {
+      if (strncmp((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
+            ptr->value.varVal->name : 
+            ptr->value.funcVal->name, 
+            token, strlen(token)) == TRUE 
+            && 
+            strlen(token) == 
+            strlen((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
+            ptr->value.varVal->name : 
+            ptr->value.funcVal->name)) 
+        {
+          if (ptr->isActive) return ptr;
+          //return (ptr->isActive == ACTIVE) ? ptr : NULL; 
+        } 
+        ptr = ptr->next;
+      } 
+    break;
+  
+  case SCOPE:
+
+    ptr = lists->slist[(lookup_lib_func(token) == TRUE) ? 0 : scope];
+    
+    while (ptr != NULL) {
+
+      if (strncmp((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
+            ptr->value.varVal->name : 
+            ptr->value.funcVal->name, 
+            token, strlen(token)) == TRUE 
+            && 
+            strlen(token) == 
+            strlen((type == GLOBALVAR || type == LOCALVAR || type == FORMAL) ? 
+            ptr->value.varVal->name : 
+            ptr->value.funcVal->name)) 
+        {
+          return (ptr->isActive == ACTIVE) ? ptr : NULL; 
+        }
+        ptr = ptr->snext;
+      } 
+    break;
+  }
+
+  
+
+  return NULL;
+
 }
 
 void print_hash(SymTable *table) {
@@ -263,6 +374,8 @@ void print_scopes(scopeLists *scope_list) {
         
         // printf("\"%s\", %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
         printf("\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
+      } else if (ptr->type == FORMAL) {
+        printf("\"%s\" [formal argument] (line %d) (scope %d)\n", ptr->value.varVal->name, ptr->value.varVal->line, ptr->value.varVal->scope);
       } else {
         printf("\"%s\" [%s function] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->type == USERFUNC) ? "user" : "library", ptr->value.varVal->line, ptr->value.varVal->scope);
       }
@@ -284,6 +397,28 @@ int hide_scope(scopeLists *scope_list, int scope_to_hide){
     ptr = ptr->snext;
   }
   return TRUE;
+}
+
+SymbolTableEntry *is_func(scopeLists *lists, char *token, int start_scope) {
+  SymbolTableEntry *ret = NULL;
+  if (token == NULL || lists == NULL) return NULL;
+
+  for (int i = start_scope; i >= 0; i--) {
+    SymbolTableEntry *ptr = lists->slist[i];
+    while (ptr != NULL) {
+      if (strncmp(ptr->value.funcVal->name, 
+        token, strlen(token)) == TRUE 
+        && 
+        strlen(token) == 
+        strlen(ptr->value.funcVal->name)) 
+        {
+          if (ptr || ptr->type == USERFUNC || ptr->type == LIBFUNC) ret = ptr;  
+        }
+        ptr = ptr->snext;
+    }
+  }
+
+  return ret;
 }
 
 

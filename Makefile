@@ -6,7 +6,7 @@ flex:
 scanner: flex yacc
 	gcc utilities/token_list.c -c
 	gcc utilities/comment_stack.c utilities/symbol_table.c -c
-	gcc scanner.c parser.c token_list.o comment_stack.o symbol_table.o -o alphac 
+	gcc scanner.c parser.c token_list.o comment_stack.o symbol_table.o -o alphac -g
 	./alphac ../test.txt   
 
 yacc:
