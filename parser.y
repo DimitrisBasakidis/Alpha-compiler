@@ -250,7 +250,7 @@ primary: lvalue {
           break;
 
         case LOCALVAR:
-          if (entry->value.varVal->scope != scope && !for_loop) {
+          if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
                         // printf("scope %d ", scope);
 
             print_errors("calling local variable outside of scope", $1, yylineno);
