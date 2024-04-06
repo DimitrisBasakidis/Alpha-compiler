@@ -17,7 +17,10 @@ int is_return_kw = 0;
 int from_func_call = 0;
 int in_loop = 0;
 int from_elist = 0;
-int see_s = 0;
+int while_loop = 0;
+int for_loop = 0;
+int if_stmt = 0;
+int global_val_exists = 0;
 
 int is_local_kw = 0;
 
@@ -175,35 +178,37 @@ assignexpr: lvalue ASSIGN expr {
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
   } else {
-   if((func_in_between >= 1  || entry->value.varVal->scope >= scope)){
-    switch (entry->type) {
-      case LOCALVAR:
-      if (entry->value.varVal->scope == scope) {
-        if (is_local_kw == 1 && entry->value.varVal->line != yylineno) 
-        {
-          print_errors("redefinition of variable", $1, yylineno);
-          exit(TRUE); 
-        }
-      } else {
-        print_errors("cant access formal argument outside of scope", $1, yylineno);
-        exit(TRUE);  
-      }
-      break;
-      case LIBFUNC:
-      case USERFUNC: 
-        if (from_func_call) break;
-        char *msg = (entry->type == LIBFUNC) ? "edefining library function" : "redefining user function";
-        print_errors(msg, $1, yylineno);
-        exit(TRUE); 
+    if((func_in_between >1 || entry->value.varVal->scope >= scope) && !global_val_exists){
+      switch (entry->type) {
+        case LOCALVAR:
+          if (entry->value.varVal->scope == scope) {
+            if (is_local_kw == 1 && entry->value.varVal->line != yylineno) {
+              print_errors("redefinition of variable", $1, yylineno);
+              exit(TRUE); 
+            }
+          } else if (!for_loop && !while_loop) {
+            print_errors("cant access local varible outside of scope", $1, yylineno);
+            exit(TRUE);  
+          }
+          break;
 
-      case FORMAL:
-        if (entry->value.varVal->scope != scope) {
-          print_errors("cant access formal argument outside of scope", $1, yylineno);
-          exit(TRUE);
-        }
-        
+        case LIBFUNC:
+        case USERFUNC: 
+          if (from_func_call) break;
+          char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
+          print_errors(msg, $1, yylineno);
+          exit(TRUE); 
+
+        case FORMAL:
+          if (entry->value.varVal->scope != scope) {
+            // printf("func in between %d\n",func_in_between);
+            print_errors("cant access formal argument outside of scope", $1, yylineno);
+            exit(TRUE);
+          }
+          
+      }
     }
-    }
+  if (!global_val_exists) global_val_exists = 0;
   }
   is_local_kw = 0;
   if(from_func_call>0) from_func_call--;
@@ -211,29 +216,51 @@ assignexpr: lvalue ASSIGN expr {
 ;
 
 primary: lvalue { 
+
   entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
   if (entry == NULL) {
     if (from_elist) {
       print_errors("using undefined variable as call argument", $1, yylineno);
       exit(TRUE);
     }
+    else {
+      print_errors("using undefined variable", $1, yylineno);
+      exit(TRUE);
+    }
     SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
   } else {
-    
     switch (entry->type) {
-
       case LIBFUNC:
       case USERFUNC: 
         if (entry->value.varVal->scope == scope && is_return_kw == 0) {
           char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
           print_errors(msg, $1, yylineno);
           exit(TRUE);
-        }        
+        }  
+        break;
+
+
+        case FORMAL: 
+          if (entry->value.varVal->scope != scope) {
+            print_errors("calling formal argument outside of scope", $1, yylineno);
+            exit(TRUE);
+          }
+          break;
+
+        case LOCALVAR:
+          if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
+                        // printf("scope %d ", scope);
+
+            print_errors("calling local variable outside of scope", $1, yylineno);
+            exit(TRUE);
+          }
+          break;
     }
-    
+
   };
+  
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
 }
@@ -293,16 +320,16 @@ lvalue: ID { // ELEGXOYME STON HASHTABLE AN UPARXEI TO ONOMA TOU ID(print error 
 
 }
 
-      | DOUBLE_COLON ID { 
-        entry = lookup(symtable, lists, $2, GLOBALVAR, 0, SCOPE); 
-        if (entry == NULL) {
-          print_errors("no global variale exists", $2, yylineno);
-          exit(TRUE);  
-        } 
-        $$ = $2;
-                        }
-      | member {;}
-      
+| DOUBLE_COLON ID { 
+  entry = lookup(symtable, lists, $2, GLOBALVAR, 0, SCOPE); 
+  if (entry == NULL) {
+    print_errors("no global variable exists", $2, yylineno);
+    exit(TRUE);  
+  } else global_val_exists = 1;
+  $$ = $2;
+  }
+| member {;}
+
       
 member: lvalue DOT ID {;}
       | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
@@ -426,7 +453,6 @@ idlist_id: ID {
     print_errors("redefining argument", $1, yylineno);
     exit(TRUE);
   } 
-  
 
   entry = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE); //check for same args 
   if (entry != NULL) {
@@ -440,44 +466,49 @@ idlist_id: ID {
   insert_to_scope(lists, node, scope + 1);
 };
 
+open_for: FOR {for_loop++;};
 
+open_while: WHILE {while_loop++;};
+
+open_if: IF {if_stmt++;}
 
 idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
 
-ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {/**/} %prec LOWER_THAN_ELSE
-      | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {;}
+ifstmt: open_if LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {if_stmt--;} %prec LOWER_THAN_ELSE
+      | open_if LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {if_stmt--;}
       ;
 
-whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {in_loop = 1;}stmt {in_loop=0;}
+whilestmt: open_while LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {in_loop++;}stmt {in_loop--; while_loop--;} 
          ;
 
-forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {in_loop = 1;} stmt  {in_loop=0;}
+forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {in_loop++;} stmt  {in_loop--; for_loop--;}
        ;
 
-returnstmt: RETURN_KW {if (func_in_between == 0){
-                          printf("Use of");
-                          printf("\033[31m");
-                          printf(" return");
-                          printf("\033[0m");
-                          printf(" while not in function");
-                         printf(" line: %d\n", yylineno);
-                         exit(TRUE);
+returnstmt: RETURN_KW {
+  if (func_in_between == 0){
+    printf("Use of");
+    printf("\033[31m");
+    printf(" return");
+    printf("\033[0m");
+    printf(" while not in function");
+    printf(" line: %d\n", yylineno);
+    exit(TRUE);
+  }
+}SEMICOLON {;}
 
-                              }}SEMICOLON {;}
-          | RETURN_KW {if (func_in_between == 0){
-                
-                          printf("Use of");
-                          printf("\033[31m");
-                          printf(" return");
-                          printf("\033[0m");
-                          printf(" while not in function");
-                          printf(" line: %d\n", yylineno);
-                          exit(TRUE);
-
-                              }} expr SEMICOLON { is_return_kw = 1;}
-          ;
+| RETURN_KW {
+  if (func_in_between == 0){    
+    printf("Use of");
+    printf("\033[31m");
+    printf(" return");
+    printf("\033[0m");
+    printf(" while not in function");
+    printf(" line: %d\n", yylineno);
+    exit(TRUE);
+  }
+} expr SEMICOLON { is_return_kw = 1;};
 
 %%
 
