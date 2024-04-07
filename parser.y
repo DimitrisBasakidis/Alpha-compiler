@@ -512,11 +512,17 @@ int yyerror(const char *error_msg) {
   printf("\033[31msyntax:\033[0m grammar\n");   
 
   while (temp) {temp /= 10; count++;}; 
-  printf("  %d |",yylineno);
+  printf("  %d | %s",yylineno, yylval.str_val);
   printf("\033[31m");
-  printf(" %s", yylval.str_val);
+  printf(" %s", yytext);
   printf("\033[0m\n");
-  printf("%*s|\n %*s|\n", count + 2, "", count + 1, "");
+  printf("%*s|", count + 2, "");
+  for (int i = 0; i < strlen(yylval.str_val) + count; i++) printf(" ");
+  printf("\033[31m^\033[0m");
+  if (strlen(yytext) > 1) {
+    for (int i = 0; i < strlen(yytext); i++) printf("\033[31m~\033[0m");
+  }
+  printf("\n%*s|\n", count + 2, "");
 
   exit(0);
 }
@@ -533,7 +539,16 @@ void print_errors(char *error_msg, char *token) {
   printf("\033[31m");
   printf(" %s", token);
   printf("\033[0m\n");
-  printf("%*s|\n %*s|\n", count + 2, "", count + 1, "");
+  printf("%*s|", count + 2, "");
+  for (int i = 0; i < strlen(error_msg) + 2; i++) printf(" ");
+  printf("\033[31m^\033[0m");
+  if (strlen(token) > 1) {
+    for (int i = 0; i < strlen(token) - 1; i++) printf("\033[31m~\033[0m");
+  }
+  printf("\n%*s|\n", count + 2, "");
+
+
+
 }
 
 
@@ -561,16 +576,3 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/* x = 2;
-function foo() {
-  function foo(bar) {
-    local foo = 2;
-    return bar + foo;
-  }
-  {
-    local foo = [{foo:[{foo:foo}]}];
-    foo.foo..foo(::foo);
-  }
-  x = (function(){});
-}
-*/
