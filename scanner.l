@@ -8,8 +8,6 @@
 #include "utilities/token_list.h"
 #include "utilities/comment_stack.h"
 
-//#define YY_DECL int alpha_yylex(void *list, FILE *output)
-
 #define BUFSIZE 1024
 
 #define TRUE    0
@@ -26,11 +24,23 @@
 #define REALLOC_MEM(token, size) \
   token = (char *) realloc(token, sizeof(char) * BUFSIZE * size)
 
+#define HANDLE_COLUMN column = next_column; next_column += strlen(yytext)
+
+static int next_column = 1;
+int column = 1;
+
+char *lineptr = NULL;
+size_t n = 0;
+size_t consumed = 0;
+size_t available = 0;
+
+size_t min(size_t a, size_t b);
+
+
 %}
 
 %option noyywrap 
 %option yylineno
-
 
 /* KEYWORDS */
 and               "and"
@@ -89,234 +99,196 @@ real            [0-9]+[.][0-9]+
 
 
 {brk} { 
-  // insert(list, yylineno, strdup(yytext), "KEYWORD", "BREAK");
   return BRK;
 }
 
 {endl} { 
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "ENDL");
   return ENDL;
 }
 
 {cont} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "CONTINUE");
   return CONTINUE;
 }
 
 {and} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "AND");
   return AND;
 }
 
 {if} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "IF");
   return IF;
 }
 
 {else} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "ELSE");
   return ELSE;
 }
 
 {while} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "WHILE");
   return WHILE;
 }
 
 {for} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "FOR");
   return FOR;
 }
 
 {func} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "FUNCTION");
   return FUNCTION;
 }
 
 {ret} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "RETURN");
   return RETURN_KW;
 }
 
 {not} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "NOT");
   return NOT;
 }
 
 {or} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "OR");
   return OR;
 }
 
 {local} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "LOCAL");
   return LOCAL;
 }
 
 {true} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "TRUE");
   return TRUE_KW;
 }
 
 {false} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "FALSE");
   return FALSE_KW;
 }
 
 {nil} {
-  //insert(list, yylineno, strdup(yytext), "KEYWORD", "NIL");
   return NIL;
 }
 
 {greater_than} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "GREATER_THAN");
   return GREATER_THAN;
 }
 
 {equal} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "EQUAL");
   return EQUAL;
 }
 
 {assign} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "ASSIGN");
   return ASSIGN;
 }
 
 {decrement} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "DECREMENT");
   return DECREMENT;
 }
 
 {not_equal} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "NOT_EQUAL");
   return NOT_EQUAL;
 }
 
 {minus} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR","MINUS");
   return MINUS;
 }
 
 {multiply} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR","MULTIPLY");
   return MULTIPLY;
 }
 
 {modulo} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR","MODULO");
   return MODULO;
 }
 
 {greater_equal_than} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR","GREATER_EQUAL_THAN");
   return GREATER_EQUAL;
 }
 
 {plus} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "PLUS");
   return PLUS;
 }
 
 {less_than} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "LESS_THAN");
   return LESSER_THAN;
 }
 
 {less_equal_than} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "LESS_EQUAL_THAN");
   return LESSER_EQUAL;
 }
 
 {increment} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "INCREMENT");
   return INCREMENT;
 }
 
 {slash} {
-  //insert(list, yylineno, strdup(yytext), "OPERATOR", "SLASH");
   return SLASH;
 }
 
 {colon} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "COLON");
   return COLON;
 }
 
 {comma} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "COMMA");
   return COMMA;
 }
 
 {semicolon} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "SEMICOLON");
   return SEMICOLON;
 }
 
 {double_dot} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "DOUBLE_DOT");
   return DOUBLE_DOT;
 }
 
 {dot} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION","DOT");
   return DOT;
 }
 
 {double_colon} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION","DOUBLE_COLON");
   return DOUBLE_COLON;
 }
 
 {left_parenthesis} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION","LEFT_PARENTHESIS");
   return LEFT_PARENTHESIS;
 }
 
 {right_parenthesis} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_PARENTHESIS");
   return RIGHT_PARENTHESIS;
 }
 
 {left_brk} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "LEFT_BRACKET");
   return LEFT_BRACKET;
 }
 
 {right_brk} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_BRACKET");
   return RIGHT_BRACKET;
 }
 
 {left_sqr_brk} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "LEFT_SQUARE_BRACKET");
   return LEFT_SQUARE_BRACKET;
 }
 
 {right_sqr_brk} {
-  //insert(list, yylineno, strdup(yytext), "PUNCTUATION", "RIGHT_SQUARE_BRACKET");
   return RIGHT_SQUARE_BRACKET;
 }
 
 {integer} {
   yylval.int_val = atoi(yytext); 
-  //insert(list, yylineno, strdup(yytext), "INTCONST", "INTEGER");
   return INTEGER;
 }
 
 {real} {
   yylval.real_val = atoi(yytext); 
-  //insert(list, yylineno, strdup(yytext), "REALCONST", strdup(yytext));
   return REAL;
 }
 
 {id} {
   yylval.str_val = strdup(yytext);
-  //insert(list, yylineno, strdup(yytext), "IDENT", strdup(yytext));
   return ID;
 }
 
-[ \n\t\r\v\f] {}
+[ \n\t\r\v\f] {
+lineptr = strdup(yytext);
+    if (lineptr == NULL) {
+        fprintf(stderr, "Error: Failed to allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+}
 
 "\"" {
   char c, peak, special_char;
@@ -379,7 +351,6 @@ real            [0-9]+[.][0-9]+
     exit(0);
   }
 
-  //insert(list, yylineno, token, "STRING", token);
   yylval.str_val = strdup(token);
   return STRING;
 }
@@ -391,7 +362,6 @@ real            [0-9]+[.][0-9]+
      break;
     }
   }
-  //insert(list,yylineno,"","COMMENT", "LINE COMMENT");
 }
 
 "/*" {
@@ -435,7 +405,6 @@ real            [0-9]+[.][0-9]+
     char tmp[128];
     comment_t *comment = pop_comment(temp, 1, 1);
     sprintf(tmp, "%d-%d", comment->start_line, comment->end_line);
-    //insert(list,yylineno,strdup(tmp),"COMMENT", "BLOCK COMMENT");
   }
 } 
 
@@ -447,29 +416,6 @@ real            [0-9]+[.][0-9]+
 
 %%
 
-// int main(int argc, char* argv[]){
-//   FILE* file;
-
-//   if (argc > 1) {
-//     if (!(yyin = fopen(argv[1], "r"))) {
-//       perror("Cant open file"); 
-//       return 1;
-//     }
-//   }
-
-//   if (argc > 2) {
-//     if (!(file = fopen(argv[2], "w"))) {
-//       perror("Cannot open output file");
-//       fclose(file);
-//       return 1;
-//     }
-//   }
-
-//   token_list *list = create_list();
-
-//   alpha_yylex(list, (argc > 2) ? file : stdout);
- 
-//   print_list(list, (argc > 2) ? file : stdout);
-//   free_list(list);
-//   return 0;
-// }
+size_t min(size_t a, size_t b) {
+    return b < a ? b : a;
+}
