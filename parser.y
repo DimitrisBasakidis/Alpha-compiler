@@ -6,6 +6,8 @@
 
 #include "grammatical_rules/grammar_functions.h"
 
+#include "utilities/quads.h"
+
 #define YYERROR_VERBOSE 1
 
 int yylex(void);
@@ -13,6 +15,10 @@ int yyerror(const char *error_msg);
 void print_errors(const char *error_msg, char *token, const char *error_type);
 
 const char *file_name;
+
+quad* quads = (quad*)0;
+unsigned total = 0;
+unsigned int currQuad = 0;
 
 int scope = 0;
 int func_in_between = 0;
@@ -25,6 +31,8 @@ int for_loop = 0;
 int if_stmt = 0;
 int global_val_exists = 0;
 int is_local_kw = 0;
+
+int temp_count = 0;
 
 extern int yylineno;
 extern char *yytext;
@@ -46,7 +54,6 @@ SymbolTableEntry *entry;
   int int_val;
   char *str_val;
   float real_val;
-  struct expr_t* expression;
 }
 
 %token <int_val>  INTEGER

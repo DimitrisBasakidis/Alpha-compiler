@@ -8,7 +8,6 @@
 
 #include "symbol_table.h"
 
-
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
@@ -45,12 +44,19 @@ void emit (
    unsigned label,
    unsigned line);
 
+
+
 void expand (void);
 
+// extern quad* quads; // for parser file
+// extern unsigned total;
+// extern unsigned int currQuad;
+// extern int temp_count;
 
 quad* quads = (quad*)0;
 unsigned total = 0;
 unsigned int currQuad = 0;
+int temp_count = 0;
 
 typedef enum expr_t {
     var_e,
@@ -86,6 +92,10 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
 void print_expr(expr* e);
 void print_quads(void);
 void printOpcode(int value);
+
+char *newtempname(void);
+void resettemp(void);
+SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line);
 
 #endif
 

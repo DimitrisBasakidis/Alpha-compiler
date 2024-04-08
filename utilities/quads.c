@@ -168,9 +168,42 @@ void printOpcode(int value) {
     }
 }
 
+char *newtempname(void) {
+    unsigned int count = 0, n = temp_count;
+    char *temp = (char *)malloc(sizeof(char) * temp_count + 2);
+
+    while (n != 0) { 
+        n /= 10; 
+        count++;
+    }
+
+    sprintf(temp , "_t%u", (unsigned int) temp_count++);
+    return temp;
+}
+
+void resettemp(void) {
+    temp_count = 0;
+}
+
+SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line) {
+    char *name = newtempname();
+    SymbolTableEntry *sym = lookup(symtable, lists, name, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, SCOPE);
+
+    if (sym == NULL) { // ama h synartish einai null tote shmainei oti exoyme kanei insert alliws epistrefei to hdh uparxon
+        insert_symbol(symtable, create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+    } else {
+        return sym;
+    }
+
+    return NULL;
+}
+
+
 int main (){
     expr* new = create_expr(constnum_e,NULL,NULL,1,NULL,0);
     emit(if_eq,new,new,new,0,0);
-    emit(if_eq,new,new,new,0,0);
+    
+    // for (int i = 0; i < 10; i++) printf("%s\n", newtempname());
+    
     print_quads();
 }
