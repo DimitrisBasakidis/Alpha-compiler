@@ -183,6 +183,7 @@ int insert_symbol(SymTable *symtable, SymbolTableEntry *entry) {
 // SymbolTableEntry *lookup_scope()
 
 SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enum SymbolType type, int scope, int flag) {
+  int index = 0;
   if (symtable == NULL) return NULL;
   SymbolTableEntry *ptr = NULL;
 
@@ -190,7 +191,7 @@ SymbolTableEntry *lookup(SymTable *symtable, scopeLists *lists, char *token, enu
 
   case HASH:
 
-    int index = (lookup_lib_func(token) == TRUE) ? 0 : hash(token);
+    index = (lookup_lib_func(token) == TRUE) ? 0 : hash(token);
     ptr = symtable->table[index];
 
     while (ptr != NULL) {

@@ -7,9 +7,13 @@
 #include "utilities/symbol_table.h"
 #include "utilities/structs.h"
 
+#define YYERROR_VERBOSE 1
+
 int yylex(void);
 int yyerror(const char *error_msg);
-void print_errors(char *error_msg, char *token, int line);
+void print_errors(const char *error_msg, char *token, const char *error_type);
+
+const char *file_name;
 
 int scope = 0;
 int func_in_between = 0;
@@ -21,15 +25,18 @@ int while_loop = 0;
 int for_loop = 0;
 int if_stmt = 0;
 int global_val_exists = 0;
-
 int is_local_kw = 0;
 
 extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
 
+extern int column;
+extern char *lineptr;
+
 SymTable *symtable;
 scopeLists *lists;
+
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
 
@@ -83,25 +90,14 @@ stmt: expr SEMICOLON {}
       | forstmt {}
       | returnstmt {}
       | BRK SEMICOLON {if (in_loop == 0){
-                          printf("Use of");
-                          printf("\033[31m");
-                          printf(" break ");
-                          printf("\033[0m");
-                          printf(" while not in loop");
-                         printf(" line: %d\n", yylineno);
+                         print_errors("use of keyword outside of function", "continue", "grammar");
                          exit(TRUE);
-
-                              }}
+                       }}
       | CONTINUE SEMICOLON {if (in_loop == 0){
-                          printf("Use of");
-                          printf("\033[31m");
-                          printf(" continue ");
-                          printf("\033[0m");
-                          printf(" while not in loop");
-                         printf(" line: %d\n", yylineno);
-                         exit(TRUE);
-
-                              }}
+                              print_errors("use of keyword outside of function", "continue", "grammar");
+                              exit(TRUE);
+                            }
+                            }
       | block {}
       | funcdef {}
       | SEMICOLON {}
@@ -131,7 +127,7 @@ term:  NOT expr {;}
 
       if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
           char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
-          print_errors(msg, $2, yylineno);
+          print_errors(msg, $2, "grammar");
           exit(TRUE); 
       }
     }
@@ -141,7 +137,7 @@ term:  NOT expr {;}
       if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
 
           char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
-          print_errors(msg, $1, yylineno);
+          print_errors(msg, $1, "grammar");
           exit(TRUE); 
       }
     }
@@ -149,7 +145,7 @@ term:  NOT expr {;}
       entry = lookup(symtable, lists, $2, (lookup_lib_func($2) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
       if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
           char *msg = (entry->type == USERFUNC) ? "cannot decriment user function" : "cannot decriment library function";
-          print_errors(msg, $2, yylineno);
+          print_errors(msg, $2, "grammar");
           exit(TRUE); 
       }
     }
@@ -157,7 +153,7 @@ term:  NOT expr {;}
 
       if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
           char *msg = (entry->type == USERFUNC) ? "cannot decriment user function" : "cannot decriment library function";
-          print_errors(msg, $1, yylineno);
+          print_errors(msg, $1, "grammar");
           exit(TRUE); 
       }
     }
@@ -171,23 +167,26 @@ assignexpr: lvalue ASSIGN expr {
 
   if (entry == NULL) {
     if (from_func_call) {
-      print_errors("accessing undefined function", $1, yylineno);
+      print_errors("accessing undefined function", $1, "grammar");
       exit(TRUE); 
     }
     SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
+
   } else {
-    if((func_in_between >1 || entry->value.varVal->scope >= scope) && !global_val_exists){
+    if ((func_in_between > 1 || entry->value.varVal->scope >= scope) && !global_val_exists) {
+
       switch (entry->type) {
+
         case LOCALVAR:
           if (entry->value.varVal->scope == scope) {
             if (is_local_kw == 1 && entry->value.varVal->line != yylineno) {
-              print_errors("redefinition of variable", $1, yylineno);
+              print_errors("redefinition of variable", $1, "grammar");
               exit(TRUE); 
             }
           } else if (!for_loop && !while_loop) {
-            print_errors("cant access local varible outside of scope", $1, yylineno);
+            print_errors("cant access local varible outside of scope", $1, "grammar");
             exit(TRUE);  
           }
           break;
@@ -195,48 +194,57 @@ assignexpr: lvalue ASSIGN expr {
         case LIBFUNC:
         case USERFUNC: 
           if (from_func_call) break;
+
           char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
-          print_errors(msg, $1, yylineno);
+          print_errors(msg, $1, "grammar");
           exit(TRUE); 
 
         case FORMAL:
           if (entry->value.varVal->scope != scope) {
-            // printf("func in between %d\n",func_in_between);
-            print_errors("cant access formal argument outside of scope", $1, yylineno);
+            print_errors("cant access formal argument outside of scope", $1, "grammar");
             exit(TRUE);
           }
           
       }
+    } else if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+      char *temp = (entry->type == USERFUNC) ? "cannot assign value to user function" : "cannot assign value to library function";
+      print_errors(temp, $1, "grammar");
+      exit(TRUE);
     }
   if (!global_val_exists) global_val_exists = 0;
   }
   is_local_kw = 0;
-  if(from_func_call>0) from_func_call--;
+  if (from_func_call > 0) from_func_call--;
 } 
 ;
 
 primary: lvalue { 
-
   entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+
   if (entry == NULL) {
     if (from_elist) {
-      print_errors("using undefined variable as call argument", $1, yylineno);
+      print_errors("using undefined variable as call argument", $1, "grammar");
       exit(TRUE);
     }
+
     else {
-      print_errors("using undefined variable", $1, yylineno);
+      print_errors("using undefined variable", $1, "grammar");
       exit(TRUE);
     }
+
     SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
+
   } else {
+
     switch (entry->type) {
+
       case LIBFUNC:
       case USERFUNC: 
         if (entry->value.varVal->scope == scope && is_return_kw == 0) {
           char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
-          print_errors(msg, $1, yylineno);
+          print_errors(msg, $1, "grammar");
           exit(TRUE);
         }  
         break;
@@ -244,16 +252,15 @@ primary: lvalue {
 
         case FORMAL: 
           if (entry->value.varVal->scope != scope) {
-            print_errors("calling formal argument outside of scope", $1, yylineno);
+            print_errors("calling formal argument outside of scope", $1, "grammar");
             exit(TRUE);
           }
           break;
 
         case LOCALVAR:
           if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
-                        // printf("scope %d ", scope);
 
-            print_errors("calling local variable outside of scope", $1, yylineno);
+            print_errors("calling local variable outside of scope", $1, "grammar");
             exit(TRUE);
           }
           break;
@@ -269,7 +276,7 @@ primary: lvalue {
     entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
     SymbolTableEntry *temp = NULL;
     if (entry == NULL) {
-        print_errors("calling undefined function:", $1, yylineno);
+        print_errors("calling undefined function:", $1, "grammar");        
         exit(TRUE);  
      } else {
 
@@ -281,7 +288,7 @@ primary: lvalue {
         temp = is_func(lists, $1, scope);
         if (temp != NULL && temp->value.funcVal->scope <= scope) break;
         char *msg = (entry->type == LIBFUNC) ? "calling local variable as a function" : "calling global variable as a function";
-        print_errors(msg, $1, yylineno);
+        print_errors(msg, $1, "grammar");
         exit(TRUE);  
     }
   };
@@ -299,7 +306,7 @@ lvalue: ID { // ELEGXOYME STON HASHTABLE AN UPARXEI TO ONOMA TOU ID(print error 
         entry = lookup(symtable, lists, $2, LOCALVAR, scope, SCOPE); 
         is_local_kw = 1;
         if (lookup_lib_func($2) == TRUE) {
-            print_errors("shadowing library function:", $2, yylineno);
+            print_errors("shadowing library function:", $2, "grammar");
             exit(TRUE);  
         }
 
@@ -309,10 +316,10 @@ lvalue: ID { // ELEGXOYME STON HASHTABLE AN UPARXEI TO ONOMA TOU ID(print error 
             insert_to_scope(lists, node, scope);
         } else {
           if (entry->type == USERFUNC) {
-            print_errors("redefining user function:", $2, yylineno);
+            print_errors("redefining user function:", $2, "grammar");
             exit(TRUE);  
           } else if (entry->type == FORMAL) {
-            print_errors("redefining formal argument:", $2, yylineno);
+            print_errors("redefining formal argument:", $2, "grammar");
             exit(TRUE);
           }
         }
@@ -323,7 +330,7 @@ lvalue: ID { // ELEGXOYME STON HASHTABLE AN UPARXEI TO ONOMA TOU ID(print error 
 | DOUBLE_COLON ID { 
   entry = lookup(symtable, lists, $2, GLOBALVAR, 0, SCOPE); 
   if (entry == NULL) {
-    print_errors("no global variable exists", $2, yylineno);
+    print_errors("no global variable exists", $2, "grammar");
     exit(TRUE);  
   } else global_val_exists = 1;
   $$ = $2;
@@ -397,37 +404,32 @@ func_id: FUNCTION fname{ // elegxoume ama uparxoyn ta entries sto hashtable kai 
     switch (entry->type) {
 
       case LIBFUNC:
-        print = "library function";
+        print = "redefining library function";
         break;
       case USERFUNC: 
-        print = "user function";
+        print = "redefining user function";
         break;
 
       case GLOBALVAR:
-        print = "global variable";
+        print = "redefining global variable";
         break; 
 
       case LOCALVAR: 
-        print = "local variable";
+        print = "redefining local variable";
         break;
-      case FORMAL :
-        print = "formal argument";
+      case FORMAL:
+        print = "redefining formal argument";
         break;
+
       default:
-      print = "vaggeli agapiesai";  
-      break;
+        print = "vaggeli agapiesai";  
+        break;
     }
 
-    printf("redefining %s:", print);
-    printf("\033[31m");
-    printf(" %s", $2);
-    printf("\033[0m");
-    printf(" line: %d\n", yylineno);
+    print_errors(print, $2, "grammar");
     exit(TRUE);
-
   }
-}
-       ;
+};
 
 funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {func_in_between++;}block {func_in_between--;}
        | func_id LEFT_PARENTHESIS RIGHT_PARENTHESIS {func_in_between++;} block {func_in_between--;}
@@ -444,19 +446,19 @@ const: INTEGER  {;}
 idlist_id: ID { 
 
   if (lookup_lib_func($1) == TRUE) {
-    print_errors("shadowing lib function:", $1, yylineno);
+    print_errors("shadowing lib function:", $1, "grammar");
     exit(TRUE);
   }
 
   entry = lookup(symtable, lists, $1, GLOBALVAR, scope, SCOPE);
   if (entry != NULL && entry->value.varVal->scope != 0 && entry->type == USERFUNC) {
-    print_errors("redefining argument", $1, yylineno);
+    print_errors("redefining argument", $1, "grammar");
     exit(TRUE);
   } 
 
-  entry = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE); //check for same args 
+  entry = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE);
   if (entry != NULL) {
-    print_errors("redefining argument", $1, yylineno);
+    print_errors("redefining argument", $1, "grammar");
     exit(TRUE);
   } 
 
@@ -488,24 +490,15 @@ forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PA
 
 returnstmt: RETURN_KW {
   if (func_in_between == 0){
-    printf("Use of");
-    printf("\033[31m");
-    printf(" return");
-    printf("\033[0m");
-    printf(" while not in function");
-    printf(" line: %d\n", yylineno);
+    print_errors("use of keyword outside of function", "return", "grammar");
     exit(TRUE);
   }
 }SEMICOLON {;}
 
 | RETURN_KW {
   if (func_in_between == 0){    
-    printf("Use of");
-    printf("\033[31m");
-    printf(" return");
-    printf("\033[0m");
-    printf(" while not in function");
-    printf(" line: %d\n", yylineno);
+    print_errors("use of keyword outside of function", "return", "grammar");
+
     exit(TRUE);
   }
 } expr SEMICOLON { is_return_kw = 1;};
@@ -513,18 +506,34 @@ returnstmt: RETURN_KW {
 %%
 
 int yyerror(const char *error_msg) {
-  fprintf(stderr, "something went\033[31m bad\033[0m %s, line %d\n", error_msg, yylineno);
+  print_errors(yylval.str_val, yytext, "syntax");
   exit(0);
 }
 
-void print_errors(char *error_msg, char *token, int line) {
-      printf("%s", error_msg);
-      printf("\033[31m");
-      printf(" %s", token);
-      printf("\033[0m");
-      printf(" line: %d\n", line);
+void print_errors(const char *error_msg, char *token, const char *error_type) {
+  int count = 1;
+  int temp = yylineno;
+
+  fprintf(stderr, "%s:%d ",file_name + 1, yylineno);
+  printf("\033[31merror:\033[0m %s\n", error_type);   
+
+  while (temp) {temp /= 10; count++;}; 
+  printf("  %d | %s",yylineno, error_msg);
+  printf("\033[31m");
+  printf(" %s", token);
+  printf("\033[0m\n");
+  printf("%*s|", count + 2, "");
+  for (int i = 0; i < strlen(error_msg) + 2; i++) printf(" ");
+  printf("\033[31m^\033[0m");
+  if (strlen(token) > 1) {
+    for (int i = 0; i < strlen(token) - 1; i++) printf("\033[31m~\033[0m");
+  }
+  printf("\n%*s|\n", count + 2, "");
+
+
 
 }
+
 
 int main(int argc, char **argv) {
 
@@ -535,6 +544,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  file_name = strrchr(argv[1], '/');
   lists = create_scope_lists();
   
   symtable = create_table();
@@ -549,16 +559,3 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/* x = 2;
-function foo() {
-  function foo(bar) {
-    local foo = 2;
-    return bar + foo;
-  }
-  {
-    local foo = [{foo:[{foo:foo}]}];
-    foo.foo..foo(::foo);
-  }
-  x = (function(){});
-}
-*/
