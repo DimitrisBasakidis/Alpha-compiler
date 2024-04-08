@@ -25,7 +25,6 @@ int while_loop = 0;
 int for_loop = 0;
 int if_stmt = 0;
 int global_val_exists = 0;
-
 int is_local_kw = 0;
 
 extern int yylineno;
@@ -37,6 +36,7 @@ extern char *lineptr;
 
 SymTable *symtable;
 scopeLists *lists;
+
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
 
@@ -173,9 +173,12 @@ assignexpr: lvalue ASSIGN expr {
     SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
+
   } else {
-    if((func_in_between >1 || entry->value.varVal->scope >= scope) && !global_val_exists){
+    if ((func_in_between > 1 || entry->value.varVal->scope >= scope) && !global_val_exists) {
+
       switch (entry->type) {
+
         case LOCALVAR:
           if (entry->value.varVal->scope == scope) {
             if (is_local_kw == 1 && entry->value.varVal->line != yylineno) {
@@ -191,43 +194,52 @@ assignexpr: lvalue ASSIGN expr {
         case LIBFUNC:
         case USERFUNC: 
           if (from_func_call) break;
+
           char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
           print_errors(msg, $1, "grammar");
           exit(TRUE); 
 
         case FORMAL:
           if (entry->value.varVal->scope != scope) {
-            // printf("func in between %d\n",func_in_between);
             print_errors("cant access formal argument outside of scope", $1, "grammar");
             exit(TRUE);
           }
           
       }
+    } else if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+      char *temp = (entry->type == USERFUNC) ? "cannot assign value to user function" : "cannot assign value to library function";
+      print_errors(temp, $1, "grammar");
+      exit(TRUE);
     }
   if (!global_val_exists) global_val_exists = 0;
   }
   is_local_kw = 0;
-  if(from_func_call>0) from_func_call--;
+  if (from_func_call > 0) from_func_call--;
 } 
 ;
 
 primary: lvalue { 
-
   entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+
   if (entry == NULL) {
     if (from_elist) {
       print_errors("using undefined variable as call argument", $1, "grammar");
       exit(TRUE);
     }
+
     else {
       print_errors("using undefined variable", $1, "grammar");
       exit(TRUE);
     }
+
     SymbolTableEntry *node = create_node($1, scope, yylineno, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope);
+
   } else {
+
     switch (entry->type) {
+
       case LIBFUNC:
       case USERFUNC: 
         if (entry->value.varVal->scope == scope && is_return_kw == 0) {
@@ -247,7 +259,6 @@ primary: lvalue {
 
         case LOCALVAR:
           if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
-                        // printf("scope %d ", scope);
 
             print_errors("calling local variable outside of scope", $1, "grammar");
             exit(TRUE);
@@ -445,7 +456,7 @@ idlist_id: ID {
     exit(TRUE);
   } 
 
-  entry = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE); //check for same args 
+  entry = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE);
   if (entry != NULL) {
     print_errors("redefining argument", $1, "grammar");
     exit(TRUE);
@@ -496,7 +507,6 @@ returnstmt: RETURN_KW {
 
 int yyerror(const char *error_msg) {
   print_errors(yylval.str_val, yytext, "syntax");
-
   exit(0);
 }
 
