@@ -23,7 +23,7 @@ int manage_continue(void (*print_errors)(const char *, char *, const char *));
 int manage_increment(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
 int manage_decrement(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
 int manage_assignexpr(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
-int manage_lvalue(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
+SymbolTableEntry *manage_lvalue(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_call(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_local_id(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_double_colon_id(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
