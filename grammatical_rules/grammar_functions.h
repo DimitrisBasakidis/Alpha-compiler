@@ -29,7 +29,8 @@ int manage_local_id(SymTable *symtable, scopeLists *lists, SymbolTableEntry *ent
 int manage_double_colon_id(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
 int manage_function(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_lib_function(char *token, void (*print_errors)(const char *, char *, const char *));
-int manage_id(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry_g, SymbolTableEntry *entry_l, char *token, void (*print_errors)(const char *, char *, const char *), int line);
+int manage_id_list(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry_g, SymbolTableEntry *entry_l, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_return(void (*print_errors)(const char *, char *, const char *));
+int manage_id(SymTable *symtable, scopeLists *lists, char *token, int line, int scope, void (*print_errors)(const char *, char *, const char *));
 
 #endif

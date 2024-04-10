@@ -153,9 +153,9 @@ term:  NOT expr {;}
 
 assignexpr: lvalue ASSIGN expr { 
 
-  entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+  // entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
 
-  manage_assignexpr(symtable, lists, entry, $1, print_errors, yylineno);
+  // manage_assignexpr(symtable, lists, entry, $1, print_errors, yylineno);
 
   is_local_kw = 0;
   if (from_func_call > 0) from_func_call--;
@@ -165,7 +165,7 @@ assignexpr: lvalue ASSIGN expr {
 primary: lvalue { 
   //entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
   // entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
-  entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
+  // entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
 
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
@@ -180,7 +180,8 @@ primary: lvalue {
 ;
 
 
-lvalue: ID { //$$->strConst = malloc(strlen($1));
+lvalue: ID { //$$->strConst = malloc(strlen($1)); // edo tha graftoun ola
+          manage_id(symtable, lists, $1, yylineno, scope, print_errors);
           $$ = $1;
         } 
 
@@ -188,6 +189,7 @@ lvalue: ID { //$$->strConst = malloc(strlen($1));
   entry = lookup(symtable, lists, $2, LOCALVAR, scope, SCOPE); 
   
   is_local_kw = 1;
+
   manage_local_id(symtable, lists, entry, $2, print_errors, yylineno);
 
   $$ = $2;
@@ -202,7 +204,7 @@ lvalue: ID { //$$->strConst = malloc(strlen($1));
 | member {;}
 
       
-member: lvalue DOT ID {printf("id : %s\n", $3);}
+member: lvalue DOT ID {}
       | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
       | call DOT ID {from_func_call++;}
       | call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
@@ -260,40 +262,6 @@ func_id: FUNCTION fname{ // elegxoume ama uparxoyn ta entries sto hashtable kai 
   entry = lookup(symtable, lists, $2, USERFUNC, scope, SCOPE);
   
   manage_function(symtable, lists, entry, $2, print_errors, yylineno);
-  // if (entry == NULL) {
-  //   SymbolTableEntry *node = create_node($2, scope, yylineno, USERFUNC, ACTIVE);
-  //   insert_symbol(symtable, node);
-  //   insert_to_scope(lists, node, scope);
-  // } else {
-  //   char *print = NULL;
-  //   switch (entry->type) {
-
-  //     case LIBFUNC:
-  //       print = "redefining library function";
-  //       break;
-  //     case USERFUNC: 
-  //       print = "redefining user function";
-  //       break;
-
-  //     case GLOBALVAR:
-  //       print = "redefining global variable";
-  //       break; 
-
-  //     case LOCALVAR: 
-  //       print = "redefining local variable";
-  //       break;
-  //     case FORMAL:
-  //       print = "redefining formal argument";
-  //       break;
-
-  //     default:
-  //       print = "vaggeli agapiesai";  
-  //       break;
-  //   }
-
-  //   print_errors(print, $2, "grammar");
-  //   exit(TRUE);
-  // }
 };
 
 funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {func_in_between++;}block {func_in_between--;}
@@ -317,7 +285,7 @@ idlist_id: ID {
   entry = lookup(symtable, lists, $1, GLOBALVAR, scope, SCOPE);
   entry_l = lookup(symtable, lists, $1, FORMAL, scope + 1, SCOPE);
   
-  manage_id(symtable, lists, entry, entry_l, $1, print_errors, yylineno);
+  manage_id_list(symtable, lists, entry, entry_l, $1, print_errors, yylineno);
 };
 
 open_for: FOR {for_loop++;};

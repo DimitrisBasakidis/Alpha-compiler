@@ -82,58 +82,8 @@ int manage_assignexpr(SymTable *symtable, scopeLists *lists, SymbolTableEntry *e
   }
 }
 
-SymbolTableEntry *manage_lvalue(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
-    SymbolTableEntry *entry = lookup(symtable, lists, token, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
-
-    if (entry == NULL) {
-        if (from_elist) {
-            print_errors("using undefined variable as call argument", token, "grammar");
-            exit(TRUE);
-        }
-
-        else {
-            print_errors("using undefined variable", token, "grammar");
-            exit(TRUE);
-        }
-
-        SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
-        insert_symbol(symtable, node);
-        insert_to_scope(lists, node, scope);
-
-        return node;
-    } else {
-
-    switch (entry->type) {
-
-      case LIBFUNC:
-      case USERFUNC: 
-        if (entry->value.varVal->scope == scope && is_return_kw == 0) {
-          char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
-          print_errors(msg, token, "grammar");
-          exit(TRUE);
-        }  
-        break;
 
 
-        case FORMAL: 
-          if (entry->value.varVal->scope != scope) {
-            print_errors("calling formal argument outside of scope", token, "grammar");
-            exit(TRUE);
-          }
-          break;
-
-        case LOCALVAR:
-          if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
-
-            print_errors("calling local variable outside of scope", token, "grammar");
-            exit(TRUE);
-          }
-          break;
-    }
-    };
-
-    return entry;
-}
 
 int manage_call(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
     SymbolTableEntry *temp = NULL;
@@ -163,7 +113,7 @@ int manage_local_id(SymTable *symtable, scopeLists *lists, SymbolTableEntry *ent
     }
 
     if (entry == NULL) {
-        SymbolTableEntry *node = create_node(token, scope, line, LOCALVAR, ACTIVE);
+        SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
     } else {
@@ -228,7 +178,7 @@ int manage_lib_function(char *token, void (*print_errors)(const char *, char *, 
     }
 }
 
-int manage_id(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry_g, SymbolTableEntry *entry_l, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+int manage_id_list(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry_g, SymbolTableEntry *entry_l, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
     if (entry_g != NULL && entry_g->value.varVal->scope != 0 && entry_g->type == USERFUNC) {
         print_errors("redefining argument", token, "grammar");
         exit(TRUE);
@@ -250,3 +200,105 @@ int manage_return(void (*print_errors)(const char *, char *, const char *)) {
         exit(TRUE);
     }
 }
+
+int manage_id(SymTable *symtable, scopeLists *lists, char *token, int line, int scope, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = NULL;
+    int index = 0;
+
+    assert(scope >= 0);
+
+    for (index = scope; index >= 0; index--) {
+        entry = lookup(symtable, lists, token, (index == 0) ? GLOBALVAR : LOCALVAR, index, SCOPE);
+
+        if (entry != NULL) break;
+    }
+
+    // if (entry != NULL) {
+    //     printf ("Found token %s,in scope %d in line %d type %d  while we are in line %d adn scope %d\n",entry->value.varVal->name, entry->value.varVal->scope, entry->value.varVal->line, entry->type, line , scope);
+
+    // }
+
+    if (entry == NULL) {
+        SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+        insert_symbol(symtable, node);
+        insert_to_scope(lists, node, scope);
+         return TRUE;
+    }
+
+
+    switch (entry->type) {
+
+        case FORMAL: 
+          if (entry->value.varVal->scope != index) {
+            print_errors("calling formal argument outside of scope", token, "grammar");
+            exit(TRUE);
+          }
+
+          if (entry->value.varVal->scope != scope) {
+            print_errors("calling formal argument outside of scope", token, "grammar");
+            exit(TRUE);
+          }
+          break;
+
+        case LOCALVAR:
+          if (entry->value.varVal->scope != scope && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {
+            print_errors("calling local variable outside of scope", token, "grammar");
+            exit(TRUE);
+          }
+          break;
+
+    }
+}
+
+// SymbolTableEntry *manage_lvalue(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+//     SymbolTableEntry *entry = lookup(symtable, lists, token, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+
+//     if (entry == NULL) {
+        // if (from_elist) {
+        //     print_errors("using undefined variable as call argument", token, "grammar");
+        //     exit(TRUE);
+        // }
+
+        // else {
+        //     print_errors("using undefined variable", token, "grammar");
+        //     exit(TRUE);
+        // }
+
+//         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+//         insert_symbol(symtable, node);
+//         insert_to_scope(lists, node, scope);
+
+//         return node;
+//     } else {
+
+    // switch (entry->type) {
+
+    //   case LIBFUNC:
+    //   case USERFUNC: 
+    //     if (entry->value.varVal->scope == scope && is_return_kw == 0) {
+    //       char *msg = (entry->type == LIBFUNC) ? "redefining library function" : "redefining user function";
+    //       print_errors(msg, token, "grammar");
+    //       exit(TRUE);
+    //     }  
+    //     break;
+
+
+    //     case FORMAL: 
+    //       if (entry->value.varVal->scope != scope) {
+    //         print_errors("calling formal argument outside of scope", token, "grammar");
+    //         exit(TRUE);
+    //       }
+    //       break;
+
+    //     case LOCALVAR:
+    //       if (entry->value.varVal->scope != scope && !for_loop && !if_stmt) {
+
+    //         print_errors("calling local variable outside of scope", token, "grammar");
+    //         exit(TRUE);
+    //       }
+    //       break;
+    // }
+    // };
+
+//     return entry;
+// }
