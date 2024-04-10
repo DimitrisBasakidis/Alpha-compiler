@@ -89,8 +89,9 @@ SymbolTableEntry *entry;
 program: statements {}
        ;
 
-statements: statements stmt {;}
-          | stmt
+statements: statements stmt {resettemp();}
+          | stmt{resettemp();}
+          |
           ;
 
 
@@ -236,7 +237,7 @@ indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
            ;
 
 
-block: LEFT_BRACKET {scope++;} statements RIGHT_BRACKET {hide_scope(lists, scope--);}
+block: LEFT_BRACKET {scope++; } statements RIGHT_BRACKET {hide_scope(lists, scope--); }
      | LEFT_BRACKET {scope++;} RIGHT_BRACKET {hide_scope(lists, scope--);}
      ;
 

@@ -221,7 +221,7 @@ void resettemp(void) {
 }
 
 SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line) {
-    char *name = newtempname();
+    char *name = newtempname(); 
     SymbolTableEntry *sym = lookup(symtable, lists, name, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, SCOPE);
     SymbolTableEntry *node = NULL;
 
