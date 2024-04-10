@@ -32,6 +32,13 @@ int if_stmt = 0;
 int global_val_exists = 0;
 int is_local_kw = 0;
 
+unsigned programVarOffset = 0;
+unsigned functionLocalOffset = 0;
+unsigned formalArgOffset = 0;
+unsigned scopeSpaceCounter = 1;
+
+// expr *ex;
+
 int temp_count = 0;
 
 extern int yylineno;
@@ -54,6 +61,7 @@ SymbolTableEntry *entry;
   int int_val;
   char *str_val;
   float real_val;
+  struct expr *ex;
 }
 
 %token <int_val>  INTEGER
@@ -75,8 +83,9 @@ SymbolTableEntry *entry;
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
 %type <int_val> term 
-%type <expression> stmt assignexpr
-%type <str_val> lvalue fname expr
+%type <expr> stmt assignexpr
+%type <str_val> lvalue
+%type <str_val> fname expr
 %type <str_val> member primary call objectdef funcdef const idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
 
 %%
@@ -121,7 +130,7 @@ expr: assignexpr {;}
 term:  NOT expr {;}
     | MINUS expr {;}
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
-    | INCREMENT lvalue {
+    | INCREMENT lvalue { 
       entry = lookup(symtable, lists, $2, (lookup_lib_func($2) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
       manage_increment(entry, $2, print_errors);
     }
@@ -154,9 +163,9 @@ assignexpr: lvalue ASSIGN expr {
 ;
 
 primary: lvalue { 
-  entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
-
-  manage_lvalue(symtable, lists, entry, $1, print_errors, yylineno);
+  //entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+  // entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
+  entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
 
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
@@ -165,12 +174,15 @@ primary: lvalue {
   entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
   manage_call(symtable, lists, entry, $1, print_errors, yylineno);
 }
-      | objectdef {;}
-      | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
-      | const {;}
-      ;
+| objectdef {;}
+| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
+| const {;}
+;
 
-lvalue: ID { $$ = $1;} 
+
+lvalue: ID { //$$->strConst = malloc(strlen($1));
+          $$ = $1;
+        } 
 
 | LOCAL ID { // kanoume lookup sto trexon scope kai ama einai libfunction tote exoyme shadowing kai meta ama einai null tote to vazoume sto table 
   entry = lookup(symtable, lists, $2, LOCALVAR, scope, SCOPE); 
@@ -190,7 +202,7 @@ lvalue: ID { $$ = $1;}
 | member {;}
 
       
-member: lvalue DOT ID {;}
+member: lvalue DOT ID {printf("id : %s\n", $3);}
       | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
       | call DOT ID {from_func_call++;}
       | call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}

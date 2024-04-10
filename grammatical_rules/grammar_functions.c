@@ -82,21 +82,25 @@ int manage_assignexpr(SymTable *symtable, scopeLists *lists, SymbolTableEntry *e
   }
 }
 
-int manage_lvalue(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+SymbolTableEntry *manage_lvalue(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
+
     if (entry == NULL) {
         if (from_elist) {
-        print_errors("using undefined variable as call argument", token, "grammar");
-        exit(TRUE);
+            print_errors("using undefined variable as call argument", token, "grammar");
+            exit(TRUE);
         }
 
         else {
-        print_errors("using undefined variable", token, "grammar");
-        exit(TRUE);
+            print_errors("using undefined variable", token, "grammar");
+            exit(TRUE);
         }
 
         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
+
+        return node;
     } else {
 
     switch (entry->type) {
@@ -127,6 +131,8 @@ int manage_lvalue(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry
           break;
     }
     };
+
+    return entry;
 }
 
 int manage_call(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line) {

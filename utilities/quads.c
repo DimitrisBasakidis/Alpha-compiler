@@ -53,6 +53,32 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
     return new;
 }
 
+expr *lvalue_expr(SymbolTableEntry *sym) {
+    assert(sym);
+    expr *e = malloc(sizeof(struct expr));
+    memset(e, 0, sizeof(struct expr));
+
+    e->next = NULL;
+    e->sym = sym;
+
+    switch (sym->type) {
+        case LOCALVAR:
+        case FORMAL:
+        case GLOBALVAR: 
+            e->type = var_e; 
+            break;
+        
+        case USERFUNC:
+            e->type = programfunc_e;
+            break;
+        case LIBFUNC:
+            e->type = libraryfunc_e;
+            break;
+    }
+
+    return e;
+}
+
 void print_quads(void){
     quad* tmp = quads;
     printf("quad#\topcode\t\tresult\t\targ1\t\targ2\t\tlabel\n");
@@ -188,22 +214,24 @@ void resettemp(void) {
 SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line) {
     char *name = newtempname();
     SymbolTableEntry *sym = lookup(symtable, lists, name, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, SCOPE);
+    SymbolTableEntry *node = NULL;
 
-    if (sym == NULL) { // ama h synartish einai null tote shmainei oti exoyme kanei insert alliws epistrefei to hdh uparxon
-        insert_symbol(symtable, create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE));
+    if (sym == NULL) { 
+        node = create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
+        insert_symbol(symtable, node);
     } else {
         return sym;
     }
 
-    return NULL;
+    return node;
 }
 
 
-int main (){
-    expr* new = create_expr(constnum_e,NULL,NULL,1,NULL,0);
-    emit(if_eq,new,new,new,0,0);
+// int main (){
+//     expr* new = create_expr(constnum_e,NULL,NULL,1,NULL,0);
+//     emit(if_eq,new,new,new,0,0);
     
-    // for (int i = 0; i < 10; i++) printf("%s\n", newtempname());
+//     // for (int i = 0; i < 10; i++) printf("%s\n", newtempname());
     
-    print_quads();
-}
+//     print_quads();
+// }

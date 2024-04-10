@@ -12,6 +12,25 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
+typedef enum expr_t {
+    var_e,
+    tableitem_e,
+
+    programfunc_e,
+    libraryfunc_e,
+
+    arithexpr_e,
+    boolexpr_e,
+    assignexpr_e,
+    newtable_e,
+
+    constnum_e,
+    constbool_e,
+    conststring_e,
+
+    nil_e
+} expr_t;
+
 typedef enum iopcode{
     assign,add,sub,
     mul,divide,mod,
@@ -23,7 +42,16 @@ typedef enum iopcode{
     funcend,tablecreate,
     tablegetelem,tablesetelem
 } iopcode;
-typedef struct expr expr;
+
+typedef struct expr{
+    expr_t type;
+    SymbolTableEntry* sym;
+    struct expr* index;
+    double numConst;
+    char* strConst;
+    unsigned char boolConst;
+    struct expr* next;
+}expr;
 
 typedef struct quad
 {
@@ -48,44 +76,19 @@ void emit (
 
 void expand (void);
 
-// extern quad* quads; // for parser file
-// extern unsigned total;
-// extern unsigned int currQuad;
-// extern int temp_count;
+extern quad* quads; // for parser file
+extern unsigned total;
+extern unsigned int currQuad;
+extern int temp_count;
 
-quad* quads = (quad*)0;
-unsigned total = 0;
-unsigned int currQuad = 0;
-int temp_count = 0;
+// quad* quads = (quad*)0;
+// unsigned total = 0;
+// unsigned int currQuad = 0;
+// int temp_count = 0;
 
-typedef enum expr_t {
-    var_e,
-    tableitem_e,
 
-    programfunc_e,
-    libraryfunc_e,
 
-    arithexpr_e,
-    boolexpr_e,
-    assignexpr_e,
-    newtable_e,
 
-    constnum_e,
-    constbool_e,
-    conststring_e,
-
-    nil_e
-} expr_t;
-
-typedef struct expr{
-    expr_t type;
-    SymbolTableEntry* sym;
-    expr* index;
-    double numConst;
-    char* strConst;
-    unsigned char boolConst;
-    expr* next;
-}expr;
 
 expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numConst,char* strConst,unsigned char boolConst);
 
@@ -96,6 +99,8 @@ void printOpcode(int value);
 char *newtempname(void);
 void resettemp(void);
 SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line);
+
+expr *lvalue_expr(SymbolTableEntry *sym);
 
 #endif
 

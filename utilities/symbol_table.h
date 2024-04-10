@@ -15,6 +15,8 @@
 #define TRUE  0
 #define FALSE 1
 
+#include "scopes.h"
+
 typedef struct Variable {
     char *name;
     unsigned int scope;
@@ -47,6 +49,8 @@ typedef struct SymbolTableEntry {
     struct SymbolTableEntry *next;
     struct SymbolTableEntry *snext;
     unsigned int hash_value;
+    scopespace_t space;
+    unsigned offset;
 } SymbolTableEntry;
 
 typedef struct scopeLists {
