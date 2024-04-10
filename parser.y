@@ -37,8 +37,6 @@ unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
 unsigned scopeSpaceCounter = 1;
 
-// expr *ex;
-
 int temp_count = 0;
 
 extern int yylineno;
@@ -53,7 +51,6 @@ scopeLists *lists;
 
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
-
 
 %}
 
@@ -82,11 +79,9 @@ SymbolTableEntry *entry;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <int_val> term 
-%type <expr> stmt assignexpr
-%type <str_val> lvalue
-%type <str_val> fname expr
-%type <str_val> member primary call objectdef funcdef const idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
+%type <ex> lvalue call const member primary assignexpr term objectdef expr
+%type <str_val> fname 
+%type <str_val> funcdef idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
 
 %%
 
@@ -112,7 +107,11 @@ stmt: expr SEMICOLON {}
       ;
 
 expr: assignexpr {;}
-    | expr PLUS expr {;}
+    | expr PLUS expr {
+        entry = newtemp(symtable, lists, scope, yylineno);
+        $$ = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
+        emit(add, $$, $1, $3, 0, yylineno);
+      }
     | expr MINUS expr {;}
     | expr SLASH expr {;}
     | expr MULTIPLY expr {;}
@@ -125,81 +124,75 @@ expr: assignexpr {;}
     | expr NOT_EQUAL expr {;}
     | expr AND expr {;}
     | expr OR expr {;}
-    | term {;}
+    | term {$$=$1;}
 
 term:  NOT expr {;}
     | MINUS expr {;}
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
     | INCREMENT lvalue { 
-      entry = lookup(symtable, lists, $2, (lookup_lib_func($2) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-      manage_increment(entry, $2, print_errors);
+      entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+      manage_increment(entry, $2->sym->value.varVal->name, print_errors);
     }
     | lvalue INCREMENT {
-      entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-      manage_increment(entry, $1, print_errors);
+      entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+      manage_increment(entry, $1->sym->value.varVal->name, print_errors);
     }
     | DECREMENT lvalue {
-      entry = lookup(symtable, lists, $2, (lookup_lib_func($2) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+      entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
 
-      manage_decrement(entry, $2, print_errors);
+      manage_decrement(entry, $2->sym->value.varVal->name, print_errors);
     }
-    | lvalue DECREMENT {entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+    | lvalue DECREMENT {entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
 
-      manage_decrement(entry, $1, print_errors);
+      manage_decrement(entry, $1->sym->value.varVal->name, print_errors);
     }
-    | primary {;}
+    | primary { $$ = $1;}
     ; 
 
 
 assignexpr: lvalue ASSIGN expr { 
 
-  // entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
-
-  // manage_assignexpr(symtable, lists, entry, $1, print_errors, yylineno);
-
+  emit(assign, $1, NULL, $3, 0, yylineno);
   is_local_kw = 0;
   if (from_func_call > 0) from_func_call--;
 } 
 ;
 
 primary: lvalue { 
-  //entry = lookup(symtable, lists, $1, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, HASH);
-  // entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
-  // entry = manage_lvalue(symtable, lists, $1, print_errors, yylineno);
 
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
 }
 | call { 
-  entry = lookup(symtable, lists, $1, (lookup_lib_func($1) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-  manage_call(symtable, lists, entry, $1, print_errors, yylineno);
+  entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+  manage_call(symtable, lists, entry, $1->sym->value.varVal->name, print_errors, yylineno);
 }
 | objectdef {;}
 | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
-| const {;}
+| const { $$ = $1;}
 ;
 
 
-lvalue: ID { //$$->strConst = malloc(strlen($1)); // edo tha graftoun ola
-          manage_id(symtable, lists, $1, yylineno, scope, print_errors);
-          $$ = $1;
-        } 
+lvalue: ID {
+            entry = manage_id(symtable, lists, $1, yylineno, scope, print_errors);
+            $$ = lvalue_expr(entry);
+           } 
 
 | LOCAL ID { // kanoume lookup sto trexon scope kai ama einai libfunction tote exoyme shadowing kai meta ama einai null tote to vazoume sto table 
-  entry = lookup(symtable, lists, $2, LOCALVAR, scope, SCOPE); 
-  
+
   is_local_kw = 1;
 
-  manage_local_id(symtable, lists, entry, $2, print_errors, yylineno);
+  entry = manage_local_id(symtable, lists, $2, print_errors, yylineno);
 
-  $$ = $2;
+  $$ = lvalue_expr(entry);
 }
 
 | DOUBLE_COLON ID { 
-  entry = lookup(symtable, lists, $2, GLOBALVAR, 0, SCOPE); 
+  
 
-  manage_double_colon_id(entry, $2, print_errors);
-  $$ = $2;
+  entry = manage_double_colon_id(symtable, lists, $2, print_errors);
+  $$ = lvalue_expr(entry);
+
 }
 | member {;}
 
@@ -210,7 +203,7 @@ member: lvalue DOT ID {}
       | call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
       ;
 
-call: call LEFT_PARENTHESIS {from_elist = 1;} elist  RIGHT_PARENTHESIS {;}
+call: call LEFT_PARENTHESIS {from_elist = 1; } elist  RIGHT_PARENTHESIS {;}
       | lvalue {;} callsuffix {;}
       | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
       ;
@@ -226,7 +219,7 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
           ;
 
 elist: expr {;}
-     | expr COMMA elist { $$ = $1;}
+     | expr COMMA elist { $$ = $1->sym->value.varVal->name;}
      | {;}
      ;
 
@@ -268,12 +261,12 @@ funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {func_in_between++;}b
        | func_id LEFT_PARENTHESIS RIGHT_PARENTHESIS {func_in_between++;} block {func_in_between--;}
        ;
 
-const: INTEGER  {;} 
-     | REAL { ;} 
-     | STRING { ;} 
-     | NIL {;} 
-     | TRUE_KW {;}
-     | FALSE_KW {;}
+const: INTEGER {$$ = create_expr(constnum_e, NULL, NULL, $1, "vaggelis", '\0');} 
+     | REAL { $$ = create_expr(constnum_e, NULL, NULL, $1, "", '\0');} 
+     | STRING { $$ = create_expr(conststring_e, NULL, NULL, 0, $1, '\0');} 
+     | NIL {$$ = create_expr(nil_e, NULL, NULL, 0, "lempesis", '\0');} 
+     | TRUE_KW {$$ = create_expr(constbool_e, NULL, NULL, 0, "", '1');}
+     | FALSE_KW {$$ = create_expr(constbool_e, NULL, NULL, 0, "", '0');}
      ;
 
 idlist_id: ID { 
@@ -359,6 +352,10 @@ int main(int argc, char **argv) {
   yyparse();
   
   print_scopes(lists);
+ 
+  printf("\n\n\n");
+
+  print_quads();
 
   free_table(symtable);
 

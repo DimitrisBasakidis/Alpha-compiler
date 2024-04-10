@@ -64,16 +64,7 @@ typedef struct quad
 
 }quad;
 
-void emit (
-    enum iopcode op,
-    expr* result,
-    expr* arg1,
-    expr* arg2,
-   unsigned label,
-   unsigned line);
-
-
-
+void emit (enum iopcode op, expr* result, expr* arg1, expr* arg2, unsigned label, unsigned line);
 void expand (void);
 
 extern quad* quads; // for parser file
@@ -85,10 +76,6 @@ extern int temp_count;
 // unsigned total = 0;
 // unsigned int currQuad = 0;
 // int temp_count = 0;
-
-
-
-
 
 expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numConst,char* strConst,unsigned char boolConst);
 

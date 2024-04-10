@@ -35,20 +35,21 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
     expr* new = (expr*) malloc(sizeof(expr));
     new->type = type;
     new->sym = sym;
+
     if(index != NULL){
         new->index = index;
     }
-    switch(type){
+    switch (type) {
         case constbool_e:
-        new->boolConst = boolConst;
-        break;
+            new->boolConst = boolConst;
+            break;
         case conststring_e:
-        new->strConst = malloc(strlen(strConst) + 1);
-        strcpy(new->strConst,strConst);
-        break;
+            new->strConst = malloc(strlen(strConst) + 1);
+            strcpy(new->strConst,strConst);
+            break;
         case constnum_e:
-        new->numConst = numConst;
-        break;
+            new->numConst = numConst;
+            break;
     }
     return new;
 }
@@ -91,14 +92,22 @@ void print_quads(void){
         print_expr(tmp->arg1);
         print_expr(tmp->arg2);
         printf("%d", tmp->label);
-        tmp = tmp + sizeof(quad);
+        tmp++;
         printf("\n");
     }
 
 }
 
 void print_expr(expr* e){
+    if(e == NULL){
+        printf("\t\t");
+        return;
+    }
     switch(e->type){
+        case var_e:
+        case arithexpr_e:
+        printf("%s\t\t",e->sym->value.varVal->name);
+        break;
         case constnum_e:
         printf("%.3f\t\t", e->numConst);
         break;
@@ -219,6 +228,7 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
     if (sym == NULL) { 
         node = create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
+        insert_to_scope(lists, node, scope);
     } else {
         return sym;
     }
