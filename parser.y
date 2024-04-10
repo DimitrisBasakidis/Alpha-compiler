@@ -91,7 +91,7 @@ program: statements {}
 
 statements: statements stmt {resettemp();}
           | stmt{resettemp();}
-          |
+          | {;}
           ;
 
 
