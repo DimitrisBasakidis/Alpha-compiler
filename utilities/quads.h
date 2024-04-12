@@ -53,8 +53,7 @@ typedef struct expr{
     struct expr* next;
 }expr;
 
-typedef struct quad
-{
+typedef struct quad {
     iopcode op;
     expr* result;
     expr* arg1;
@@ -88,6 +87,8 @@ void resettemp(void);
 SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int line);
 
 expr *lvalue_expr(SymbolTableEntry *sym);
+expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
+expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
 
 #endif
 

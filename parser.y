@@ -13,7 +13,6 @@
 int yylex(void);
 int yyerror(const char *error_msg);
 void print_errors(const char *error_msg, char *token, const char *error_type);
-
 const char *file_name;
 
 quad* quads = (quad*)0;
@@ -87,11 +86,11 @@ SymbolTableEntry *entry;
 
 
 program: statements {}
+      |
        ;
 
 statements: statements stmt {resettemp();}
           | stmt{resettemp();}
-          | {;}
           ;
 
 
@@ -109,26 +108,48 @@ stmt: expr SEMICOLON {}
 
 expr: assignexpr {;}
     | expr PLUS expr {
-        entry = newtemp(symtable, lists, scope, yylineno);
-        $$ = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
-        emit(add, $$, $1, $3, 0, yylineno);
-      }
-    | expr MINUS expr {;}
-    | expr SLASH expr {;}
-    | expr MULTIPLY expr {;}
-    | expr MODULO expr {;}
-    | expr GREATER_THAN expr {;}
-    | expr GREATER_EQUAL expr {;}
-    | expr LESSER_THAN expr {;}
-    | expr LESSER_EQUAL expr {;}
-    | expr EQUAL expr {;}
-    | expr NOT_EQUAL expr {;}
-    | expr AND expr {;}
-    | expr OR expr {;}
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,add);
+    }
+    | expr MINUS expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,sub);
+    }
+    | expr SLASH expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,divide);
+    }
+    | expr MULTIPLY expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,mul);
+    }
+    | expr MODULO expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,mod);
+    }
+    | expr GREATER_THAN expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_greater);
+    }
+    | expr GREATER_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_greatereq);
+    }
+    | expr LESSER_THAN expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_less);
+    }
+    | expr LESSER_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_lesseq);
+    }
+    | expr EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_eq);
+    }
+    | expr NOT_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_noteq);
+    }
+    | expr AND expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,and);
+    }
+    | expr OR expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,or);
+    }
     | term {$$=$1;}
 
-term:  NOT expr {;}
-    | MINUS expr {;}
+term:  NOT expr { $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$2,NULL,not);}
+    | MINUS expr {$$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus);}
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
     | INCREMENT lvalue { 
       entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
@@ -140,7 +161,6 @@ term:  NOT expr {;}
     }
     | DECREMENT lvalue {
       entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-
       manage_decrement(entry, $2->sym->value.varVal->name, print_errors);
     }
     | lvalue DECREMENT {entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
@@ -152,7 +172,6 @@ term:  NOT expr {;}
 
 
 assignexpr: lvalue ASSIGN expr { 
-
   emit(assign, $1, NULL, $3, 0, yylineno);
   is_local_kw = 0;
   if (from_func_call > 0) from_func_call--;
@@ -253,9 +272,11 @@ fname: ID { $$ = $1;}
 
 func_id: FUNCTION fname{ // elegxoume ama uparxoyn ta entries sto hashtable kai einai active, an nai ektypwnoyme ta katallhla error messages
 // alliws ta vazoume sto table
-  entry = lookup(symtable, lists, $2, USERFUNC, scope, SCOPE);
   
-  manage_function(symtable, lists, entry, $2, print_errors, yylineno);
+  entry = manage_function(symtable, lists, $2, print_errors, yylineno);
+
+  enterscopespace();
+  resetformalargsoffset();
 };
 
 funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {func_in_between++;}block {func_in_between--;}
@@ -333,6 +354,8 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
   }
   printf("\n%*s|\n", count + 2, "");
 }
+
+
 
 
 int main(int argc, char **argv) {

@@ -118,6 +118,9 @@ SymbolTableEntry *manage_local_id(SymTable *symtable, scopeLists *lists, char *t
         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
+        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+        node->offset = currscopeoffset(); 
+        incurrscopeoffset();
         return node;
     } else {
         if (entry->type == USERFUNC) {
@@ -143,12 +146,22 @@ SymbolTableEntry *manage_double_colon_id(SymTable *symtable, scopeLists *lists, 
     return entry;
 }
 
-int manage_function(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, USERFUNC, scope, SCOPE);
+
     if (entry == NULL) {
         SymbolTableEntry *node = create_node(token, scope, line, USERFUNC, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
+        printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
+        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+        node->offset = currscopeoffset(); 
+        incurrscopeoffset();
+        printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
+
+        return node;
     } else {
+
     char *print = NULL;
     switch (entry->type) {
 
@@ -178,6 +191,8 @@ int manage_function(SymTable *symtable, scopeLists *lists, SymbolTableEntry *ent
     print_errors(print, token, "grammar");
     exit(TRUE);
   }
+
+  return entry;
 }
 
 int manage_lib_function(char *token, void (*print_errors)(const char *, char *, const char *)) {
@@ -226,6 +241,9 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
+        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+        node->offset = currscopeoffset(); 
+        incurrscopeoffset();
         return node;
     }
 

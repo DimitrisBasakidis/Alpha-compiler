@@ -54,6 +54,27 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
     return new;
 }
 
+expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
+    SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
+    entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+    entry->offset = currscopeoffset(); 
+    incurrscopeoffset();
+    expr* result = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
+    emit(op, result, arg1, arg2, 0, yylineno);
+    return result;
+}
+
+expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
+    SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
+    entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
+    entry->offset = currscopeoffset(); 
+    incurrscopeoffset();
+    expr* result = create_expr(boolexpr_e, entry, NULL, 0, NULL, '\0');
+    
+    emit(op, result, arg1, arg2, 0, yylineno);
+    return result;
+}
+
 expr *lvalue_expr(SymbolTableEntry *sym) {
     assert(sym);
     expr *e = malloc(sizeof(struct expr));
@@ -82,16 +103,26 @@ expr *lvalue_expr(SymbolTableEntry *sym) {
 
 void print_quads(void){
     quad* tmp = quads;
-    printf("quad#\topcode\t\tresult\t\targ1\t\targ2\t\tlabel\n");
+    expr_t type ;
+    printf("quad#\topcode\t\tresult\t\targ1\t\targ2\t\tlabel\t\toffset\t\tspace\n");
+    printf("--------------------------------");
     printf("------------------------------------------------------------------------------\n");
     for(int i = 0; i< currQuad;i++){
+        type = tmp->result->type;
         printf("%d:\t",i+1);
         printOpcode(tmp->op);
-        printf("\t\t");
+        if (type == arithexpr_e || type == assignexpr_e || type == var_e){
+            printf("\t\t");
+        } else if (type == boolexpr_e){
+            printf("\t");
+        }
+        if (tmp->op == not || tmp->op == and) printf("\t");
         print_expr(tmp->result);
         print_expr(tmp->arg1);
         print_expr(tmp->arg2);
         printf("%d", tmp->label);
+        printf("\t\t%d", tmp->result->sym->offset);
+        printf("\t\t%d", tmp->result->sym->space);
         tmp++;
         printf("\n");
     }
@@ -106,13 +137,14 @@ void print_expr(expr* e){
     switch(e->type){
         case var_e:
         case arithexpr_e:
+        case boolexpr_e:
         printf("%s\t\t",e->sym->value.varVal->name);
         break;
         case constnum_e:
         printf("%.3f\t\t", e->numConst);
         break;
         case constbool_e:
-        printf("%d\t\t",e->boolConst);
+        printf("%s\t\t", (e->boolConst == '1') ? "true" : "false");
         break;
         case conststring_e:
         printf("%s\t\t",e->strConst);
@@ -235,6 +267,7 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
 
     return node;
 }
+
 
 
 // int main (){

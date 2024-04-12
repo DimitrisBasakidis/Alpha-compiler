@@ -1,4 +1,5 @@
 #include "scopes.h"
+#include "quads.h"
 
 enum scopespace_t currscopespace(void) {
     if (scopeSpaceCounter == 1) {
@@ -31,6 +32,26 @@ unsigned incurrscopeoffset(void) {
 void enterscopespace(void) { ++scopeSpaceCounter; }
 
 void exitscopespace(void) { assert(scopeSpaceCounter > 1); --scopeSpaceCounter; }
+
+void resetformalargsoffset(void) { formalArgOffset = 0; }
+
+void resetfunctionlocaloffset(void) { functionLocalOffset = 0; }
+
+void restorecurrentscopeoffset(unsigned n) {
+    switch (currscopeoffset()) {
+        case programvar     : programVarOffset = n; break;
+        case functionlocal  : functionLocalOffset = n; break;
+        case formararg      : formalArgOffset = n; break;
+        default: assert(0);
+    }
+} 
+
+unsigned nextquadlabel(void) { return currQuad; }
+
+void patchlabel(unsigned quadNo, unsigned label) {
+    assert(quadNo < currQuad);
+    quads[quadNo].label = label;    
+}
 
 // int main() {
 //     printf("awdawd\n");
