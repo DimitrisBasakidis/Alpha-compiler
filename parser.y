@@ -337,6 +337,8 @@ open_while: WHILE {while_loop++;};
 
 open_if: IF {if_stmt++;}
 
+return_keyword: RETURN_KW { manage_return(print_errors);};
+
 idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
@@ -351,9 +353,9 @@ whilestmt: open_while LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {in_loop++;}stmt {
 forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {in_loop++;} stmt  {in_loop--; for_loop--;}
        ;
 
-returnstmt: RETURN_KW { manage_return(print_errors);} SEMICOLON {;}
+returnstmt: return_keyword SEMICOLON {;}
 
-| RETURN_KW { manage_return(print_errors);} expr SEMICOLON { is_return_kw = 1;};
+| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1;};
 
 %%
 
