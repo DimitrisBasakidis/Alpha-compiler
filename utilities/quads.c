@@ -111,8 +111,9 @@ void print_quads(void){
         type = tmp->result->type;
         printf("%d:\t",i+1);
         printOpcode(tmp->op);
-        if (type == arithexpr_e || type == assignexpr_e || type == var_e){
-            printf("\t\t");
+        if (type == arithexpr_e || type == assignexpr_e || type == var_e || type == programfunc_e){
+            printf("\t");
+            if (tmp->op != funcstart) printf("\t");
         } else if (type == boolexpr_e){
             printf("\t");
         }
@@ -148,6 +149,10 @@ void print_expr(expr* e){
         break;
         case conststring_e:
         printf("%s\t\t",e->strConst);
+        break;
+        case programfunc_e:
+        printf("%s\t\t",e->sym->value.funcVal->name);
+        break;
     }
 }
 

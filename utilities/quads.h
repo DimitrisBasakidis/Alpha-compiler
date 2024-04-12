@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "symbol_table.h"
+#include "scope_stack.h"
 
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total * sizeof(quad))

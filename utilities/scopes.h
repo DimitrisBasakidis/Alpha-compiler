@@ -7,7 +7,7 @@
 typedef enum scopespace_t {
     programvar,
     functionlocal,
-    formararg
+    formalarg
 } scopespace_t;
 
 

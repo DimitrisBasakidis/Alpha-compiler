@@ -156,6 +156,7 @@ SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *t
         printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
         node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
         node->offset = currscopeoffset(); 
+        // node-
         incurrscopeoffset();
         printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
 
@@ -216,6 +217,9 @@ int manage_id_list(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entr
     SymbolTableEntry *node = create_node(token, scope + 1, line, FORMAL, ACTIVE);
     insert_symbol(symtable, node);
     insert_to_scope(lists, node, scope + 1);
+    node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+    node->offset = currscopeoffset(); 
+    incurrscopeoffset();
 }
 
 int manage_return(void (*print_errors)(const char *, char *, const char *)) {
