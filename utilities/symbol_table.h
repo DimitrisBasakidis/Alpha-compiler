@@ -48,6 +48,7 @@ typedef struct SymbolTableEntry {
     enum SymbolType type;
     struct SymbolTableEntry *next;
     struct SymbolTableEntry *snext;
+    unsigned int total_locals;
     unsigned int hash_value;
     scopespace_t space;
     unsigned offset;

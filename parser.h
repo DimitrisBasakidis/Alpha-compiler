@@ -169,8 +169,9 @@ union YYSTYPE
   char *str_val;
   float real_val;
   struct expr *ex;
+  struct SymbolTableEntry *symbol;
 
-#line 174 "parser.h"
+#line 175 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -13,7 +13,6 @@
 int yylex(void);
 int yyerror(const char *error_msg);
 void print_errors(const char *error_msg, char *token, const char *error_type);
-
 const char *file_name;
 
 quad* quads = (quad*)0;
@@ -48,6 +47,7 @@ extern char *lineptr;
 
 SymTable *symtable;
 scopeLists *lists;
+scope_stack *stack;
 
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
@@ -59,6 +59,7 @@ SymbolTableEntry *entry;
   char *str_val;
   float real_val;
   struct expr *ex;
+  struct SymbolTableEntry *symbol;
 }
 
 %token <int_val>  INTEGER
@@ -79,19 +80,21 @@ SymbolTableEntry *entry;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <ex> lvalue call const member primary assignexpr term objectdef expr
-%type <str_val> fname 
-%type <str_val> funcdef idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
+%type <ex> lvalue call const member primary assignexpr term objectdef expr 
+%type <symbol> funcprefix funcdef
+%type <str_val> funcname
+%type <int_val> funcbody
+%type <str_val> idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
 
 %%
 
 
 program: statements {}
+      |
        ;
 
 statements: statements stmt {resettemp();}
           | stmt{resettemp();}
-          | {;}
           ;
 
 
@@ -109,26 +112,48 @@ stmt: expr SEMICOLON {}
 
 expr: assignexpr {;}
     | expr PLUS expr {
-        entry = newtemp(symtable, lists, scope, yylineno);
-        $$ = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
-        emit(add, $$, $1, $3, 0, yylineno);
-      }
-    | expr MINUS expr {;}
-    | expr SLASH expr {;}
-    | expr MULTIPLY expr {;}
-    | expr MODULO expr {;}
-    | expr GREATER_THAN expr {;}
-    | expr GREATER_EQUAL expr {;}
-    | expr LESSER_THAN expr {;}
-    | expr LESSER_EQUAL expr {;}
-    | expr EQUAL expr {;}
-    | expr NOT_EQUAL expr {;}
-    | expr AND expr {;}
-    | expr OR expr {;}
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,add);
+    }
+    | expr MINUS expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,sub);
+    }
+    | expr SLASH expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,divide);
+    }
+    | expr MULTIPLY expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,mul);
+    }
+    | expr MODULO expr {
+      $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$1,$3,mod);
+    }
+    | expr GREATER_THAN expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_greater);
+    }
+    | expr GREATER_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_greatereq);
+    }
+    | expr LESSER_THAN expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_less);
+    }
+    | expr LESSER_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_lesseq);
+    }
+    | expr EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_eq);
+    }
+    | expr NOT_EQUAL expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,if_noteq);
+    }
+    | expr AND expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,and);
+    }
+    | expr OR expr {
+      $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$1,$3,or);
+    }
     | term {$$=$1;}
 
-term:  NOT expr {;}
-    | MINUS expr {;}
+term:  NOT expr { $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$2,NULL,not);}
+    | MINUS expr {$$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus);}
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
     | INCREMENT lvalue { 
       entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
@@ -140,7 +165,6 @@ term:  NOT expr {;}
     }
     | DECREMENT lvalue {
       entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
-
       manage_decrement(entry, $2->sym->value.varVal->name, print_errors);
     }
     | lvalue DECREMENT {entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
@@ -152,7 +176,6 @@ term:  NOT expr {;}
 
 
 assignexpr: lvalue ASSIGN expr { 
-
   emit(assign, $1, NULL, $3, 0, yylineno);
   is_local_kw = 0;
   if (from_func_call > 0) from_func_call--;
@@ -169,7 +192,7 @@ primary: lvalue {
   manage_call(symtable, lists, entry, $1->sym->value.varVal->name, print_errors, yylineno);
 }
 | objectdef {;}
-| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {;}
+| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {$$ = create_expr(programfunc_e,$2,0,0,"",'\0');} // gia na briskei tis unnamed functions
 | const { $$ = $1;}
 ;
 
@@ -190,7 +213,6 @@ lvalue: ID {
 
 | DOUBLE_COLON ID { 
   
-
   entry = manage_double_colon_id(symtable, lists, $2, print_errors);
   $$ = lvalue_expr(entry);
 
@@ -241,7 +263,7 @@ block: LEFT_BRACKET {scope++; } statements RIGHT_BRACKET {hide_scope(lists, scop
      | LEFT_BRACKET {scope++;} RIGHT_BRACKET {hide_scope(lists, scope--);}
      ;
 
-fname: ID { $$ = $1;}
+funcname: ID { $$ = $1;}
         | {
           unsigned int count = 0, n = nfuncs;
           while (n != 0) { n /= 10; count++;}
@@ -251,16 +273,43 @@ fname: ID { $$ = $1;}
           }
         ;
 
-func_id: FUNCTION fname{ // elegxoume ama uparxoyn ta entries sto hashtable kai einai active, an nai ektypwnoyme ta katallhla error messages
+funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtable kai einai active, an nai ektypwnoyme ta katallhla error messages
 // alliws ta vazoume sto table
-  entry = lookup(symtable, lists, $2, USERFUNC, scope, SCOPE);
   
-  manage_function(symtable, lists, entry, $2, print_errors, yylineno);
+  $$ = manage_function(symtable, lists, $2, print_errors, yylineno);
+  //funcprefix.iaddress = nextquadlabel();
+  emit(funcstart, lvalue_expr($$), NULL, NULL, 0, 0);
+  push(stack, currscopeoffset());
+  enterscopespace();
+  resetformalargsoffset();
 };
 
-funcdef: func_id LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {func_in_between++;}block {func_in_between--;}
-       | func_id LEFT_PARENTHESIS RIGHT_PARENTHESIS {func_in_between++;} block {func_in_between--;}
-       ;
+funcargs: idlist {
+                enterscopespace();
+                resetfunctionlocaloffset();
+                }
+                | {enterscopespace();
+                resetfunctionlocaloffset();;};
+
+funcbody: block {
+    $$ = currscopeoffset();
+    exitscopespace();
+    };
+
+r_parenthesis: RIGHT_PARENTHESIS {func_in_between++; };
+
+funcdef: funcprefix LEFT_PARENTHESIS funcargs r_parenthesis funcbody {
+      //exitscopespace();
+      $$->total_locals = $5;
+      scopestack_t *temp = pop(stack);
+      int offset = temp->x;
+      restorecurrentscopeoffset(offset);
+      $$ = $1;
+      emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
+      
+      func_in_between--;
+      }
+      ;
 
 const: INTEGER {$$ = create_expr(constnum_e, NULL, NULL, $1, "vaggelis", '\0');} 
      | REAL { $$ = create_expr(constnum_e, NULL, NULL, $1, "", '\0');} 
@@ -288,6 +337,8 @@ open_while: WHILE {while_loop++;};
 
 open_if: IF {if_stmt++;}
 
+return_keyword: RETURN_KW { manage_return(print_errors);};
+
 idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
@@ -302,9 +353,9 @@ whilestmt: open_while LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {in_loop++;}stmt {
 forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {in_loop++;} stmt  {in_loop--; for_loop--;}
        ;
 
-returnstmt: RETURN_KW { manage_return(print_errors);} SEMICOLON {;}
+returnstmt: return_keyword SEMICOLON {;}
 
-| RETURN_KW { manage_return(print_errors);} expr SEMICOLON { is_return_kw = 1;};
+| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1;};
 
 %%
 
@@ -334,7 +385,6 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
   printf("\n%*s|\n", count + 2, "");
 }
 
-
 int main(int argc, char **argv) {
 
   if (argc > 1) {
@@ -348,6 +398,8 @@ int main(int argc, char **argv) {
   lists = create_scope_lists();
   
   symtable = create_table();
+
+  stack = create_scope_stack();
 
   add_lib_func(symtable, lists);
   yyparse();

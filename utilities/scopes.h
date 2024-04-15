@@ -7,7 +7,7 @@
 typedef enum scopespace_t {
     programvar,
     functionlocal,
-    formararg
+    formalarg
 } scopespace_t;
 
 
@@ -28,5 +28,14 @@ unsigned incurrscopeoffset(void);
 void enterscopespace(void);
 
 void exitscopespace(void);
+
+void resetformalargsoffset(void);
+
+void resetfunctionlocaloffset(void);
+
+void restorecurrentscopeoffset(unsigned n);
+
+unsigned nextquadlabel(void);
+void patchlabel(unsigned quadNo, unsigned label);
 
 #endif

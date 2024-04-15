@@ -76,6 +76,7 @@ SymbolTableEntry *create_node(char *name, unsigned int scope, unsigned int line,
   new_entry->type = type;
   new_entry->next = NULL;
   new_entry->snext = NULL;
+  new_entry->total_locals = 0U;
 
   return new_entry;
 }
