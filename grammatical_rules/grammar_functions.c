@@ -154,8 +154,8 @@ SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *t
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
         printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
-        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
-        node->offset = currscopeoffset(); 
+        node->space = FUNC_SPACE;  // dialeksh 9 slide 49 sto site tou pratikakh
+        node->offset = FUNC_SPACE; 
         // node-
         incurrscopeoffset();
         printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());

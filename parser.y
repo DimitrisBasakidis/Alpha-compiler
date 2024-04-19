@@ -8,6 +8,8 @@
 
 #include "utilities/quads.h"
 
+#include "utilities/elist.h"
+
 #define YYERROR_VERBOSE 1
 
 int yylex(void);
@@ -59,6 +61,7 @@ SymbolTableEntry *entry;
   char *str_val;
   float real_val;
   struct expr *ex;
+  struct call_t *elist_call;
   struct SymbolTableEntry *symbol;
 }
 
@@ -80,11 +83,12 @@ SymbolTableEntry *entry;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <ex> lvalue call const member primary assignexpr term objectdef expr 
+%type <ex> lvalue call const member primary assignexpr term objectdef expr elist tablemake tableitem
 %type <symbol> funcprefix funcdef
 %type <str_val> funcname
 %type <int_val> funcbody
-%type <str_val> idlist ifstmt whilestmt forstmt returnstmt elist block callsuffix normcall methodcall indexed indexedelem
+%type <elist_call> callsuffix normcall methodcall
+%type <str_val> idlist ifstmt whilestmt forstmt returnstmt block indexed indexedelem
 
 %%
 
@@ -177,13 +181,16 @@ term:  NOT expr { $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$
 
 assignexpr: lvalue ASSIGN expr { 
   emit(assign, $1, NULL, $3, 0, yylineno);
+  expr *tmp = lvalue_expr(newtemp(symtable, lists, scope, yylineno));
+  emit(assign, tmp, NULL, $1, 0, yylineno);
   is_local_kw = 0;
   if (from_func_call > 0) from_func_call--;
 } 
 ;
 
 primary: lvalue { 
-
+  printf("type ::: %d\n",$1->type);
+  $$ = emit_iftableitem($1, symtable, lists, scope, yylineno);
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
 }
@@ -200,6 +207,7 @@ primary: lvalue {
 lvalue: ID {
             entry = manage_id(symtable, lists, $1, yylineno, scope, print_errors);
             $$ = lvalue_expr(entry);
+            printf("type : %d\n", $$->type);
            } 
 
 | LOCAL ID { // kanoume lookup sto trexon scope kai ama einai libfunction tote exoyme shadowing kai meta ama einai null tote to vazoume sto table 
@@ -217,38 +225,84 @@ lvalue: ID {
   $$ = lvalue_expr(entry);
 
 }
-| member {;}
+| member {$$=$1;}
+| tableitem  {$$ = $1;}
+;
 
-      
-member: lvalue DOT ID {}
-      | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
-      | call DOT ID {from_func_call++;}
+tableitem: lvalue DOT ID { //$$->type = tableitem_e;
+                          $$ = member_item($1,$3,symtable,lists,scope,yylineno);}
+          | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
+            printf("mphka\n");
+            $1 = emit_iftableitem($1, symtable, lists, scope, yylineno);
+            $$ = create_expr(tableitem_e, NULL, NULL, 0.0f, NULL, '\0');
+            $$->sym = $1->sym;
+            $$->index = $3;
+            };
+
+member: call DOT ID {from_func_call++;}
       | call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
       ;
 
-call: call LEFT_PARENTHESIS {from_elist = 1; } elist  RIGHT_PARENTHESIS {;}
-      | lvalue {;} callsuffix {;}
-      | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
-      ;
+left_par: LEFT_PARENTHESIS {from_elist = 1; };
 
-callsuffix: normcall {;}
-          | methodcall {;}
+call: call left_par elist RIGHT_PARENTHESIS {//$$ = make_call($1, $3);
+}
+
+| lvalue callsuffix {
+ //   $$ = emit_iftableitem($1);
+    if ($2->method) {
+      expr* last = get_last($2->elist);
+      if(last == NULL){
+        last = $1;
+      }else{
+        last->next = $1;
+      }
+      // $1 = emit_iftableitem(member_item($$, $2->name));
+    }
+    $$ = make_call($1, $2->elist, yylineno, newtemp(symtable, lists, scope, yylineno));
+  }
+
+| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+  expr* func = create_expr(programfunc_e, $2, NULL, 0.0f, NULL, '\0'); 
+  $$ = make_call(func, $5, yylineno, newtemp(symtable, lists, scope, yylineno));
+};
+
+callsuffix: normcall {$$ = $1;}
+          | methodcall {$$ = $1;}
           ;
 
-normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;} 
+normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+  $$->elist = $2;
+  $$->method = 0;
+  $$->name = NULL;
+} 
         ;
 
-methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {;}
+methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+  $$->elist = $4;
+  $$->method = 1;
+  $$->name = strdup($2);
+
+}
           ;
 
-elist: expr {;}
-     | expr COMMA elist { $$ = $1->sym->value.varVal->name;}
-     | {;}
-     ;
+elist: expr { $$ = $1; $$->next = NULL; }
+      | expr COMMA elist { $1->next = $3; $$=$1; }
+      | { $$ = NULL;};
 
-objectdef: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {;}
+objectdef: tablemake {;}
          | LEFT_SQUARE_BRACKET indexed RIGHT_SQUARE_BRACKET {;}
          ;
+
+tablemake: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {
+  expr* t = create_expr(newtable_e, newtemp(symtable, lists, scope, yylineno), NULL, 0.0f, NULL, '\0');
+  emit(tablecreate, t, NULL, NULL, 0, yylineno);
+  expr *tmp = $2;
+  for (int i = 0; tmp; tmp = tmp->next) {
+    emit(tablesetelem, t, newexpr_constnum(i++), tmp, 0, yylineno);
+  }
+  $$ = t;
+};
 
 indexed: indexedelem {;}
        | indexedelem COMMA indexed {;}
@@ -277,7 +331,7 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
 // alliws ta vazoume sto table
   
   $$ = manage_function(symtable, lists, $2, print_errors, yylineno);
-  //funcprefix.iaddress = nextquadlabel();
+  //funcprefix.iaddress = nextquadlabel(); deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
   emit(funcstart, lvalue_expr($$), NULL, NULL, 0, 0);
   push(stack, currscopeoffset());
   enterscopespace();
@@ -289,7 +343,7 @@ funcargs: idlist {
                 resetfunctionlocaloffset();
                 }
                 | {enterscopespace();
-                resetfunctionlocaloffset();;};
+                resetfunctionlocaloffset();};
 
 funcbody: block {
     $$ = currscopeoffset();
@@ -354,8 +408,7 @@ forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PA
        ;
 
 returnstmt: return_keyword SEMICOLON {;}
-
-| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1;};
+| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1;}
 
 %%
 
@@ -414,7 +467,7 @@ int main(int argc, char **argv) {
   add_lib_func(symtable, lists);
   yyparse();
   
-  print_scopes(lists);
+ // print_scopes(lists);
  
   printf("\n\n\n");
 

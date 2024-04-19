@@ -51,6 +51,9 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
             new->numConst = numConst;
             break;
     }
+    
+    new->next = NULL;
+    
     return new;
 }
 
@@ -111,10 +114,10 @@ void print_quads(void){
         type = tmp->result->type;
         printf("%d:\t",i+1);
         printOpcode(tmp->op);
-        if (type == arithexpr_e || type == assignexpr_e || type == var_e || type == programfunc_e){
-            printf("\t");
+        if (type == arithexpr_e || type == assignexpr_e || type == var_e || type == programfunc_e || type == conststring_e || type == tableitem_e){
+            if (tmp->op != tablegetelem) printf("\t");
             if (tmp->op != funcstart) printf("\t");
-        } else if (type == boolexpr_e){
+        } else if (type == boolexpr_e || type == newtable_e){
             printf("\t");
         }
         if (tmp->op == not || tmp->op == and) printf("\t");
@@ -122,8 +125,8 @@ void print_quads(void){
         print_expr(tmp->arg1);
         print_expr(tmp->arg2);
         printf("%d", tmp->label);
-        printf("\t\t%d", tmp->result->sym->offset);
-        printf("\t\t%d", tmp->result->sym->space);
+        printf("\t\t%d", (tmp->result->sym!=NULL) ? tmp->result->sym->offset : 0);
+        printf("\t\t%d", (tmp->result->sym!=NULL) ? tmp->result->sym->space : 0);    
         tmp++;
         printf("\n");
     }
@@ -139,10 +142,11 @@ void print_expr(expr* e){
         case var_e:
         case arithexpr_e:
         case boolexpr_e:
-        printf("%s\t\t",e->sym->value.varVal->name);
+        printf("%s\t",e->sym->value.varVal->name);
+        if (strlen(e->sym->value.funcVal->name) < 5) printf("\t");
         break;
         case constnum_e:
-        printf("%.3f\t\t", e->numConst);
+        printf("%.2f\t\t", e->numConst);
         break;
         case constbool_e:
         printf("%s\t\t", (e->boolConst == '1') ? "true" : "false");
@@ -151,6 +155,10 @@ void print_expr(expr* e){
         printf("%s\t\t",e->strConst);
         break;
         case programfunc_e:
+        case newtable_e:
+        printf("%s\t\t",e->sym->value.funcVal->name);
+        break;
+        case tableitem_e:
         printf("%s\t\t",e->sym->value.funcVal->name);
         break;
     }

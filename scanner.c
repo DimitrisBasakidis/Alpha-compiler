@@ -1174,7 +1174,7 @@ case 44:
 YY_RULE_SETUP
 #line 274 "scanner.l"
 {
-  yylval.real_val = atoi(yytext); 
+  yylval.real_val = atof(yytext); 
   return REAL;
 }
 	YY_BREAK

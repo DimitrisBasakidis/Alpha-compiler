@@ -2,6 +2,7 @@
 #define GRAMMAR
 
 #include "../utilities/symbol_table.h"
+#define FUNC_SPACE -1 
 
 #include <stdlib.h>
 
