@@ -11,7 +11,7 @@
 #define YYERROR_VERBOSE 1
 
 int yylex(void);
-int yyerror(const char *error_msg);
+void yyerror(const char *error_msg);
 void print_errors(const char *error_msg, char *token, const char *error_type);
 const char *file_name;
 
@@ -359,7 +359,7 @@ returnstmt: return_keyword SEMICOLON {;}
 
 %%
 
-int yyerror(const char *error_msg) {
+void yyerror(const char *error_msg) {
   print_errors(yylval.str_val, yytext, "syntax");
   exit(0);
 }
@@ -368,20 +368,30 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
   int count = 1;
   int temp = yylineno;
 
+  printf("%p, %p\n", error_msg, token);
+  fflush(stdout);
+
   fprintf(stderr, "%s:%d ",file_name + 1, yylineno);
   printf("\033[31merror:\033[0m %s\n", error_type);   
 
   while (temp) {temp /= 10; count++;}; 
-  printf("  %d | %s",yylineno, error_msg);
+  if (error_msg == NULL) {
+    printf("  %d | ",yylineno);
+  } else {
+    printf("  %d | %s",yylineno, error_msg);
+  }
   printf("\033[31m");
   printf(" %s", token);
   printf("\033[0m\n");
   printf("%*s|", count + 2, "");
-  for (int i = 0; i < strlen(error_msg) + 2; i++) printf(" ");
-  printf("\033[31m^\033[0m");
-  if (strlen(token) > 1) {
-    for (int i = 0; i < strlen(token) - 1; i++) printf("\033[31m~\033[0m");
+  if (error_msg != NULL) {
+    for (int i = 0; i < strlen(error_msg) + 2; i++) printf(" ");
+    printf("\033[31m^\033[0m");
+    if (strlen(token) > 1) {
+      for (int i = 0; i < strlen(token) - 1; i++) printf("\033[31m~\033[0m");
+    }
   }
+  
   printf("\n%*s|\n", count + 2, "");
 }
 
