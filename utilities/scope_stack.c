@@ -32,15 +32,21 @@ scopestack_t *pop(scope_stack *top){
 }
 
 
+indexed_list_t* create_indexlist_node(expr* index,expr* value){
+    indexed_list_t *new = malloc(sizeof(indexed_list_t));
+    new->index = index;
+    new->value = value;
+    return new;
+}
+
+
+
 
 // int main(){
-//    scope_stack *tmp = create_stack();
-
-
-//     // stack = push(stack,2);
-//     // stack = push(stack,3);
-//     // stack = pop(stack);
-//     // stack = pop(stack);
-
-//     //print(stack);
+//     index_list* list = create_list();
+//     insert(list,create_node("i1","v1"));
+//     insert(list,create_node("i2","v2"));
+//     insert(list,create_node("i3","v3"));
+//     insert(list,create_node("i4","v4"));
+//     print_indexedlist(list);
 // }

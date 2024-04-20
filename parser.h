@@ -171,8 +171,10 @@ union YYSTYPE
   struct expr *ex;
   struct call_t *elist_call;
   struct SymbolTableEntry *symbol;
+  struct indexed_list_t *indexedlist_node;
 
-#line 176 "parser.h"
+
+#line 178 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

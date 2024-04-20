@@ -79,9 +79,10 @@ extern int temp_count;
 
 expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numConst,char* strConst,unsigned char boolConst);
 
-void print_expr(expr* e);
+char* print_expr(expr* e);
 void print_quads(void);
-void printOpcode(int value);
+int printOpcode(int value);
+void check_arith(expr* e, const char* context);
 
 char *newtempname(void);
 void resettemp(void);

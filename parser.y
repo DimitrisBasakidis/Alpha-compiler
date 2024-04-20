@@ -63,6 +63,8 @@ SymbolTableEntry *entry;
   struct expr *ex;
   struct call_t *elist_call;
   struct SymbolTableEntry *symbol;
+  struct indexed_list_t *indexedlist_node;
+
 }
 
 %token <int_val>  INTEGER
@@ -83,12 +85,13 @@ SymbolTableEntry *entry;
 %token SEMICOLON LEFT_BRACKET RIGHT_BRACKET COMMA COLON DOUBLE_COLON
 %token IF ELSE WHILE FOR FUNCTION RETURN_KW BRK CONTINUE LOCAL TRUE_KW FALSE_KW ENDL NIL
 
-%type <ex> lvalue call const member primary assignexpr term objectdef expr elist tablemake tableitem
+%type <ex> lvalue call const member primary assignexpr term objectdef expr elist tablemake tableitem 
 %type <symbol> funcprefix funcdef
 %type <str_val> funcname
 %type <int_val> funcbody
 %type <elist_call> callsuffix normcall methodcall
-%type <str_val> idlist ifstmt whilestmt forstmt returnstmt block indexed indexedelem
+%type <indexedlist_node> indexedelem indexed
+%type <str_val> idlist ifstmt whilestmt forstmt returnstmt block  
 
 %%
 
@@ -179,12 +182,19 @@ term:  NOT expr { $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$
     ; 
 
 
-assignexpr: lvalue ASSIGN expr { 
-  emit(assign, $1, NULL, $3, 0, yylineno);
-  expr *tmp = lvalue_expr(newtemp(symtable, lists, scope, yylineno));
-  emit(assign, tmp, NULL, $1, 0, yylineno);
-  is_local_kw = 0;
-  if (from_func_call > 0) from_func_call--;
+assignexpr: lvalue ASSIGN expr {
+    if($1->type == tableitem_e){
+        emit(tablesetelem,$1,$1->index,$3,0,yylineno);
+       $$ = emit_iftableitem($1,symtable,lists,scope,yylineno);
+        $$->type = assignexpr_e;
+    }else{
+      emit(assign, $1, $3, NULL, 0, yylineno);
+      expr *tmp = lvalue_expr(newtemp(symtable, lists, scope, yylineno));
+      emit(assign, tmp,$1, NULL, 0, yylineno);
+
+    }
+    is_local_kw = 0;
+    if (from_func_call > 0) from_func_call--;
 } 
 ;
 
@@ -230,9 +240,10 @@ lvalue: ID {
 ;
 
 tableitem: lvalue DOT ID { //$$->type = tableitem_e;
+                        printf("mphka %s\n", $3);
                           $$ = member_item($1,$3,symtable,lists,scope,yylineno);}
           | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
-            printf("mphka\n");
+       
             $1 = emit_iftableitem($1, symtable, lists, scope, yylineno);
             $$ = create_expr(tableitem_e, NULL, NULL, 0.0f, NULL, '\0');
             $$->sym = $1->sym;
@@ -245,8 +256,7 @@ member: call DOT ID {from_func_call++;}
 
 left_par: LEFT_PARENTHESIS {from_elist = 1; };
 
-call: call left_par elist RIGHT_PARENTHESIS {//$$ = make_call($1, $3);
-}
+call: call left_par elist RIGHT_PARENTHESIS {;}//$$ = make_call($1, $3);}
 
 | lvalue callsuffix {
  //   $$ = emit_iftableitem($1);
@@ -291,7 +301,6 @@ elist: expr { $$ = $1; $$->next = NULL; }
       | { $$ = NULL;};
 
 objectdef: tablemake {;}
-         | LEFT_SQUARE_BRACKET indexed RIGHT_SQUARE_BRACKET {;}
          ;
 
 tablemake: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {
@@ -303,13 +312,25 @@ tablemake: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {
   }
   $$ = t;
 };
+  | LEFT_SQUARE_BRACKET indexed RIGHT_SQUARE_BRACKET  {
+        expr* t = create_expr(newtable_e,NULL,NULL,0.0f,"",'\0');
+        t->sym = newtemp(symtable,lists,scope,yylineno);
+        emit(tablecreate,t,NULL,NULL,0,yylineno);
+        indexed_list_t *tmp = $2;
+        while(tmp!=NULL){
+          emit(tablesetelem,t,tmp->index,tmp->value,0,yylineno);
+          tmp = tmp->next;
+        }
+        $$ = t;
+    }
+    ;
 
-indexed: indexedelem {;}
-       | indexedelem COMMA indexed {;}
-       {;}
+indexed: indexedelem {$$ = $1; $$->next = NULL;}
+       | indexedelem COMMA indexed {$1->next = $3; $$=$1;}
+       |{$$ = NULL;}
        ;
 
-indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {;}
+indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {$$ = create_indexlist_node($2,$4);}//$$ = create_indexlist_node($2->strConst,$4->strConst);}
            ;
 
 

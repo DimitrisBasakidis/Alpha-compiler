@@ -104,147 +104,182 @@ expr *lvalue_expr(SymbolTableEntry *sym) {
     return e;
 }
 
+void check_arith(expr* e, const char* context){
+    if( e->type == constbool_e ||
+        e->type == conststring_e ||
+        e->type == nil_e || 
+        e->type == newtable_e ||
+        e->type == programfunc_e ||
+        e->type == libraryfunc_e ||
+        e->type == boolexpr_e){
+            printf("Illegal expr used in %s!\n", context);
+            exit(0);
+        }
+}
+
 void print_quads(void){
     quad* tmp = quads;
     expr_t type ;
-    printf("quad#\topcode\t\tresult\t\targ1\t\targ2\t\tlabel\t\toffset\t\tspace\n");
-    printf("--------------------------------");
-    printf("------------------------------------------------------------------------------\n");
+    int total_space = 20;
+    int curr_space;
+    char str[10];
+    int len = 0 ;
+    printf("quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
+    printf("------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for(int i = 0; i< currQuad;i++){
+
         type = tmp->result->type;
-        printf("%d:\t",i+1);
-        printOpcode(tmp->op);
-        if (type == arithexpr_e || type == assignexpr_e || type == var_e || type == programfunc_e || type == conststring_e || type == tableitem_e){
-            if (tmp->op != tablegetelem) printf("\t");
-            if (tmp->op != funcstart) printf("\t");
-        } else if (type == boolexpr_e || type == newtable_e){
-            printf("\t");
+        sprintf(str,"%d",i);
+        printf("%d:%-*s",i,(int) (18-strlen(str)),"");
+        memset(str,'\0',10);
+        int opcodeLength = printOpcode(tmp->op);
+        printf("%-*s", 20 - opcodeLength, "");
+        if(tmp->result !=NULL){
+            len = strlen(print_expr(tmp->result));
+            if(tmp->result->type == conststring_e){
+                len+=2;
+            }
+        }else{
+            len = 0;
         }
-        if (tmp->op == not || tmp->op == and) printf("\t");
-        print_expr(tmp->result);
-        print_expr(tmp->arg1);
-        print_expr(tmp->arg2);
+        printf("%-*s", 20-len,"");
+         if(tmp->arg1 !=NULL){
+            len = strlen(print_expr(tmp->arg1));
+            if(tmp->arg1->type == conststring_e){
+                len+=2;
+            }
+        }else{
+            len = 0;
+        }
+        printf("%-*s", 20-len,"");
+        if(tmp->arg2 !=NULL){
+           len = strlen(print_expr(tmp->arg2));
+            if(tmp->arg2->type == conststring_e){
+                len+=2;
+            }
+        }else{
+            len = 0;
+        }
+        printf("%-*s", 20-len,"");
         printf("%d", tmp->label);
-        printf("\t\t%d", (tmp->result->sym!=NULL) ? tmp->result->sym->offset : 0);
-        printf("\t\t%d", (tmp->result->sym!=NULL) ? tmp->result->sym->space : 0);    
+        sprintf(str,"%d",tmp->label);
+        printf("%-*s",(int)(20-strlen(str)),"");
+        memset(str,'\0',10);
+        printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
+        printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
         tmp++;
         printf("\n");
     }
-
 }
 
-void print_expr(expr* e){
-    if(e == NULL){
-        printf("\t\t");
-        return;
-    }
+char* print_expr(expr* e){
+    char *str = malloc(20);
     switch(e->type){
         case var_e:
         case arithexpr_e:
         case boolexpr_e:
-        printf("%s\t",e->sym->value.varVal->name);
-        if (strlen(e->sym->value.funcVal->name) < 5) printf("\t");
-        break;
+        printf("%s", e->sym->value.varVal->name);
+        return e->sym->value.varVal->name;
         case constnum_e:
-        printf("%.2f\t\t", e->numConst);
-        break;
+        printf("%.2f", e->numConst);
+        sprintf(str,"%.2f",e->numConst);
+        return str;
         case constbool_e:
-        printf("%s\t\t", (e->boolConst == '1') ? "true" : "false");
-        break;
+        printf("%s", (e->boolConst == '1') ? "true" : "false");
+        return (e->boolConst == '1') ? "true" : "false";
         case conststring_e:
-        printf("%s\t\t",e->strConst);
-        break;
+        printf("'%s'", e->strConst);
+        return e->strConst;
         case programfunc_e:
         case newtable_e:
-        printf("%s\t\t",e->sym->value.funcVal->name);
-        break;
         case tableitem_e:
-        printf("%s\t\t",e->sym->value.funcVal->name);
-        break;
+        case assignexpr_e:
+        printf("%s", e->sym->value.funcVal->name);
+        return e->sym->value.funcVal->name;
     }
 }
 
 
-void printOpcode(int value) {
+int printOpcode(int value) {
     switch(value) {
         case assign:
             printf("assign");
-            break;
+            return 6;
         case add:
             printf("add");
-            break;
+            return 3;
         case sub:
             printf("sub");
-            break;
+            return 3;
         case mul:
             printf("mul");
-            break;
+            return 3;
         case divide:
             printf("divide");
-            break;
+            return 6;
         case mod:
             printf("mod");
-            break;
+            return 3;
         case uminus:
             printf("uminus");
-            break;
+            return 6;
         case and:
             printf("and");
-            break;
+            return 3;
         case or:
             printf("or");
-            break;
+            return 2;
         case not:
             printf("not");
-            break;
+            return 3;
         case if_eq:
             printf("if_eq");
-            break;
+            return 5;
         case if_noteq:
             printf("if_noteq");
-            break;
+            return 8;
         case if_lesseq:
             printf("if_lesseq");
-            break;
+            return 8;
         case if_greatereq:
             printf("if_greatereq");
-            break;
+            return 12;
         case if_less:
             printf("if_less");
-            break;
+            return 6;
         case if_greater:
             printf("if_greater");
-            break;
+            return 9;
         case call:
             printf("call");
-            break;
+            return 4;
         case param:
             printf("param");
-            break;
+            return 5;
         case ret:
             printf("ret");
-            break;
+            return 3;
         case getretval:
             printf("getretval");
-            break;
+            return 9;
         case funcstart:
             printf("funcstart");
-            break;
+            return 9;
         case funcend:
             printf("funcend");
-            break;
+            return 7;
         case tablecreate:
             printf("tablecreate");
-            break;
+            return 11;
         case tablegetelem:
             printf("tablegetelem");
-            break;
+            return 12;
         case tablesetelem:
             printf("tablesetelem");
-            break;
+            return 12;
         default:
             printf("O baggelis sou xakare ton upologisth! Steiltoy to poyli sou gia na ston afhsei\n");
-            break;
+            return -1;
     }
 }
 
