@@ -161,7 +161,7 @@ expr: assignexpr {;}
 
 term:  NOT expr { $$ = create_and_emit_bool_expr(symtable,lists,scope,yylineno,$2,NULL,not);}
     | MINUS expr {$$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus);}
-    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {;}
+    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
     | INCREMENT lvalue { 
       entry = lookup(symtable, lists, $2->sym->value.varVal->name, (lookup_lib_func($2->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
       manage_increment(entry, $2->sym->value.varVal->name, print_errors);
@@ -199,7 +199,6 @@ assignexpr: lvalue ASSIGN expr {
 ;
 
 primary: lvalue { 
-  printf("type ::: %d\n",$1->type);
   $$ = emit_iftableitem($1, symtable, lists, scope, yylineno);
   is_return_kw = 0;
   if (from_elist) from_elist = 0;
@@ -217,7 +216,7 @@ primary: lvalue {
 lvalue: ID {
             entry = manage_id(symtable, lists, $1, yylineno, scope, print_errors);
             $$ = lvalue_expr(entry);
-            printf("type : %d\n", $$->type);
+            printf("type : %d, name %s\n", $$->type, $1);
            } 
 
 | LOCAL ID { // kanoume lookup sto trexon scope kai ama einai libfunction tote exoyme shadowing kai meta ama einai null tote to vazoume sto table 
@@ -239,7 +238,8 @@ lvalue: ID {
 | tableitem  {$$ = $1;}
 ;
 
-tableitem: lvalue DOT ID { //$$->type = tableitem_e;
+tableitem: lvalue DOT ID { 
+
                         printf("mphka %s\n", $3);
                           $$ = member_item($1,$3,symtable,lists,scope,yylineno);}
           | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
@@ -256,10 +256,15 @@ member: call DOT ID {from_func_call++;}
 
 left_par: LEFT_PARENTHESIS {from_elist = 1; };
 
-call: call left_par elist RIGHT_PARENTHESIS {;}//$$ = make_call($1, $3);}
-
+call: call left_par elist RIGHT_PARENTHESIS {
+  //lookup_func_id(symtable, lists, $1, print_errors);
+  $$ = make_call($1, reverse_elist($3),yylineno,symtable,lists,scope);
+  // printf("goes from here\n");
+}
 | lvalue callsuffix {
- //   $$ = emit_iftableitem($1);
+    //lookup_func_id(symtable, lists, $1, print_errors);
+
+    $$ = emit_iftableitem($1,symtable,lists,scope,yylineno);
     if ($2->method) {
       expr* last = get_last($2->elist);
       if(last == NULL){
@@ -267,14 +272,14 @@ call: call left_par elist RIGHT_PARENTHESIS {;}//$$ = make_call($1, $3);}
       }else{
         last->next = $1;
       }
-      // $1 = emit_iftableitem(member_item($$, $2->name));
+      $1 = emit_iftableitem(member_item($$, $2->name,symtable,lists,scope,yylineno),symtable,lists,scope,yylineno);
     }
-    $$ = make_call($1, $2->elist, yylineno, newtemp(symtable, lists, scope, yylineno));
+    $$ = make_call($1, reverse_elist($2->elist) ,yylineno, symtable, lists, scope);
   }
-
 | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+  // lookup_func_id(symtable, lists, $1->name, print_errors);
   expr* func = create_expr(programfunc_e, $2, NULL, 0.0f, NULL, '\0'); 
-  $$ = make_call(func, $5, yylineno, newtemp(symtable, lists, scope, yylineno));
+  $$ = make_call(func, reverse_elist($5), yylineno, symtable, lists, scope);
 };
 
 callsuffix: normcall {$$ = $1;}
@@ -292,13 +297,26 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
   $$->elist = $4;
   $$->method = 1;
   $$->name = strdup($2);
+};
 
-}
-          ;
+// expr* last = get_last($2->elist);
+//       if(last == NULL){
+//         last = $1;
+//       }else{
+//         last->next = $1;
+//       }
 
-elist: expr { $$ = $1; $$->next = NULL; }
-      | expr COMMA elist { $1->next = $3; $$=$1; }
-      | { $$ = NULL;};
+
+elist: expr {  
+             // correct
+              $$->next = NULL;
+            }
+        | expr COMMA elist {
+                            // correct
+                            $1->next = $3; 
+                            $$=$1;      
+                           }
+        | { $$ = NULL;};
 
 objectdef: tablemake {;}
          ;
@@ -374,7 +392,7 @@ funcbody: block {
 r_parenthesis: RIGHT_PARENTHESIS {func_in_between++; };
 
 funcdef: funcprefix LEFT_PARENTHESIS funcargs r_parenthesis funcbody {
-      //exitscopespace();
+      exitscopespace();
       $$->total_locals = $5;
       scopestack_t *temp = pop(stack);
       int offset = temp->x;
@@ -488,7 +506,8 @@ int main(int argc, char **argv) {
   add_lib_func(symtable, lists);
   yyparse();
   
- // print_scopes(lists);
+  print_scopes(lists);
+
  
   printf("\n\n\n");
 

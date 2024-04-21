@@ -277,3 +277,15 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
 
     return entry;
 }
+
+void lookup_func_id(SymTable *symtable, scopeLists *lists, expr *e, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, e->sym->value.varVal->name, 0, 0, HASH);
+
+    if (entry != NULL && entry->type != USERFUNC && entry->type != LIBFUNC && e->type != programfunc_e && e->type !=libraryfunc_e) {
+        //checking if var_e kai an einai tote peraiterw ktl paparies den prokeitai na ta kanoyme pote
+
+        print_errors("calling undefined user function",  e->sym->value.varVal->name, "grammar");
+        exit(0);
+    }
+
+}

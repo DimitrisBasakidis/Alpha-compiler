@@ -59,9 +59,9 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
 
 expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
     SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
-    entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
-    entry->offset = currscopeoffset(); 
-    incurrscopeoffset();
+    // entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
+    // entry->offset = currscopeoffset(); 
+    // incurrscopeoffset();
     expr* result = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
     emit(op, result, arg1, arg2, 0, yylineno);
     return result;
@@ -69,9 +69,9 @@ expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,
 
 expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
     SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
-    entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
-    entry->offset = currscopeoffset(); 
-    incurrscopeoffset();
+    // entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
+    // entry->offset = currscopeoffset(); 
+    // incurrscopeoffset();
     expr* result = create_expr(boolexpr_e, entry, NULL, 0, NULL, '\0');
     
     emit(op, result, arg1, arg2, 0, yylineno);
@@ -134,7 +134,7 @@ void print_quads(void){
         memset(str,'\0',10);
         int opcodeLength = printOpcode(tmp->op);
         printf("%-*s", 20 - opcodeLength, "");
-        if(tmp->result !=NULL){
+        if(tmp->result != NULL){
             len = strlen(print_expr(tmp->result));
             if(tmp->result->type == conststring_e){
                 len+=2;
@@ -246,10 +246,10 @@ int printOpcode(int value) {
             return 12;
         case if_less:
             printf("if_less");
-            return 6;
+            return 7;
         case if_greater:
             printf("if_greater");
-            return 9;
+            return 10;
         case call:
             printf("call");
             return 4;
@@ -309,14 +309,15 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
         node = create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
+        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
+        node->offset = currscopeoffset(); 
+        incurrscopeoffset();
     } else {
         return sym;
     }
 
     return node;
 }
-
-
 
 // int main (){
 //     expr* new = create_expr(constnum_e,NULL,NULL,1,NULL,0);

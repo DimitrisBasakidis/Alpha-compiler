@@ -28,9 +28,6 @@ typedef struct indexed_list_t{
 }indexed_list_t;
 
 
-
-
-
 indexed_list_t* create_indexlist_node(struct expr* index,struct expr* value);
 
 
