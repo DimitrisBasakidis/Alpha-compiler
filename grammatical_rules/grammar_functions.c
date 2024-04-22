@@ -15,15 +15,19 @@ int manage_continue(void (*print_errors)(const char *, char *, const char *)) {
     }
 }
 
-int manage_increment(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *)) {
+void manage_increment(SymTable *symtable, scopeLists *lists,char *token, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, (lookup_lib_func(token) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+
     if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
-          char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
-          print_errors(msg, token, "grammar");
-          exit(TRUE); 
-      }
+        char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
+        print_errors(msg, token, "grammar");
+        exit(TRUE); 
+    }
 }
 
-int manage_decrement(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *)) {
+void manage_decrement(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, (lookup_lib_func(token) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+
     if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
           char *msg = (entry->type == USERFUNC) ? "cannot decriment user function" : "cannot decriment library function";
           print_errors(msg, token, "grammar");

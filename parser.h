@@ -170,11 +170,12 @@ union YYSTYPE
   float real_val;
   struct expr *ex;
   struct call_t *elist_call;
+  struct stmt_t* statement_struct;
   struct SymbolTableEntry *symbol;
   struct indexed_list_t *indexedlist_node;
 
 
-#line 178 "parser.h"
+#line 179 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

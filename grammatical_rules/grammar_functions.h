@@ -21,8 +21,8 @@ extern int is_local_kw;
 
 int manage_break(void (*print_errors)(const char *, char *, const char *));
 int manage_continue(void (*print_errors)(const char *, char *, const char *));
-int manage_increment(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
-int manage_decrement(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *));
+void manage_increment(SymTable *symtable, scopeLists *lists,char *token, void (*print_errors)(const char *, char *, const char *));
+void manage_decrement(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *));
 int manage_assignexpr(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 SymbolTableEntry *manage_lvalue(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *), int line);
 int manage_call(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *), int line);

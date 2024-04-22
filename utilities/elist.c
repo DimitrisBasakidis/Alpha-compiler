@@ -71,7 +71,7 @@ expr* reverse_elist(expr* head) {
 }
 
 
-expr *emit_iftableitem(expr *e,SymTable *symtable, scopeLists *lists, unsigned int scope, unsigned int line){
+expr *emit_iftableitem(expr *e, SymTable *symtable, scopeLists *lists, unsigned int scope, unsigned int line){
     if (e->type != tableitem_e) {
         return e;
     } else {

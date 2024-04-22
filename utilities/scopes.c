@@ -46,7 +46,7 @@ void restorecurrentscopeoffset(unsigned n) {
     }
 } 
 
-unsigned nextquadlabel(void) { return currQuad; }
+unsigned nextquadlabel(void) { return currQuad ; }
 
 void patchlabel(unsigned quadNo, unsigned label) {
     assert(quadNo < currQuad);

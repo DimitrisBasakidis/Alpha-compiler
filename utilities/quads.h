@@ -41,7 +41,7 @@ typedef enum iopcode{
     if_greater,call,param,
     ret,getretval,funcstart,
     funcend,tablecreate,
-    tablegetelem,tablesetelem
+    tablegetelem,tablesetelem,jump
 } iopcode;
 
 typedef struct expr{
@@ -52,7 +52,12 @@ typedef struct expr{
     char* strConst;
     unsigned char boolConst;
     struct expr* next;
-}expr;
+} expr;
+
+typedef struct stmt_t {
+    int breakList;
+    int contList;
+} stmt_t;
 
 typedef struct quad {
     iopcode op;
@@ -62,22 +67,21 @@ typedef struct quad {
    unsigned label;
    unsigned line;
 
-}quad;
+} quad;
 
 void emit (enum iopcode op, expr* result, expr* arg1, expr* arg2, unsigned label, unsigned line);
 void expand (void);
 
-extern quad* quads; // for parser file
+extern quad* quads;
 extern unsigned total;
 extern unsigned int currQuad;
 extern int temp_count;
 
-// quad* quads = (quad*)0;
-// unsigned total = 0;
-// unsigned int currQuad = 0;
-// int temp_count = 0;
-
 expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numConst,char* strConst,unsigned char boolConst);
+stmt_t *make_stmt (struct stmt_t* s);
+int newlist (int i);
+int mergelist (int l1, int l2);
+void patchlist (int list, int label);
 
 char* print_expr(expr* e);
 void print_quads(void);
@@ -91,6 +95,7 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
 expr *lvalue_expr(SymbolTableEntry *sym);
 expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
 expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
+void check_expr(expr* a , expr* b,void (*print_errors)(const char *, char *, const char *));
 
 #endif
 
