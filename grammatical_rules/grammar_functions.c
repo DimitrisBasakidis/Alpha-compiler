@@ -15,15 +15,19 @@ int manage_continue(void (*print_errors)(const char *, char *, const char *)) {
     }
 }
 
-int manage_increment(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *)) {
+void manage_increment(SymTable *symtable, scopeLists *lists,char *token, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, (lookup_lib_func(token) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+
     if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
-          char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
-          print_errors(msg, token, "grammar");
-          exit(TRUE); 
-      }
+        char *msg = (entry->type == USERFUNC) ? "cannot increment user function" : "cannot increment library function";
+        print_errors(msg, token, "grammar");
+        exit(TRUE); 
+    }
 }
 
-int manage_decrement(SymbolTableEntry *entry, char *token, void (*print_errors)(const char *, char *, const char *)) {
+void manage_decrement(SymTable *symtable, scopeLists *lists, char *token, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, token, (lookup_lib_func(token) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+
     if (entry != NULL && entry->type == USERFUNC || entry->type == LIBFUNC) {
           char *msg = (entry->type == USERFUNC) ? "cannot decriment user function" : "cannot decriment library function";
           print_errors(msg, token, "grammar");
@@ -154,8 +158,8 @@ SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *t
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
         printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
-        node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
-        node->offset = currscopeoffset(); 
+        node->space = FUNC_SPACE;  // dialeksh 9 slide 49 sto site tou pratikakh
+        node->offset = FUNC_SPACE; 
         // node-
         incurrscopeoffset();
         printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
@@ -276,4 +280,16 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
     }
 
     return entry;
+}
+
+void lookup_func_id(SymTable *symtable, scopeLists *lists, expr *e, void (*print_errors)(const char *, char *, const char *)) {
+    SymbolTableEntry *entry = lookup(symtable, lists, e->sym->value.varVal->name, 0, 0, HASH);
+
+    if (entry != NULL && entry->type != USERFUNC && entry->type != LIBFUNC && e->type != programfunc_e && e->type !=libraryfunc_e) {
+        //checking if var_e kai an einai tote peraiterw ktl paparies den prokeitai na ta kanoyme pote
+
+        print_errors("calling undefined user function",  e->sym->value.varVal->name, "grammar");
+        exit(0);
+    }
+
 }

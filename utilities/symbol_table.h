@@ -23,6 +23,7 @@ typedef struct Variable {
     unsigned int line;
 } Variable;
 
+
 typedef struct Function {
     char *name;
     //arg list

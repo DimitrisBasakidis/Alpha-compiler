@@ -38,7 +38,7 @@ void resetformalargsoffset(void) { formalArgOffset = 0; }
 void resetfunctionlocaloffset(void) { functionLocalOffset = 0; }
 
 void restorecurrentscopeoffset(unsigned n) {
-    switch (currscopeoffset()) {
+    switch (currscopespace()) {
         case programvar     : programVarOffset = n; break;
         case functionlocal  : functionLocalOffset = n; break;
         case formalarg      : formalArgOffset = n; break;
@@ -46,13 +46,10 @@ void restorecurrentscopeoffset(unsigned n) {
     }
 } 
 
-unsigned nextquadlabel(void) { return currQuad; }
+unsigned nextquadlabel(void) { return currQuad ; }
 
 void patchlabel(unsigned quadNo, unsigned label) {
     assert(quadNo < currQuad);
     quads[quadNo].label = label;    
 }
 
-// int main() {
-//     printf("awdawd\n");
-// }

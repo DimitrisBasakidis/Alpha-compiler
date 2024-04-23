@@ -272,7 +272,7 @@ real            [0-9]+[.][0-9]+
 }
 
 {real} {
-  yylval.real_val = atoi(yytext); 
+  yylval.real_val = atof(yytext); 
   return REAL;
 }
 
