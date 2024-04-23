@@ -92,7 +92,7 @@ SymbolTableEntry *entry;
 %type <int_val> funcbody ifprefix elseprefix open_while whilecond
 %type <elist_call> callsuffix normcall methodcall
 %type <indexedlist_node> indexedelem indexed
-%type <str_val> idlist  whilestmt forstmt returnstmt block  
+%type <str_val> idlist  whilestmt forstmt returnstmt    
 %type <statement_struct> statements stmt ifstmt 
 
 %%
@@ -103,14 +103,23 @@ program: statements {}
        ;
 
 statements: statements stmt {resettemp();
-            $$->breakList = mergelist($1->breakList,$2->breakList);
-            $$->contList = mergelist($1->contList,$2->contList);
+            // $$ = malloc(sizeof(struct stmt_t));
+            // $$->breakList = mergelist($1->breakList,$2->breakList);
+            // $$->contList = mergelist($1->contList,$2->contList);
+                          resettemp();
+                        $$ = malloc(sizeof(struct stmt_t));
+                        int break1=0, break2=0, continue1=0, continue2=0;
+                        if($1){break1=$1->breakList; continue1=$1->contList; }
+                        if($2){break2=$2->breakList; continue2=$2->contList; }
+                        $$->breakList = mergelist(break1,break2);
+                        $$->contList = mergelist(continue1,continue2);
+
           }
           | stmt { resettemp(); $$ = $1; };
 
 
 stmt: expr SEMICOLON {}
-      | ifstmt {}
+      | ifstmt {$$ = $1;}
       | whilestmt {}
       | forstmt {}
       | returnstmt {}
@@ -422,7 +431,7 @@ indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {$$ = create_indexlist_n
            ;
 
 
-block: LEFT_BRACKET {scope++; } statements RIGHT_BRACKET {hide_scope(lists, scope--); }
+block: LEFT_BRACKET {scope++;  } statements RIGHT_BRACKET {hide_scope(lists, scope--); }
      | LEFT_BRACKET {scope++;} RIGHT_BRACKET {hide_scope(lists, scope--);}
      ;
 
@@ -521,19 +530,23 @@ idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
 
-ifstmt: ifprefix stmt {if_stmt--;
-                        patchlabel($1,nextquadlabel());} %prec LOWER_THAN_ELSE 
-      | ifprefix stmt elseprefix stmt {if_stmt--;
+ifstmt: ifprefix stmt { //$$ = malloc(sizeof(struct stmt_t));
+                      if_stmt--;
+                      patchlabel($1,nextquadlabel());
+
+                      } %prec LOWER_THAN_ELSE 
+      | ifprefix stmt elseprefix stmt {  //$$ = malloc(sizeof(struct stmt_t));
+                                        if_stmt--;
                                         patchlabel($1,$3+1);patchlabel($3,nextquadlabel());}
       ;
 
 whilestmt: open_while whilecond stmt {in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,$1,yylineno);
-                                       patchlabel($2,nextquadlabel());
+
+                                      patchlabel($2,nextquadlabel());
                                       // printf("breaklist = %d , contlist = %d",$3->breakList,$3->contList);
                                       patchlist($3->breakList,nextquadlabel());
                                       patchlist($3->contList,$1);
-                                    
                                       } 
          ;
 
