@@ -27,8 +27,7 @@ void emit (
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
-
-
+    p->label = label;
     p->line = line;
 }
 
@@ -183,6 +182,7 @@ void print_quads(void){
             len = 0;
         }
         printf("%-*s", 20-len,"");
+
         printf("%d", tmp->label);
         sprintf(str,"%d",tmp->label);
         printf("%-*s",(int)(20-strlen(str)),"");
@@ -368,12 +368,14 @@ int mergelist (int l1, int l2) {
         return l1;
     else {
         int i = l1;
-        while (quads[i].label)
+        while (quads[i].label){
             i = quads[i].label;
+        }    
         quads[i].label = l2;
         return l1;
     }
 }
+
 
 void patchlist (int list, int label) {
     while (list) {

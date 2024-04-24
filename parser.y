@@ -64,6 +64,7 @@ SymbolTableEntry *entry;
   struct call_t *elist_call;
   struct stmt_t* statement_struct;
   struct SymbolTableEntry *symbol;
+  struct forstruct_t *forprefix_struct;
   struct indexed_list_t *indexedlist_node;
 
 }
@@ -89,11 +90,12 @@ SymbolTableEntry *entry;
 %type <ex> lvalue call const member primary assignexpr term objectdef expr elist tablemake tableitem 
 %type <symbol> funcprefix funcdef
 %type <str_val> funcname 
-%type <int_val> funcbody ifprefix elseprefix open_while whilecond
+%type <int_val> funcbody ifprefix elseprefix open_while whilecond N M N_right_par
 %type <elist_call> callsuffix normcall methodcall
 %type <indexedlist_node> indexedelem indexed
 %type <str_val> idlist
-%type <statement_struct> statements stmt ifstmt block whilestmt forstmt returnstmt
+%type <statement_struct> statements stmt ifstmt block whilestmt forstmt returnstmt for_stmt_args
+%type <forprefix_struct> forprefix
 
 %%
 
@@ -104,6 +106,7 @@ program: statements {}
 
 statements: statements stmt {
                 resettemp();
+                $$ = malloc(sizeof(struct stmt_t));
                 $$->breakList = mergelist($1->breakList,$2->breakList);
                 $$->contList = mergelist($1->contList,$2->contList);
           }
@@ -111,15 +114,16 @@ statements: statements stmt {
 
 
 stmt: expr SEMICOLON { $$ = make_stmt($$); }
-      | ifstmt {$$ = $1;}
-      | whilestmt {$$ = make_stmt($$);}
-      | forstmt { $$ = make_stmt($$); }
+      | ifstmt { $$ = $1; }
+      | whilestmt {/* $$ = make_stmt($$); */ $$ = NULL; }
+      | forstmt { /*$$ = make_stmt($$);*/ $$ = NULL; }
       | returnstmt { $$ = $1; }
       | BRK SEMICOLON { 
                         manage_break(print_errors);
                         $$ = make_stmt($$);
                         $$->breakList = newlist(nextquadlabel()); 
                         emit(jump,NULL,NULL,NULL,0,yylineno);
+                        
                       }      
       | CONTINUE SEMICOLON {
                             manage_continue(print_errors);
@@ -128,7 +132,7 @@ stmt: expr SEMICOLON { $$ = make_stmt($$); }
                             emit(jump,NULL,NULL,NULL,0,yylineno);
                             }
       | block {$$ = $1;}
-      | funcdef {printf("goes here \n"); fflush(stdout); $$ = make_stmt($$); }
+      | funcdef { /*$$ = make_stmt($$);*/ $$ = NULL; }
       | SEMICOLON { $$ = NULL; }
       ;
 
@@ -325,13 +329,12 @@ left_par: LEFT_PARENTHESIS {from_elist = 1; };
 call: call left_par elist RIGHT_PARENTHESIS {
   //lookup_func_id(symtable, lists, $1, print_errors);
   $$ = make_call($1, reverse_elist($3),yylineno,symtable,lists,scope);
-  // printf("goes from here\n");
+  
 }
 | lvalue callsuffix {
     //lookup_func_id(symtable, lists, $1, print_errors);
     $1 = emit_iftableitem($1,symtable,lists,scope,yylineno);
     if ($2->method) {
-      printf("Method :: %d \n", $2->method);
       expr* last = get_last($2->elist);
       if(last == NULL){
         last = $1;
@@ -495,6 +498,7 @@ open_while: WHILE {while_loop++; $$ = nextquadlabel();};
 whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS{in_loop++; 
               emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
               $$ = nextquadlabel();
+              printf("while cond next label ::%d\n", nextquadlabel());
               emit(jump,NULL,NULL,NULL,0,yylineno);}
 
 ifprefix : open_if LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
@@ -504,10 +508,10 @@ ifprefix : open_if LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
                 }
           ;
 
-elseprefix : ELSE {$$ = nextquadlabel();
+elseprefix : ELSE { $$ = nextquadlabel();
                     emit(jump,NULL,NULL,NULL,0,yylineno);}
 
-open_if: IF  {if_stmt++;}
+open_if: IF  { if_stmt++; }
 
 return_keyword: RETURN_KW { manage_return(print_errors);};
 
@@ -515,31 +519,69 @@ idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
 
-ifstmt: ifprefix stmt { $$ = malloc(sizeof(struct stmt_t));
+ifstmt: ifprefix stmt { 
                       if_stmt--;
-                      patchlabel($1,nextquadlabel());
-
+                       patchlabel($1,nextquadlabel());
+                       $$=$2;
+                        printf("if\n");
                       } %prec LOWER_THAN_ELSE 
-      | ifprefix stmt elseprefix stmt {  $$ = malloc(sizeof(struct stmt_t));
+      | ifprefix stmt elseprefix stmt { 
                                         if_stmt--;
-                                        patchlabel($1,$3+1);patchlabel($3,nextquadlabel());}
+                                        $$ = make_stmt($$);
+                                        patchlabel($1,$3+1);
+                                        patchlabel($3,nextquadlabel());
+                                        printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
+                                        fflush(stdout);
+                                        $$->breakList = mergelist($2->breakList,$4->breakList);
+                                        $$->contList = mergelist($2->contList,$4->contList);
+                                      }
       ;
 
-whilestmt: open_while whilecond stmt {in_loop--; while_loop--;
+whilestmt: open_while whilecond stmt {  printf("in while stmt\n");
+                                      in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,$1,yylineno);
-                                      $$ = $3;
                                       patchlabel($2,nextquadlabel());
-                                      // printf("breaklist = %d , contlist = %d",$3->breakList,$3->contList);
-                                      patchlist($3->breakList,nextquadlabel());
+                                      printf("Address No %d, Address to jump %d\n ",$3->breakList,nextquadlabel()); 
+                                      patchlist($3->breakList,nextquadlabel()); //$3->breaklist: index tou quad opou briskontai ta breaks, nextquadlabel(): quad label opou bazoume ta brakes na deixnoun 
                                       patchlist($3->contList,$1);
                                       } 
          ;
 
-forstmt: open_for LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {in_loop++;} stmt  {in_loop--; for_loop--;}
+N: {$$ = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno);}
+M:{$$ = nextquadlabel();}
+
+forprefix : open_for LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
+              $$ = malloc(sizeof(struct forstruct_t));
+              $$->test = $5;
+              $$->enter = nextquadlabel();
+              emit(if_eq,$6,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
+          }
+          ;
+
+N_right_par: RIGHT_PARENTHESIS N { $$ = $2; in_loop++;};
+
+for_stmt_args: stmt {$$ = make_stmt($$); in_loop--; for_loop--;};
+
+forstmt: forprefix N elist N_right_par for_stmt_args N {
+            $$ = make_stmt($$);
+            patchlabel($1->enter,$4+1);
+            patchlabel($2,nextquadlabel());
+            patchlabel($4,$1->test);
+            patchlabel($6,$2 +1);
+
+            patchlist($5->breakList,nextquadlabel());
+            patchlist($5->contList,$2+1);
+}
        ;
 
-returnstmt: return_keyword SEMICOLON {emit(ret,NULL,NULL,NULL,0,0);emit(jump,NULL,NULL,NULL,0,yylineno);}
-| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1; emit(jump,NULL,NULL,NULL,0,yylineno);}
+returnstmt: return_keyword SEMICOLON {emit(ret,NULL,NULL,NULL,0,0);
+                                      $$ = make_stmt($$);
+                                      emit(jump,NULL,NULL,NULL,0,yylineno);
+                                    }
+| return_keyword expr SEMICOLON { emit(ret,$2,NULL,NULL,0,0);is_return_kw = 1; 
+                                  $$ = make_stmt($$);
+                                  emit(jump,NULL,NULL,NULL,0,yylineno);
+                                }
 
 %%
 
@@ -592,7 +634,7 @@ int main(int argc, char **argv) {
 
   file_name = strrchr(argv[1], '/');
   lists = create_scope_lists();
-  emit(dummy,NULL,NULL,NULL,0,0);
+  emit(jump,NULL,NULL,NULL,1,0);
   symtable = create_table();
 
   stack = create_scope_stack();
