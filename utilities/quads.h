@@ -41,7 +41,9 @@ typedef enum iopcode{
     if_greater,call,param,
     ret,getretval,funcstart,
     funcend,tablecreate,
-    tablegetelem,tablesetelem,jump
+    tablegetelem,tablesetelem,jump,
+
+    dummy
 } iopcode;
 
 typedef struct expr{

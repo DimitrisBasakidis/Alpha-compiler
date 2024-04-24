@@ -2545,7 +2545,7 @@ int main(int argc, char **argv) {
 
   file_name = strrchr(argv[1], '/');
   lists = create_scope_lists();
-  emit(jump,NULL,NULL,NULL,0,0);
+  emit(dummy,NULL,NULL,NULL,0,0);
   symtable = create_table();
 
   stack = create_scope_stack();
