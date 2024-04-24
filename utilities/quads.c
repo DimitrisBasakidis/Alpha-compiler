@@ -27,7 +27,8 @@ void emit (
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
-    p->label = label;
+
+
     p->line = line;
 }
 
@@ -142,9 +143,10 @@ void print_quads(void){
     int curr_space;
     char str[10];
     int len = 0 ;
+    tmp++;
     printf("quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
     printf("------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    for(int i = 0; i< currQuad;i++){
+    for(int i = 1; i< currQuad;i++){
         sprintf(str,"%d",i);
         printf("%d:%-*s",i,(int) (18-strlen(str)),"");
         memset(str,'\0',10);
@@ -354,7 +356,7 @@ stmt_t *make_stmt (struct stmt_t* s){
 }
 
 int newlist (int i) { 
-    // quads[i].label = 0;
+    quads[i].label = 0;
     return i; 
 }
 

@@ -6,6 +6,7 @@ int manage_break(void (*print_errors)(const char *, char *, const char *)) {
         print_errors("use of keyword outside of function", "break", "grammar");
         exit(TRUE);
     }
+
 }
 
 int manage_continue(void (*print_errors)(const char *, char *, const char *)) {
