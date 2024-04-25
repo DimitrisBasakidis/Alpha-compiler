@@ -142,9 +142,10 @@ void print_quads(void){
     int curr_space;
     char str[10];
     int len = 0 ;
+    tmp++;
     printf("quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
     printf("------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    for(int i = 0; i< currQuad;i++){
+    for(int i = 1; i< currQuad;i++){
         sprintf(str,"%d",i);
         printf("%d:%-*s",i,(int) (18-strlen(str)),"");
         memset(str,'\0',10);
@@ -181,6 +182,7 @@ void print_quads(void){
             len = 0;
         }
         printf("%-*s", 20-len,"");
+
         printf("%d", tmp->label);
         sprintf(str,"%d",tmp->label);
         printf("%-*s",(int)(20-strlen(str)),"");
@@ -354,7 +356,7 @@ stmt_t *make_stmt (struct stmt_t* s){
 }
 
 int newlist (int i) { 
-    // quads[i].label = 0;
+    quads[i].label = 0;
     return i; 
 }
 
@@ -366,12 +368,14 @@ int mergelist (int l1, int l2) {
         return l1;
     else {
         int i = l1;
-        while (quads[i].label)
+        while (quads[i].label){
             i = quads[i].label;
+        }    
         quads[i].label = l2;
         return l1;
     }
 }
+
 
 void patchlist (int list, int label) {
     while (list) {

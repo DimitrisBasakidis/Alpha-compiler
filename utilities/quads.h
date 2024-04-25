@@ -13,6 +13,11 @@
 #define CURR_SIZE (total * sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
 
+typedef struct forstruct_t {
+    int enter;
+    int test;
+}forstruct_t;
+
 typedef enum expr_t {
     var_e,
     tableitem_e,
@@ -41,7 +46,9 @@ typedef enum iopcode{
     if_greater,call,param,
     ret,getretval,funcstart,
     funcend,tablecreate,
-    tablegetelem,tablesetelem,jump
+    tablegetelem,tablesetelem,jump,
+
+    dummy
 } iopcode;
 
 typedef struct expr{
