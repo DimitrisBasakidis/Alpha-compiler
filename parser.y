@@ -547,7 +547,8 @@ ifstmt: ifprefix stmt {
                                         patchlabel($1,$3+1);
                                         patchlabel($3,nextquadlabel());
                                         printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
-                                        fflush(stdout);ß
+                                        fflush(stdout);
+                                        /*
                                         int brk_statemenets = 0, cont_statements = 0;
                                         int brk_stmt = 0, cont_stmt = 0;
 
@@ -563,6 +564,9 @@ ifstmt: ifprefix stmt {
 
                                         $$->breakList = mergelist(brk_statemenets, brk_stmt);
                                         $$->contList = mergelist(cont_statements , cont_stmt);
+                                        */
+                                        $$->breakList = mergelist($2->breakList,$4->breakList);
+                                        $$->contList = mergelist($2->contList,$4->contList);
                                         }
       ;
 
