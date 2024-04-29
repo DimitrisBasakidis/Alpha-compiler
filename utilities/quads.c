@@ -214,6 +214,7 @@ char* print_expr(expr* e){
         printf("'%s'", e->strConst);
         return e->strConst;
         case programfunc_e:
+        case libraryfunc_e:
         case newtable_e:
         case tableitem_e:
         case assignexpr_e:
