@@ -547,10 +547,23 @@ ifstmt: ifprefix stmt {
                                         patchlabel($1,$3+1);
                                         patchlabel($3,nextquadlabel());
                                         printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
-                                        fflush(stdout);
-                                        $$->breakList = mergelist($2->breakList,$4->breakList);
-                                        $$->contList = mergelist($2->contList,$4->contList);
-                                      }
+                                        fflush(stdout);ß
+                                        int brk_statemenets = 0, cont_statements = 0;
+                                        int brk_stmt = 0, cont_stmt = 0;
+
+                                        if($2){
+                                          brk_statemenets = $2->breakList;
+                                          cont_statements = $4->contList;
+                                        }
+
+                                        if($4){
+                                          brk_stmt = $4->breakList;
+                                          cont_stmt = $2->contList;
+                                        }
+
+                                        $$->breakList = mergelist(brk_statemenets, brk_stmt);
+                                        $$->contList = mergelist(cont_statements , cont_stmt);
+                                        }
       ;
 
 whilestmt: open_while whilecond stmt {  printf("in while stmt\n");

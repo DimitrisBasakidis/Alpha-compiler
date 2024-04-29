@@ -616,8 +616,8 @@ static const yytype_uint16 yyrline[] =
      429,   432,   436,   436,   437,   437,   440,   441,   450,   463,
      467,   470,   475,   477,   490,   491,   492,   493,   494,   495,
      498,   510,   512,   514,   520,   527,   530,   532,   534,   535,
-     538,   544,   556,   566,   567,   569,   577,   579,   581,   593,
-     597
+     538,   544,   570,   580,   581,   583,   591,   593,   595,   607,
+     611
 };
 #endif
 
@@ -2511,13 +2511,27 @@ yyreduce:
                                         patchlabel((yyvsp[(3) - (4)].int_val),nextquadlabel());
                                         printf("$2->breakList = %p, $4->breakList = %p\n", (yyvsp[(2) - (4)].statement_struct), (yyvsp[(4) - (4)].statement_struct));
                                         fflush(stdout);
-                                        (yyval.statement_struct)->breakList = mergelist((yyvsp[(2) - (4)].statement_struct)->breakList,(yyvsp[(4) - (4)].statement_struct)->breakList);
-                                        (yyval.statement_struct)->contList = mergelist((yyvsp[(2) - (4)].statement_struct)->contList,(yyvsp[(4) - (4)].statement_struct)->contList);
-                                      }
+                                        
+                                        int brk_statemenets = 0, cont_statements = 0;
+                                        int brk_stmt = 0, cont_stmt = 0;
+
+                                        if((yyvsp[(2) - (4)].statement_struct)){
+                                          brk_statemenets = (yyvsp[(2) - (4)].statement_struct)->breakList;
+                                          cont_statements = (yyvsp[(4) - (4)].statement_struct)->contList;
+                                        }
+
+                                        if((yyvsp[(4) - (4)].statement_struct)){
+                                          brk_stmt = (yyvsp[(4) - (4)].statement_struct)->breakList;
+                                          cont_stmt = (yyvsp[(2) - (4)].statement_struct)->contList;
+                                        }
+
+                                        (yyval.statement_struct)->breakList = mergelist(brk_statemenets, brk_stmt);
+                                        (yyval.statement_struct)->contList = mergelist(cont_statements , cont_stmt);
+                                        }
     break;
 
   case 102:
-#line 556 "parser.y"
+#line 570 "parser.y"
     {  printf("in while stmt\n");
                                       in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,(yyvsp[(1) - (3)].int_val),yylineno);
@@ -2529,17 +2543,17 @@ yyreduce:
     break;
 
   case 103:
-#line 566 "parser.y"
+#line 580 "parser.y"
     {(yyval.int_val) = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno);}
     break;
 
   case 104:
-#line 567 "parser.y"
+#line 581 "parser.y"
     {(yyval.int_val) = nextquadlabel();}
     break;
 
   case 105:
-#line 569 "parser.y"
+#line 583 "parser.y"
     {
               (yyval.forprefix_struct) = malloc(sizeof(struct forstruct_t));
               (yyval.forprefix_struct)->test = (yyvsp[(5) - (7)].int_val);
@@ -2549,17 +2563,17 @@ yyreduce:
     break;
 
   case 106:
-#line 577 "parser.y"
+#line 591 "parser.y"
     { (yyval.int_val) = (yyvsp[(2) - (2)].int_val); in_loop++;}
     break;
 
   case 107:
-#line 579 "parser.y"
+#line 593 "parser.y"
     {(yyval.statement_struct) = make_stmt((yyval.statement_struct)); in_loop--; for_loop--;}
     break;
 
   case 108:
-#line 581 "parser.y"
+#line 595 "parser.y"
     {
             (yyval.statement_struct) = make_stmt((yyval.statement_struct));
             patchlabel((yyvsp[(1) - (6)].forprefix_struct)->enter,(yyvsp[(4) - (6)].int_val)+1);
@@ -2573,7 +2587,7 @@ yyreduce:
     break;
 
   case 109:
-#line 593 "parser.y"
+#line 607 "parser.y"
     {emit(ret,NULL,NULL,NULL,0,0);
                                       (yyval.statement_struct) = make_stmt((yyval.statement_struct));
                                       emit(jump,NULL,NULL,NULL,0,yylineno);
@@ -2581,7 +2595,7 @@ yyreduce:
     break;
 
   case 110:
-#line 597 "parser.y"
+#line 611 "parser.y"
     { emit(ret,(yyvsp[(2) - (3)].ex),NULL,NULL,0,0);is_return_kw = 1; 
                                   (yyval.statement_struct) = make_stmt((yyval.statement_struct));
                                   emit(jump,NULL,NULL,NULL,0,yylineno);
@@ -2590,7 +2604,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 2594 "parser.c"
+#line 2608 "parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2804,7 +2818,7 @@ yyreturn:
 }
 
 
-#line 602 "parser.y"
+#line 616 "parser.y"
 
 
 void yyerror(const char *error_msg) {
