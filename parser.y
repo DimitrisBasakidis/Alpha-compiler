@@ -102,7 +102,7 @@ SymbolTableEntry *entry;
 
 
 program: statements {}
-      |
+      | {;}
        ;
 
 statements: statements stmt {
