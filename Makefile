@@ -2,7 +2,7 @@ all: scanner
 	 ./alphac ../test.txt
 
 gdb: scanner
-	gdb ./alphac  ../test.txt
+	sudo gdb ./alphac  ../test.txt
 
 flex:
 	flex --outfile=scanner.c scanner.l 

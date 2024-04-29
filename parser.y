@@ -107,8 +107,24 @@ program: statements {}
 statements: statements stmt {
                 resettemp();
                 $$ = malloc(sizeof(struct stmt_t));
-                $$->breakList = mergelist($1->breakList,$2->breakList);
-                $$->contList = mergelist($1->contList,$2->contList);
+                int brk_statemenets = 0, brk_stmt = 0;
+                int cont_statements = 0, cont_stmt = 0;
+
+                if($1){
+                  brk_statemenets = $1->breakList;
+                  cont_statements = $1->contList;
+                }
+
+                if($2){
+                  brk_stmt = $2->breakList;
+                  cont_stmt = $2->contList;
+                }
+
+                $$->breakList = mergelist(brk_statemenets, brk_stmt);
+                $$->contList = mergelist(cont_statements , cont_stmt);
+
+           //     $$->breakList = mergelist($1->breakList,$2->breakList);
+          //      $$->contList = mergelist($1->contList,$2->contList);
           }
           | stmt { resettemp();   $$ = $1; };
 
