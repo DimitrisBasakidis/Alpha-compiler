@@ -548,25 +548,24 @@ ifstmt: ifprefix stmt {
                                         patchlabel($3,nextquadlabel());
                                         printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
                                         fflush(stdout);
-                                        /*
+                                        
                                         int brk_statemenets = 0, cont_statements = 0;
                                         int brk_stmt = 0, cont_stmt = 0;
 
                                         if($2){
                                           brk_statemenets = $2->breakList;
+                                          if($4)
                                           cont_statements = $4->contList;
                                         }
 
                                         if($4){
                                           brk_stmt = $4->breakList;
+                                          if($2)
                                           cont_stmt = $2->contList;
                                         }
 
                                         $$->breakList = mergelist(brk_statemenets, brk_stmt);
                                         $$->contList = mergelist(cont_statements , cont_stmt);
-                                        */
-                                        $$->breakList = mergelist($2->breakList,$4->breakList);
-                                        $$->contList = mergelist($2->contList,$4->contList);
                                         }
       ;
 
@@ -574,9 +573,8 @@ whilestmt: open_while whilecond stmt {  printf("in while stmt\n");
                                       in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,$1,yylineno);
                                       patchlabel($2,nextquadlabel());
-                                      printf("Address No %d, Address to jump %d\n ",$3->breakList,nextquadlabel()); 
-                                      patchlist($3->breakList,nextquadlabel()); //$3->breaklist: index tou quad opou briskontai ta breaks, nextquadlabel(): quad label opou bazoume ta brakes na deixnoun 
-                                      patchlist($3->contList,$1);
+                                      if($3) {patchlist($3->breakList,nextquadlabel()); //$3->breaklist: index tou quad opou briskontai ta breaks, nextquadlabel(): quad label opou bazoume ta brakes na deixnoun 
+                                            patchlist($3->contList,$1);}
                                       } 
          ;
 
