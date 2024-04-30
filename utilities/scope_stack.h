@@ -9,7 +9,7 @@
 typedef struct scopestack_t {
     unsigned int x;
     struct scopestack_t *prev;
-}scopestack_t;
+} scopestack_t;
 
 typedef struct scope_stack {
     scopestack_t *s;

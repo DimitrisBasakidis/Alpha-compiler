@@ -50,6 +50,7 @@ extern char *lineptr;
 SymTable *symtable;
 scopeLists *lists;
 scope_stack *stack;
+scope_stack *loop_stack;
 
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
@@ -94,7 +95,7 @@ SymbolTableEntry *entry;
 %type <elist_call> callsuffix normcall methodcall
 %type <indexedlist_node> indexedelem indexed
 %type <str_val> idlist
-%type <statement_struct> statements stmt ifstmt block whilestmt forstmt returnstmt for_stmt_args
+%type <statement_struct> loopstmt statements stmt ifstmt block whilestmt forstmt returnstmt for_stmt_args
 %type <forprefix_struct> forprefix
 
 %%
@@ -472,11 +473,15 @@ funcbody: block {
     exitscopespace();
     };
 
+funcblockstart: { push(loop_stack, in_loop); in_loop = 0;}
+
+funcblockend: { scopestack_t *temp = pop(loop_stack); in_loop = temp->x; }
+
 r_parenthesis: RIGHT_PARENTHESIS {func_in_between++; };
 
-funcdef: funcprefix LEFT_PARENTHESIS funcargs r_parenthesis funcbody {
+funcdef: funcprefix LEFT_PARENTHESIS funcargs r_parenthesis funcblockstart funcbody funcblockend {
       exitscopespace();
-      $$->total_locals = $5;
+      $$->total_locals = $6;
       scopestack_t *temp = pop(stack);
       int offset = temp->x;
       restorecurrentscopeoffset(offset);
@@ -511,7 +516,7 @@ open_for: FOR {for_loop++;};
 
 open_while: WHILE {while_loop++; $$ = nextquadlabel();};
 
-whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS{in_loop++; 
+whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { //in_loop++; 
               emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
               $$ = nextquadlabel();
               printf("while cond next label ::%d\n", nextquadlabel());
@@ -541,35 +546,39 @@ ifstmt: ifprefix stmt {
                        $$=$2;
                         printf("if\n");
                       } %prec LOWER_THAN_ELSE 
-      | ifprefix stmt elseprefix stmt { 
-                                        if_stmt--;
-                                        $$ = make_stmt($$);
-                                        patchlabel($1,$3+1);
-                                        patchlabel($3,nextquadlabel());
-                                        printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
-                                        fflush(stdout);
-                                        
-                                        int brk_statemenets = 0, cont_statements = 0;
-                                        int brk_stmt = 0, cont_stmt = 0;
+      | ifprefix stmt elseprefix stmt 
+      { 
+        if_stmt--;
+        $$ = make_stmt($$);
+        patchlabel($1,$3+1);
+        patchlabel($3,nextquadlabel());
+        printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
+        fflush(stdout);
+        
+        int brk_statemenets = 0, cont_statements = 0;
+        int brk_stmt = 0, cont_stmt = 0;
 
-                                        if($2){
-                                          brk_statemenets = $2->breakList;
-                                          if($4)
-                                          cont_statements = $4->contList;
-                                        }
+        if($2){
+          brk_statemenets = $2->breakList;
+          if($4) cont_statements = $4->contList;
+        }
 
-                                        if($4){
-                                          brk_stmt = $4->breakList;
-                                          if($2)
-                                          cont_stmt = $2->contList;
-                                        }
+        if($4){
+          brk_stmt = $4->breakList;
+          if($2) cont_stmt = $2->contList;
+        }
 
-                                        $$->breakList = mergelist(brk_statemenets, brk_stmt);
-                                        $$->contList = mergelist(cont_statements , cont_stmt);
-                                        }
-      ;
+        $$->breakList = mergelist(brk_statemenets, brk_stmt);
+        $$->contList = mergelist(cont_statements , cont_stmt);
+      };
 
-whilestmt: open_while whilecond stmt {  printf("in while stmt\n");
+loopstart: { in_loop++; };
+
+loopend: { in_loop--; };
+
+loopstmt: loopstart stmt loopend { $$ = $2; };
+
+whilestmt: open_while whilecond loopstmt {  printf("in while stmt\n");
                                       in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,$1,yylineno);
                                       patchlabel($2,nextquadlabel());
@@ -589,21 +598,20 @@ forprefix : open_for LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
           }
           ;
 
-N_right_par: RIGHT_PARENTHESIS N { $$ = $2; in_loop++;};
+N_right_par: RIGHT_PARENTHESIS N { $$ = $2; /* in_loop++; */};
 
-for_stmt_args: stmt {$$ = make_stmt($$); in_loop--; for_loop--;};
+for_stmt_args: loopstmt {$$ = make_stmt($$); in_loop--; for_loop--;};
 
 forstmt: forprefix N elist N_right_par for_stmt_args N {
-            $$ = make_stmt($$);
-            patchlabel($1->enter,$4+1);
-            patchlabel($2,nextquadlabel());
-            patchlabel($4,$1->test);
-            patchlabel($6,$2 +1);
+          $$ = make_stmt($$);
+          patchlabel($1->enter,$4+1);
+          patchlabel($2,nextquadlabel());
+          patchlabel($4,$1->test);
+          patchlabel($6,$2 +1);
 
-            patchlist($5->breakList,nextquadlabel());
-            patchlist($5->contList,$2+1);
-}
-       ;
+          patchlist($5->breakList,nextquadlabel());
+          patchlist($5->contList,$2+1);
+};
 
 returnstmt: return_keyword SEMICOLON {emit(ret,NULL,NULL,NULL,0,0);
                                       $$ = make_stmt($$);
@@ -669,6 +677,8 @@ int main(int argc, char **argv) {
   symtable = create_table();
 
   stack = create_scope_stack();
+
+  loop_stack = create_scope_stack();
 
   add_lib_func(symtable, lists);
   yyparse();
