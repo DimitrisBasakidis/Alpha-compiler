@@ -75,9 +75,9 @@ expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,i
     expr* result = create_expr(boolexpr_e, entry, NULL, 0, NULL, '\0');
     
     emit(op,NULL, arg1, arg2, nextquadlabel() + 3, yylineno);
-    emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'0'),NULL,0,yylineno);
-    emit(jump,NULL,NULL,NULL,nextquadlabel()+2,yylineno);
-    emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
+    // emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'0'),NULL,0,yylineno);
+    // emit(jump,NULL,NULL,NULL,nextquadlabel()+2,yylineno);
+    // emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
     return result;
 
 }
@@ -201,8 +201,12 @@ char* print_expr(expr* e){
         case var_e:
         case arithexpr_e:
         case boolexpr_e:
-        printf("%s", e->sym->value.varVal->name);
-        return e->sym->value.varVal->name;
+        if(e->sym!=NULL){
+            printf("%s", e->sym->value.varVal->name);
+            return e->sym->value.varVal->name;
+        }else{
+            return "";
+        }    
         case constnum_e:
         printf("%.2f", e->numConst);
         sprintf(str,"%.2f",e->numConst);
@@ -224,6 +228,7 @@ char* print_expr(expr* e){
         return "";
     }
 }
+
 
 
 int printOpcode(int value) {
@@ -333,7 +338,6 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
     char *name = newtempname(); 
     SymbolTableEntry *sym = lookup(symtable, lists, name, (scope == 0) ? GLOBALVAR : LOCALVAR, scope, SCOPE);
     SymbolTableEntry *node = NULL;
-
     if (sym == NULL) { 
         node = create_node(name, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
         insert_symbol(symtable, node);
@@ -384,4 +388,30 @@ void patchlist (int list, int label) {
         quads[list].label = label;
         list = next;
     }
+}
+
+expr* manage_bool_expr(expr* boolean,SymTable *symtable, scopeLists *lists, int scope, int yylineno){
+    if(boolean->type ==  boolexpr_e){
+        SymbolTableEntry *tmp = newtemp(symtable,lists,scope,yylineno);
+        expr *e = create_expr(boolexpr_e,tmp,NULL,0.0,"",'a');
+        patchlist(boolean->trueList, nextquadlabel());
+        emit(assign,e,create_expr(constbool_e,NULL,NULL,0.0,"",'1'),NULL,0,yylineno);
+        emit(jump,NULL,NULL,NULL,nextquadlabel()+2,yylineno);
+        patchlist(boolean->falseList, nextquadlabel());
+        emit(assign,e,create_expr(constbool_e,NULL,NULL,0.0,"",'0'),NULL,0,yylineno);
+        return e;
+    }
+    return boolean;
+}
+
+expr* do_bool(expr* e,int yylineno){
+    if(e->type != boolexpr_e){
+        expr* new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
+        new->trueList = newlist(nextquadlabel());
+        new->falseList = newlist(nextquadlabel() + 1);
+        emit(if_eq,new,create_expr(constbool_e,NULL,NULL,0,"",'1'),NULL,0,yylineno);
+        emit(jump,NULL,NULL,NULL,0,yylineno);
+        return new;
+   }
+   return e;
 }
