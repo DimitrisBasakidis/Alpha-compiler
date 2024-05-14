@@ -241,9 +241,11 @@ expr: assignexpr {$$ = $1;}
 
 term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
     | MINUS expr {$$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus);} %prec UMINUS
-    | NOT expr { $2 = do_bool($2,yylineno); $$ = $2;
+    | NOT expr {$2 = do_bool($2,yylineno); 
+                $$ = $2;
+                int tmp = $$->trueList;
                 $$->trueList = $2->falseList;
-                $$->falseList = $2->trueList;}
+                $$->falseList = tmp;}
     | INCREMENT lvalue { 
       manage_increment(symtable, lists, $2->sym->value.varVal->name, print_errors);
       check_arith($2, "++lvalue");

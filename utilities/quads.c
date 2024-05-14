@@ -312,7 +312,7 @@ int printOpcode(int value) {
             printf("JUMP");
             return 4; 
         default:
-            printf("O baggelis sou xakare ton upologisth! Steiltoy to istioploiko sou gia na ston afhsei\n");
+            printf("O baggelis sou xakare ton upologisth!\n");
             return 0;
     }
 }
