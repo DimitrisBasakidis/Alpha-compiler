@@ -276,22 +276,12 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
     switch (entry->type) {
 
         case FORMAL: 
-        //   if (entry->value.varVal->scope != index && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {
-        //     print_errors("calling formal argument outside of scope", token, "grammar");
-        //     exit(TRUE);
-        //   }
-
-        //   if (entry->value.varVal->scope != scope && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {
-            // print_errors("calling formal argument outside of scope", token, "grammar");
-            // exit(TRUE);
-        //   }
 
         if (entry->value.varVal->scope != last_func_scope + 1 && entry->value.varVal->scope != 0) {
             print_errors("calling formal argument outside of scope", token, "grammar");
             exit(TRUE);
         }
-        //   printf("we are her in scope %d anmd prev func scope %d\n", scope, index);
-          break;
+        break;
 
         case LOCALVAR:
           if (entry->value.varVal->scope != scope && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {

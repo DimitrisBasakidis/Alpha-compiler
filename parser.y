@@ -97,7 +97,7 @@ SymbolTableEntry *entry;
 %type <elist_call> callsuffix normcall methodcall
 %type <indexedlist_node> indexedelem indexed
 %type <str_val> idlist
-%type <statement_struct> loopstmt statements stmt ifstmt block whilestmt forstmt returnstmt for_stmt_args
+%type <statement_struct> loopstmt statements stmt ifstmt block whilestmt forstmt returnstmt
 %type <forprefix_struct> forprefix
 
 %%
@@ -131,7 +131,7 @@ statements: statements stmt {
 stmt: expr SEMICOLON {  
                         printf("expr semicolon in line %d\n", yylineno);
                         $$ = make_stmt($$);
-                        if (boolflag !=1) manage_bool_expr($1,symtable,lists,scope,yylineno);
+                        if (boolflag !=1) $1 = manage_bool_expr($1,symtable,lists,scope,yylineno);
                         boolflag = 0;
                     }
       | ifstmt     { $$ = $1; }
@@ -371,9 +371,7 @@ lvalue: ID {
 | tableitem  {$$ = $1;}
 ;
 
-tableitem: lvalue DOT ID {                           
-                          $$ = member_item($1,$3,symtable,lists,scope,yylineno);
-                          }
+tableitem: lvalue DOT ID { $$ = member_item($1,$3,symtable,lists,scope,yylineno); }
           | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
             $1 = emit_iftableitem($1, symtable, lists, scope, yylineno);
             $$ = create_expr(tableitem_e, $1->sym, $3, 0.0f, NULL, '\0');
@@ -462,7 +460,7 @@ indexed: indexedelem {$$ = $1; $$->next = NULL;}
        |{$$ = NULL;}
        ;
 
-indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {$$ = create_indexlist_node($2,$4); manage_bool_expr($4,symtable,lists,scope,yylineno);}
+indexedelem: LEFT_BRACKET expr COLON expr RIGHT_BRACKET {$$ = create_indexlist_node($2,$4); $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);}
            ;
 
 
@@ -541,15 +539,15 @@ idlist_id: ID {
 open_while: WHILE {while_loop++; $$ = nextquadlabel();};
 
 whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { 
-               manage_bool_expr($2,symtable,lists,scope,yylineno);
+              $2 = manage_bool_expr($2,symtable,lists,scope,yylineno);
               emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
               $$ = nextquadlabel();
               printf("while cond next label ::%d\n", nextquadlabel());
               emit(jump,NULL,NULL,NULL,0,yylineno);}
 
 ifprefix :  IF  { if_stmt++; } LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                manage_bool_expr($4,symtable,lists,scope,yylineno);
-                emit (if_eq, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+                $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
+                emit (mul, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
                 $$ = nextquadlabel();
                 emit(jump,NULL,NULL,NULL,0,yylineno);
                 }
@@ -614,7 +612,7 @@ M: {$$ = nextquadlabel();}
 
 forprefix : FOR {for_loop++; in_loop++; } LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
               $$ = malloc(sizeof(struct forstruct_t));
-              manage_bool_expr($7,symtable,lists,scope,yylineno);
+              $7 = manage_bool_expr($7,symtable,lists,scope,yylineno);
               $$->test = $6;
               $$->enter = nextquadlabel();
               emit(if_eq,$7,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
@@ -640,7 +638,7 @@ returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON {emit(ret,NULL,
                                       emit(jump,NULL,NULL,NULL,0,yylineno);
                                     }
 | RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,$3,NULL,NULL,0,0); is_return_kw = 1; 
-                                   manage_bool_expr($3,symtable,lists,scope,yylineno);
+                                  $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
                                   $$ = make_stmt($$);
                                   emit(jump,NULL,NULL,NULL,0,yylineno);
                                 }

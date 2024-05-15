@@ -409,7 +409,7 @@ expr* do_bool(expr* e,int yylineno){
         expr* new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
         new->trueList = newlist(nextquadlabel());
         new->falseList = newlist(nextquadlabel() + 1);
-        emit(if_eq,new,create_expr(constbool_e,NULL,NULL,0,"",'1'),NULL,0,yylineno);
+        emit(if_eq,new,create_expr(constbool_e, NULL, NULL, 0,"",'1'),NULL,0,yylineno);
         emit(jump,NULL,NULL,NULL,0,yylineno);
         return new;
    }
