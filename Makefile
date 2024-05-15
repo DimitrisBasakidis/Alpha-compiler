@@ -1,5 +1,5 @@
 all: scanner
-	 ./alphac ../test.txt
+	 ./alphac ../test.txt 
 
 gdb: scanner
 	sudo gdb ./alphac  ../test.txt
@@ -15,7 +15,7 @@ scanner: flex yacc
 	# gdb ./alphac ../test.txt
 
 yacc:
-	bison --yacc --defines --output=parser.c parser.y -v
+	bison --yacc --defines --output=parser.c parser.y -v -Wconflicts-rr
 
 clean:
 	rm -f scanner.c *.o alphac

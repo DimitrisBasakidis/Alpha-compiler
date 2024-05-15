@@ -58,6 +58,8 @@ typedef struct expr{
     double numConst;
     char* strConst;
     unsigned char boolConst;
+    int trueList;
+    int falseList;
     struct expr* next;
 } expr;
 
@@ -103,6 +105,9 @@ expr *lvalue_expr(SymbolTableEntry *sym);
 expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
 expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op);
 void check_expr(expr* a , expr* b,void (*print_errors)(const char *, char *, const char *));
+expr* manage_bool_expr(expr* boolean,SymTable *symtable, scopeLists *lists, int scope, int yylineno);
+expr* do_bool(expr* e,int yylineno);
+
 
 #endif
 

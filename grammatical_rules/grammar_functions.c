@@ -2,8 +2,9 @@
 
 
 int manage_break(void (*print_errors)(const char *, char *, const char *)) {
+    // printf("in loop %d\n", in_loop);
     if (in_loop == 0){
-        print_errors("use of keyword outside of function", "break", "grammar");
+        print_errors("use of keyword outside of loop", "break", "grammar");
         exit(TRUE);
     }
 
@@ -11,7 +12,7 @@ int manage_break(void (*print_errors)(const char *, char *, const char *)) {
 
 int manage_continue(void (*print_errors)(const char *, char *, const char *)) {
     if (in_loop == 0){
-        print_errors("use of keyword outside of function", "continue", "grammar");
+        print_errors("use of keyword outside of loop", "continue", "grammar");
         exit(TRUE);
     }
 }
