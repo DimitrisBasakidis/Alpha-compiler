@@ -162,7 +162,6 @@ SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *t
         printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
         node->space = FUNC_SPACE;  // dialeksh 9 slide 49 sto site tou pratikakh
         node->offset = FUNC_SPACE; 
-        // node-
         incurrscopeoffset();
         printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
 
@@ -235,17 +234,33 @@ int manage_return(void (*print_errors)(const char *, char *, const char *)) {
     }
 }
 
-SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, int line, int scope, void (*print_errors)(const char *, char *, const char *)) {
+SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, int line, int scope, int last_func_scope, void (*print_errors)(const char *, char *, const char *)) {
     SymbolTableEntry *entry = NULL;
     int index = 0;
-
+    int delimiter = (last_func_scope == -1) ? 0 : last_func_scope + 1;
+     
     assert(scope >= 0);
+
+   // printf("IN MANAGE ID THE LAST FUNC SCOPE IS %d AND THE SCOPE IS %d\n", last_func_scope + 1, scope);
+
+    // printf("searching from scope to delimiter %d to %d\n", scope, delimiter);
+    // for (index = scope; index >= delimiter; index--) {
+    //     entry = lookup(symtable, lists, token, (index == 0) ? GLOBALVAR : LOCALVAR, index, SCOPE);
+
+    //     if (entry != NULL) break;
+    // }
+
+    // if (delimiter != 0 && entry == NULL) {
+    //     entry = lookup(symtable, lists, token, GLOBALVAR, index, SCOPE);
+    // }
 
     for (index = scope; index >= 0; index--) {
         entry = lookup(symtable, lists, token, (index == 0) ? GLOBALVAR : LOCALVAR, index, SCOPE);
 
         if (entry != NULL) break;
     }
+
+    printf("searching from scope to delimiter %d to %d and the entrt ptr is %d\n", scope, delimiter, (entry == NULL) ? 0 : entry->type);
 
     if (entry == NULL) {
         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);
@@ -261,15 +276,21 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
     switch (entry->type) {
 
         case FORMAL: 
-          if (entry->value.varVal->scope != index) {
-            print_errors("calling formal argument outside of scope", token, "grammar");
-            exit(TRUE);
-          }
+        //   if (entry->value.varVal->scope != index && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {
+        //     print_errors("calling formal argument outside of scope", token, "grammar");
+        //     exit(TRUE);
+        //   }
 
-          if (entry->value.varVal->scope != scope) {
+        //   if (entry->value.varVal->scope != scope && func_in_between != 0  && !for_loop && !if_stmt && !while_loop) {
+            // print_errors("calling formal argument outside of scope", token, "grammar");
+            // exit(TRUE);
+        //   }
+
+        if (entry->value.varVal->scope != last_func_scope + 1 && entry->value.varVal->scope != 0) {
             print_errors("calling formal argument outside of scope", token, "grammar");
             exit(TRUE);
-          }
+        }
+        //   printf("we are her in scope %d anmd prev func scope %d\n", scope, index);
           break;
 
         case LOCALVAR:

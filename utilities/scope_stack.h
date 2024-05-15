@@ -16,10 +16,10 @@ typedef struct scope_stack {
 } scope_stack;
 
 
-
 scope_stack *create_scope_stack(void);
 void push(scope_stack *top, unsigned int a);
 scopestack_t *pop(scope_stack *top);
+scopestack_t *peek(scope_stack *stack);
 
 typedef struct indexed_list_t{
     struct expr* index; 

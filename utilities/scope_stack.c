@@ -39,14 +39,8 @@ indexed_list_t* create_indexlist_node(expr* index,expr* value){
     return new;
 }
 
+scopestack_t *peek(scope_stack *stack) {
+    if (stack == NULL) return NULL;
 
-
-
-// int main(){
-//     index_list* list = create_list();
-//     insert(list,create_node("i1","v1"));
-//     insert(list,create_node("i2","v2"));
-//     insert(list,create_node("i3","v3"));
-//     insert(list,create_node("i4","v4"));
-//     print_indexedlist(list);
-// }
+    return stack->s;    
+}

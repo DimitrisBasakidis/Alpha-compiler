@@ -52,6 +52,7 @@ SymTable *symtable;
 scopeLists *lists;
 scope_stack *stack;
 scope_stack *loop_stack;
+scope_stack *func_scopes;
 
 size_t nfuncs = 0U;
 SymbolTableEntry *entry;
@@ -342,7 +343,12 @@ primary: lvalue {
 
 
 lvalue: ID {
-            entry = manage_id(symtable, lists, $1, yylineno, scope, print_errors);
+            if (peek(func_scopes) == NULL) {
+              printf("we are not in a func in scope: %d\n", scope);
+            } else {
+              printf("we are  in a func in scope: %d and the prev func scope is %d\n", scope, peek(func_scopes)->x);
+            }
+            entry = manage_id(symtable, lists, $1, yylineno, scope, (peek(func_scopes) != NULL) ? peek(func_scopes)->x : -1, print_errors);
             $$ = lvalue_expr(entry);
            } 
 
@@ -494,27 +500,23 @@ funcargs: idlist {
                 | {enterscopespace();
                 resetfunctionlocaloffset();};
 
-funcbody: block {
-    $$ = currscopeoffset();
-    exitscopespace();
-    };
+funcbody: block { $$ = currscopeoffset(); exitscopespace(); };
 
-funcblockstart: { push(loop_stack, in_loop); in_loop = 0;}
+funcblockstart: { push(func_scopes, scope); push(loop_stack, in_loop); in_loop = 0;}
 
-funcblockend: { scopestack_t *temp = pop(loop_stack); in_loop = temp->x; }
+funcblockend: { scopestack_t *temp = pop(loop_stack); pop(func_scopes); in_loop = temp->x; }
 
-funcdef: funcprefix LEFT_PARENTHESIS funcargs RIGHT_PARENTHESIS {func_in_between++; } funcblockstart funcbody funcblockend {
-      exitscopespace();
-      $$->total_locals = $7;
-      scopestack_t *temp = pop(stack);
-      int offset = temp->x;
-      restorecurrentscopeoffset(offset);
-      $$ = $1;
-      emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
-      
-      func_in_between--;
-      }
-      ;
+funcdef: funcprefix LEFT_PARENTHESIS funcargs RIGHT_PARENTHESIS { func_in_between++; } funcblockstart funcbody funcblockend {
+  exitscopespace();
+  $$->total_locals = $7;
+  scopestack_t *temp = pop(stack);
+  int offset = temp->x;
+  restorecurrentscopeoffset(offset);
+  $$ = $1;
+  emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
+  
+  func_in_between--;
+};
 
 const: INTEGER {$$ = create_expr(constnum_e, NULL, NULL, $1, "vaggelis", '\0');} 
      | REAL { $$ = create_expr(constnum_e, NULL, NULL, $1, "", '\0');} 
@@ -628,9 +630,9 @@ forstmt: forprefix N elist N_right_par loopstmt { in_loop--; for_loop--;} N {
   patchlabel($4,$1->test);
   patchlabel($7,$2 +1);
   
-  patchlist($5->breakList,nextquadlabel());
-  printf("$5 = %d\n", $5->contList);
-  patchlist($5->contList,$2+1);
+  if ($5) patchlist($5->breakList,nextquadlabel());
+  // printf("$5 = %d\n", $5->contList);
+  if ($5) patchlist($5->contList,$2+1);
 };
 
 returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON {emit(ret,NULL,NULL,NULL,0,0);
@@ -700,6 +702,8 @@ int main(int argc, char **argv) {
   stack = create_scope_stack();
 
   loop_stack = create_scope_stack();
+
+  func_scopes = create_scope_stack();
 
   add_lib_func(symtable, lists);
   yyparse();
