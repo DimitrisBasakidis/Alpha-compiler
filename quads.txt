@@ -1,0 +1,160 @@
+-----------     Scope #0     -----------
+"print" [library function] (line 0) (scope 0)
+"input" [library function] (line 0) (scope 0)
+"objectmemberkeys" [library function] (line 0) (scope 0)
+"objectotalmembers" [library function] (line 0) (scope 0)
+"objectcopy" [library function] (line 0) (scope 0)
+"totalarguments" [library function] (line 0) (scope 0)
+"argument" [library function] (line 0) (scope 0)
+"typeof" [library function] (line 0) (scope 0)
+"strtonum" [library function] (line 0) (scope 0)
+"sqrt" [library function] (line 0) (scope 0)
+"cos" [library function] (line 0) (scope 0)
+"sin" [library function] (line 0) (scope 0)
+"a" [global variable] (line 1) (scope 0)
+"b" [global variable] (line 1) (scope 0)
+"c" [global variable] (line 1) (scope 0)
+"d" [global variable] (line 1) (scope 0)
+"e" [global variable] (line 1) (scope 0)
+"f" [global variable] (line 1) (scope 0)
+"_t0" [global variable] (line 1) (scope 0)
+"_t1" [global variable] (line 1) (scope 0)
+"_t2" [global variable] (line 1) (scope 0)
+"_t3" [global variable] (line 1) (scope 0)
+"_t4" [global variable] (line 1) (scope 0)
+"_t5" [global variable] (line 1) (scope 0)
+"x" [global variable] (line 3) (scope 0)
+"y" [global variable] (line 5) (scope 0)
+"_func_0" [user function] (line 8) (scope 0)
+"_func_1" [user function] (line 8) (scope 0)
+
+-----------     Scope #1     -----------
+"i" [local variable] (line 11) (scope 1)
+"_t2" [local variable] (line 11) (scope 1)
+"_t3" [local variable] (line 11) (scope 1)
+"_t4" [local variable] (line 11) (scope 1)
+"_t0" [local variable] (line 16) (scope 1)
+"_t1" [local variable] (line 20) (scope 1)
+"_t2" [local variable] (line 20) (scope 1)
+
+-----------     Scope #2     -----------
+"_t5" [local variable] (line 12) (scope 2)
+"_t0" [local variable] (line 14) (scope 2)
+
+
+
+quad#              opcode              result              arg1                arg2               label              offset              space
+------------------------------------------------------------------------------------------------------------------------------------------------------
+1:                 ASSIGN              f                   1.00                                    0                   
+2:                 ASSIGN              _t0                 f                                       0                   
+3:                 ASSIGN              e                   1.00                                    0                   
+4:                 ASSIGN              _t1                 e                                       0                   
+5:                 ASSIGN              d                   1.00                                    0                   
+6:                 ASSIGN              _t2                 d                                       0                   
+7:                 ASSIGN              c                   1.00                                    0                   
+8:                 ASSIGN              _t3                 c                                       0                   
+9:                 ASSIGN              b                   1.00                                    0                   
+10:                ASSIGN              _t4                 b                                       0                   
+11:                ASSIGN              a                   1.00                                    0                   
+12:                ASSIGN              _t5                 a                                       0                   
+13:                IF_LESS                                 a                   b                   19                  
+14:                JUMP                                                                            15                  
+15:                IF_GREATER                              c                   d                   17                  
+16:                JUMP                                                                            21                  
+17:                IF_LESS                                 e                   f                   19                  
+18:                JUMP                                                                            21                  
+19:                ASSIGN              _t0                 true                                    0                   
+20:                JUMP                                                                            22                  
+21:                ASSIGN              _t0                 false                                   0                   
+22:                ASSIGN              x                   _t0                                     0                   
+23:                ASSIGN              _t1                 x                                       0                   
+24:                IF_EQ               x                   true                                    28                  
+25:                JUMP                                                                            26                  
+26:                IF_EQ               x                   true                                    30                  
+27:                JUMP                                                                            28                  
+28:                IF_EQ               a                   true                                    30                  
+29:                JUMP                                                                            32                  
+30:                ASSIGN              _t0                 true                                    0                   
+31:                JUMP                                                                            33                  
+32:                ASSIGN              _t0                 false                                   0                   
+33:                ASSIGN              y                   _t0                                     0                   
+34:                ASSIGN              _t1                 y                                       0                   
+35:                IF_EQ               x                   true                                    37                  
+36:                JUMP                                                                            47                  
+37:                JUMP                                                                            0                   
+38:                FUNCSTART           _func_0                                                     0                   
+39:                RET                 false                                                       0                   
+40:                JUMP                                                                            0                   
+41:                FUNCEND             _func_0                                                     0                   
+42:                PARAM               2.00                                                        0                   
+43:                CALL                _func_0                                                     0                   
+44:                GETRETVAL           _t0                                                         0                   
+45:                IF_EQ               _t0                 true                                    54                  
+46:                JUMP                                                                            47                  
+47:                JUMP                                                                            0                   
+48:                FUNCSTART           _func_1                                                     0                   
+49:                RET                 true                                                        0                   
+50:                JUMP                                                                            0                   
+51:                FUNCEND             _func_1                                                     0                   
+52:                IF_EQ               _func_1             true                                    54                  
+53:                JUMP                                                                            56                  
+54:                ASSIGN              _t0                 true                                    0                   
+55:                JUMP                                                                            57                  
+56:                ASSIGN              _t0                 false                                   0                   
+57:                ASSIGN              x                   _t0                                     0                   
+58:                ASSIGN              _t1                 x                                       0                   
+59:                IF_EQ               a                   true                                    67                  
+60:                JUMP                                                                            61                  
+61:                IF_EQ               b                   true                                    67                  
+62:                JUMP                                                                            63                  
+63:                ASSIGN              y                   x                                       0                   
+64:                ASSIGN              _t0                 y                                       0                   
+65:                IF_EQ               x                   true                                    67                  
+66:                JUMP                                                                            69                  
+67:                ASSIGN              _t1                 true                                    0                   
+68:                JUMP                                                                            70                  
+69:                ASSIGN              _t1                 false                                   0                   
+70:                IF_EQ               _t1                 true                                    72                  
+71:                JUMP                                                                            97                  
+72:                ASSIGN              i                   0.00                                    0                   
+73:                ASSIGN              _t2                 i                                       0                   
+74:                IF_LESS                                 i                   5.00                76                  
+75:                JUMP                                                                            80                  
+76:                IF_EQ               a                   true                                    78                  
+77:                JUMP                                                                            80                  
+78:                ASSIGN              _t3                 true                                    0                   
+79:                JUMP                                                                            81                  
+80:                ASSIGN              _t3                 false                                   0                   
+81:                IF_EQ               _t3                 true                                    86                  
+82:                JUMP                                                                            93                  
+83:                ADD                 i                   1.00                i                   0                   
+84:                ASSIGN              i                                       _t4                 0                   
+85:                JUMP                                                                            74                  
+86:                PARAM               i                                                           0                   
+87:                CALL                print                                                       0                   
+88:                GETRETVAL           _t5                                                         0                   
+89:                JUMP                                                                            83                  
+90:                ADD                 i                   1.00                i                   0                   
+91:                ASSIGN              i                                       _t0                 0                   
+92:                JUMP                                                                            83                  
+93:                PARAM               y                                                           0                   
+94:                CALL                print                                                       0                   
+95:                GETRETVAL           _t0                                                         0                   
+96:                JUMP                                                                            114                 
+97:                IF_EQ               y                   true                                    101                 
+98:                JUMP                                                                            99                  
+99:                ASSIGN              _t0                 true                                    0                   
+100:               JUMP                                                                            102                 
+101:               ASSIGN              _t0                 false                                   0                   
+102:               IF_EQ               _t0                 true                                    104                 
+103:               JUMP                                                                            114                 
+104:               IF_EQ               y                   true                                    108                 
+105:               JUMP                                                                            106                 
+106:               ASSIGN              _t1                 true                                    0                   
+107:               JUMP                                                                            109                 
+108:               ASSIGN              _t1                 false                                   0                   
+109:               PARAM               _t1                                                         0                   
+110:               CALL                print                                                       0                   
+111:               GETRETVAL           _t2                                                         0                   
+112:               JUMP                                                                            114                 
+113:               JUMP                                                                            97                  

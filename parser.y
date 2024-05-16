@@ -530,7 +530,7 @@ whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 ifprefix :  IF  { if_stmt++; } LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
         $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
-        emit (mul, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+        emit (if_eq, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
         $$ = nextquadlabel();
         emit(jump,NULL,NULL,NULL,0,yylineno);
       };

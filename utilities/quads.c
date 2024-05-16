@@ -260,7 +260,7 @@ int print_opcode(int value, FILE *ptr) {
             return 8;
         case if_lesseq:
             fprintf(ptr, "if_lesseq");
-            return 8;
+            return 9;
         case if_greatereq:
             fprintf(ptr, "IF_GREATEREQ");
             return 12;

@@ -2316,7 +2316,7 @@ yyreduce:
 #line 531 "parser.y"
                                                                        {
         (yyvsp[-1].ex) = manage_bool_expr((yyvsp[-1].ex),symtable,lists,scope,yylineno);
-        emit (mul, (yyvsp[-1].ex), create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+        emit (if_eq, (yyvsp[-1].ex), create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
         (yyval.int_val) = nextquadlabel();
         emit(jump,NULL,NULL,NULL,0,yylineno);
       }

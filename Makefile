@@ -1,5 +1,5 @@
 all: scanner
-	 ./alphac ../test.txt 
+	 ./alphac ../test.txt quads.txt
 
 gdb: scanner
 	sudo gdb ./alphac  ../test.txt
