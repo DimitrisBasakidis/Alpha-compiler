@@ -2750,6 +2750,8 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
 
 int main(int argc, char **argv) {
 
+  FILE* fptr = NULL;
+
   if (argc > 1) {
     if (!(yyin = fopen(argv[1], "r"))) {
       perror("Cant open file"); 
@@ -2757,31 +2759,34 @@ int main(int argc, char **argv) {
     }
   }
 
-  
+  if (argc == 3) {
+    fptr = fopen(argv[2], "wb+");
+    if (fptr == NULL) {
+      perror("error opening file");
+      exit(-1);
+    }
+  }
 
   file_name = strrchr(argv[1], '/');
+
   lists = create_scope_lists();
-  emit(jump,NULL,NULL,NULL,1,0);
   symtable = create_table();
-
   stack = create_scope_stack();
-
   loop_stack = create_scope_stack();
-
   func_scopes = create_scope_stack();
+
+  emit(jump,NULL,NULL,NULL,1,0);
 
   add_lib_func(symtable, lists);
   yyparse();
   
-  print_scopes(lists);
+  print_scopes(lists, (fptr == NULL) ? stdout : fptr);
 
- 
-  printf("\n\n\n");
+  fprintf((fptr == NULL) ? stdout : fptr, "\n\n\n");
 
-  print_quads();
+  print_quads((fptr == NULL) ? stdout : fptr);
 
   free_table(symtable);
 
   return 0;
 }
-

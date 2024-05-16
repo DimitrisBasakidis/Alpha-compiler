@@ -108,53 +108,52 @@ program: statements {}
        ;
 
 statements: statements stmt {
-                resettemp();
-                $$ = malloc(sizeof(struct stmt_t));
-                int brk_statemenets = 0, brk_stmt = 0;
-                int cont_statements = 0, cont_stmt = 0;
+        resettemp();
+        $$ = malloc(sizeof(struct stmt_t));
+        int brk_statemenets = 0, brk_stmt = 0;
+        int cont_statements = 0, cont_stmt = 0;
 
-                if ($1) {
-                  brk_statemenets = $1->breakList;
-                  cont_statements = $1->contList;
-                }
+        if ($1) {
+          brk_statemenets = $1->breakList;
+          cont_statements = $1->contList;
+        }
 
-                if ($2) {
-                  brk_stmt = $2->breakList;
-                  cont_stmt = $2->contList;
-                }
+        if ($2) {
+          brk_stmt = $2->breakList;
+          cont_stmt = $2->contList;
+        }
 
-                $$->breakList = mergelist(brk_statemenets, brk_stmt);
-                $$->contList = mergelist(cont_statements , cont_stmt);
-          }
-      | stmt { resettemp();   $$ = $1; };
+        $$->breakList = mergelist(brk_statemenets, brk_stmt);
+        $$->contList = mergelist(cont_statements , cont_stmt);
+  }
+| stmt { resettemp();   $$ = $1; };
 
 stmt: expr SEMICOLON {  
-                        printf("expr semicolon in line %d\n", yylineno);
-                        $$ = make_stmt($$);
-                        if (boolflag !=1) $1 = manage_bool_expr($1,symtable,lists,scope,yylineno);
-                        boolflag = 0;
-                    }
-      | ifstmt     { $$ = $1; }
-      | whilestmt  { $$ = NULL; }
-      | forstmt    { $$ = NULL; }
-      | returnstmt { $$ = $1; }
-      | BRK SEMICOLON 
-                   { 
-                    manage_break(print_errors);
-                    $$ = make_stmt($$);
-                    $$->breakList = newlist(nextquadlabel()); 
-                    emit(jump,NULL,NULL,NULL,0,yylineno);   
-                   }      
-      | CONTINUE SEMICOLON 
-                   {
-                    manage_continue(print_errors);
-                    $$ = make_stmt($$);
-                    $$->contList = newlist(nextquadlabel()); 
-                    emit(jump,NULL,NULL,NULL,0,yylineno);
-                   }
-      | block      { $$ = $1;}
-      | funcdef    { $$ = NULL; }
-      | SEMICOLON  { $$ = NULL; }
+          $$ = make_stmt($$);
+          if (boolflag !=1) $1 = manage_bool_expr($1,symtable,lists,scope,yylineno);
+          boolflag = 0;
+        }
+| ifstmt     { $$ = $1; }
+| whilestmt  { $$ = NULL; }
+| forstmt    { $$ = NULL; }
+| returnstmt { $$ = $1; }
+| BRK SEMICOLON 
+            { 
+            manage_break(print_errors);
+            $$ = make_stmt($$);
+            $$->breakList = newlist(nextquadlabel()); 
+            emit(jump,NULL,NULL,NULL,0,yylineno);   
+            }      
+| CONTINUE SEMICOLON 
+            {
+              manage_continue(print_errors);
+              $$ = make_stmt($$);
+              $$->contList = newlist(nextquadlabel()); 
+              emit(jump,NULL,NULL,NULL,0,yylineno);
+            }
+| block      { $$ = $1;}
+| funcdef    { $$ = NULL; }
+| SEMICOLON  { $$ = NULL; }
       ;
 
 expr: assignexpr {$$ = $1;}
@@ -241,89 +240,90 @@ expr: assignexpr {$$ = $1;}
 
 
 term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
-    | MINUS expr {$$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus);} %prec UMINUS
-    | NOT expr {$2 = do_bool($2,yylineno); 
-                $$ = $2;
-                int tmp = $$->trueList;
-                $$->trueList = $2->falseList;
-                $$->falseList = tmp;}
-    | INCREMENT lvalue { 
-      manage_increment(symtable, lists, $2->sym->value.varVal->name, print_errors);
-      check_arith($2, "++lvalue");
-      if ($2->type == tableitem_e) {
-        $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
-        emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
-        emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
-      } else {
-        emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
-        $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-        emit(assign, $2, NULL, $$, 0, yylineno);
-      }
-    }
-    | lvalue INCREMENT {
-      
-      manage_increment(symtable, lists, $1->sym->value.varVal->name, print_errors);
-      check_arith($1, "lvalue++");
-      $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
-      if ($1->type == tableitem_e) {
-        expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-        emit(assign, val, NULL, $$, 0, yylineno);
-        emit(add, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem, $1, $1->index, val, 0, yylineno);
-      } else {
-        emit(assign, $1, NULL, $$, 0, yylineno);
-        emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
-      }
-      
-    }
-    | DECREMENT lvalue {
-      manage_decrement(symtable, lists, $2->sym->value.varVal->name, print_errors);
-      check_arith($2, "--lvalue");
-      if ($2->type == tableitem_e) {
-        $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
-        emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
-        emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
-      } else {
-        emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
-        $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-        emit(assign, $2, NULL, $$, 0, yylineno);
-      }
-    }
-    | lvalue DECREMENT {
+| MINUS expr { $$ = create_and_emit_arith_expr(symtable,lists,scope,yylineno,$2,NULL,uminus); } %prec UMINUS
+| NOT expr { $2 = do_bool($2,yylineno); 
+            $$ = $2;
+            int tmp = $$->trueList;
+            $$->trueList = $2->falseList;
+            $$->falseList = tmp;
+          }
+| INCREMENT lvalue { 
+  manage_increment(symtable, lists, $2->sym->value.varVal->name, print_errors);
+  check_arith($2, "++lvalue");
+  if ($2->type == tableitem_e) {
+    $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
+    emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+    emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+  } else {
+    emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
+    $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
+    emit(assign, $2, NULL, $$, 0, yylineno);
+  }
+}
+| lvalue INCREMENT {
+  
+  manage_increment(symtable, lists, $1->sym->value.varVal->name, print_errors);
+  check_arith($1, "lvalue++");
+  $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
+  if ($1->type == tableitem_e) {
+    expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
+    emit(assign, val, NULL, $$, 0, yylineno);
+    emit(add, val, newexpr_constnum(1), val, 0, yylineno);
+    emit(tablesetelem, $1, $1->index, val, 0, yylineno);
+  } else {
+    emit(assign, $1, NULL, $$, 0, yylineno);
+    emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
+  }
+  
+}
+| DECREMENT lvalue {
+  manage_decrement(symtable, lists, $2->sym->value.varVal->name, print_errors);
+  check_arith($2, "--lvalue");
+  if ($2->type == tableitem_e) {
+    $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
+    emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+    emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+  } else {
+    emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
+    $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
+    emit(assign, $2, NULL, $$, 0, yylineno);
+  }
+}
+| lvalue DECREMENT {
 
-      manage_decrement(symtable, lists, $1->sym->value.varVal->name, print_errors);
-      check_arith($1, "lvalue--");
-      $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
-      if ($1->type == tableitem_e) {
-        expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-        emit(assign, val, NULL, $$, 0, yylineno);
-        emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
-        emit(tablesetelem, $1, $1->index, val, 0, yylineno);
-      } else {
-        emit(assign, $1, NULL, $$, 0, yylineno);
-        emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
-      }
-    }
-    | primary { $$ = $1;}
-    ; 
+  manage_decrement(symtable, lists, $1->sym->value.varVal->name, print_errors);
+  check_arith($1, "lvalue--");
+  $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
+  if ($1->type == tableitem_e) {
+    expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
+    emit(assign, val, NULL, $$, 0, yylineno);
+    emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+    emit(tablesetelem, $1, $1->index, val, 0, yylineno);
+  } else {
+    emit(assign, $1, NULL, $$, 0, yylineno);
+    emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+  }
+}
+| primary { $$ = $1;}
+; 
 
 
 assignexpr: lvalue ASSIGN expr {
-    $$ = $3;
-    if($1->type == tableitem_e){
-        emit(tablesetelem,$1,$1->index,$3,0,yylineno);
-        $$ = emit_iftableitem($1,symtable,lists,scope,yylineno);
-        $$->type = assignexpr_e;
-    }else{
-      expr* new = manage_bool_expr($3,symtable,lists,scope,yylineno);
-      emit(assign, $1, new, NULL, 0, yylineno);
-      expr* tmp = NULL ;
-      tmp = lvalue_expr(newtemp(symtable, lists, scope, yylineno));
-      emit(assign, tmp,$1, NULL, 0, yylineno);
-      boolflag = 1;
-    }
-    is_local_kw = 0;
-    if (from_func_call > 0) from_func_call--;
+  $$ = $3;
+  if($1->type == tableitem_e){
+      emit(tablesetelem,$1,$1->index,$3,0,yylineno);
+      $$ = emit_iftableitem($1,symtable,lists,scope,yylineno);
+      $$->type = assignexpr_e;
+  }else{
+    expr* new = manage_bool_expr($3,symtable,lists,scope,yylineno);
+    emit(assign, $1, new, NULL, 0, yylineno);
+    expr* tmp = NULL ;
+    tmp = lvalue_expr(newtemp(symtable, lists, scope, yylineno));
+    emit(assign, tmp,$1, NULL, 0, yylineno);
+    boolflag = 1;
+  }
+  is_local_kw = 0;
+  if (from_func_call > 0) from_func_call--;
 } 
 ;
 
@@ -343,39 +343,30 @@ primary: lvalue {
 
 
 lvalue: ID {
-            if (peek(func_scopes) == NULL) {
-              printf("we are not in a func in scope: %d\n", scope);
-            } else {
-              printf("we are  in a func in scope: %d and the prev func scope is %d\n", scope, peek(func_scopes)->x);
-            }
-            entry = manage_id(symtable, lists, $1, yylineno, scope, (peek(func_scopes) != NULL) ? peek(func_scopes)->x : -1, print_errors);
-            $$ = lvalue_expr(entry);
-           } 
+  entry = manage_id(symtable, lists, $1, yylineno, scope, (peek(func_scopes) != NULL) ? peek(func_scopes)->x : -1, print_errors);
+  $$ = lvalue_expr(entry);
+} 
 
 | LOCAL ID { // kanoume lookup sto trexon scope kai ama einai libfunction tote exoyme shadowing kai meta ama einai null tote to vazoume sto table 
-
   is_local_kw = 1;
 
   entry = manage_local_id(symtable, lists, $2, print_errors, yylineno);
-
   $$ = lvalue_expr(entry);
 }
 
 | DOUBLE_COLON ID { 
-  
   entry = manage_double_colon_id(symtable, lists, $2, print_errors);
   $$ = lvalue_expr(entry);
-
 }
 | member {$$=$1;}
 | tableitem  {$$ = $1;}
 ;
 
 tableitem: lvalue DOT ID { $$ = member_item($1,$3,symtable,lists,scope,yylineno); }
-          | lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
-            $1 = emit_iftableitem($1, symtable, lists, scope, yylineno);
-            $$ = create_expr(tableitem_e, $1->sym, $3, 0.0f, NULL, '\0');
-            };
+| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET{
+  $1 = emit_iftableitem($1, symtable, lists, scope, yylineno);
+  $$ = create_expr(tableitem_e, $1->sym, $3, 0.0f, NULL, '\0');
+};
 
 member: call DOT ID {from_func_call++;}
       | call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {;}
@@ -400,22 +391,19 @@ call: call LEFT_PARENTHESIS {from_elist = 1; } elist RIGHT_PARENTHESIS {
     $$ = make_call($1, reverse_elist($2->elist) ,yylineno, symtable, lists, scope);
   }
 | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
-  // lookup_func_id(symtable, lists, $1->name, print_errors);
   expr* func = create_expr(programfunc_e, $2, NULL, 0.0f, NULL, '\0'); 
   $$ = make_call(func, reverse_elist($5), yylineno, symtable, lists, scope);
 };
 
 callsuffix: normcall {$$ = $1;}
-          | methodcall {$$ = $1;}
-          ;
+          | methodcall {$$ = $1;};
 
 normcall: LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
   $$ = malloc(sizeof(struct call_t));
   $$->elist = $2;
   $$->method = 0;
   $$->name = NULL;
-} 
-        ;
+};
 
 methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
   $$ = malloc(sizeof(struct call_t));
@@ -424,13 +412,11 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
   $$->name = strdup($2);
 };
 
+elist: expr { $$->next = NULL; $$ = manage_bool_expr($1,symtable,lists,scope,yylineno); }
+| expr COMMA elist { $1->next = $3; $$=$1; }
+| { $$ = NULL;};
 
-elist: expr { printf("expr\n"); $$->next = NULL; $$ = manage_bool_expr($1,symtable,lists,scope,yylineno); }
-        | expr COMMA elist { printf("expr comma elist\n"); $1->next = $3; $$=$1; }
-        | { printf("hi");$$ = NULL;};
-
-objectdef: tablemake {;}
-         ;
+objectdef: tablemake {;};
 
 tablemake: LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET {
   expr* t = create_expr(newtable_e, newtemp(symtable, lists, scope, yylineno), NULL, 0.0f, NULL, '\0');
@@ -483,7 +469,7 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
   
   $$ = manage_function(symtable, lists, $2, print_errors, yylineno);
   /* gia tin epomenh fash */ 
-  emit(jump, NULL, NULL, NULL, 0, yylineno);
+  emit(jump, NULL, NULL, NULL, 0, yylineno); // GOTO
   //$$->iaddress = nextquadlabel();// deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
   emit(funcstart, lvalue_expr($$), NULL, NULL, 0, 0);
   push(stack, currscopeoffset());
@@ -491,16 +477,12 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
   resetformalargsoffset();
 };
 
-funcargs: idlist {
-                enterscopespace();
-                resetfunctionlocaloffset();
-                }
-                | {enterscopespace();
-                resetfunctionlocaloffset();};
+funcargs: idlist  { enterscopespace(); resetfunctionlocaloffset(); }
+                | { enterscopespace(); resetfunctionlocaloffset(); };
 
 funcbody: block { $$ = currscopeoffset(); exitscopespace(); };
 
-funcblockstart: { push(func_scopes, scope); push(loop_stack, in_loop); in_loop = 0;}
+funcblockstart: { push(func_scopes, scope); push(loop_stack, in_loop); in_loop = 0; }
 
 funcblockend: { scopestack_t *temp = pop(loop_stack); pop(func_scopes); in_loop = temp->x; }
 
@@ -538,41 +520,34 @@ idlist_id: ID {
 
 open_while: WHILE {while_loop++; $$ = nextquadlabel();};
 
-whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { 
-              $2 = manage_bool_expr($2,symtable,lists,scope,yylineno);
-              emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
-              $$ = nextquadlabel();
-              printf("while cond next label ::%d\n", nextquadlabel());
-              emit(jump,NULL,NULL,NULL,0,yylineno);}
+whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+    { 
+      $2 = manage_bool_expr($2,symtable,lists,scope,yylineno);
+      emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
+      $$ = nextquadlabel();
+      emit(jump,NULL,NULL,NULL,0,yylineno);
+    };
 
 ifprefix :  IF  { if_stmt++; } LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
-                emit (mul, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
-                $$ = nextquadlabel();
-                emit(jump,NULL,NULL,NULL,0,yylineno);
-                }
-          ;
+        $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
+        emit (mul, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+        $$ = nextquadlabel();
+        emit(jump,NULL,NULL,NULL,0,yylineno);
+      };
 
-elseprefix : ELSE { $$ = nextquadlabel();
-                    emit(jump,NULL,NULL,NULL,0,yylineno);}
+elseprefix : ELSE { $$ = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno);}
 
 idlist: idlist_id {;}
       | idlist_id COMMA idlist {;}
       ;
 
-ifstmt: ifprefix stmt { 
-                      if_stmt--;
-                       patchlabel($1,nextquadlabel());
-                       $$=$2;
-                        printf("if\n");
-                      } %prec LOWER_THAN_ELSE 
+ifstmt: ifprefix stmt { if_stmt--; patchlabel($1,nextquadlabel()); $$=$2; } %prec LOWER_THAN_ELSE 
       | ifprefix stmt elseprefix stmt 
       { 
         if_stmt--;
         $$ = make_stmt($$);
         patchlabel($1,$3+1);
         patchlabel($3,nextquadlabel());
-        printf("$2->breakList = %p, $4->breakList = %p\n", $2, $4);
         fflush(stdout);
         
         int brk_statemenets = 0, cont_statements = 0;
@@ -598,7 +573,7 @@ loopend: { in_loop--; };
 
 loopstmt: loopstart stmt loopend { $$ = $2; };
 
-whilestmt: open_while whilecond loopstmt {  printf("in while stmt\n");
+whilestmt: open_while whilecond loopstmt {
                                       in_loop--; while_loop--;
                                       emit(jump,NULL,NULL,NULL,$1,yylineno);
                                       patchlabel($2,nextquadlabel());
@@ -629,7 +604,6 @@ forstmt: forprefix N elist N_right_par loopstmt { in_loop--; for_loop--;} N {
   patchlabel($7,$2 +1);
   
   if ($5) patchlist($5->breakList,nextquadlabel());
-  // printf("$5 = %d\n", $5->contList);
   if ($5) patchlist($5->contList,$2+1);
 };
 
@@ -683,6 +657,8 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
 
 int main(int argc, char **argv) {
 
+  FILE* fptr = NULL;
+
   if (argc > 1) {
     if (!(yyin = fopen(argv[1], "r"))) {
       perror("Cant open file"); 
@@ -690,31 +666,34 @@ int main(int argc, char **argv) {
     }
   }
 
-  
+  if (argc == 3) {
+    fptr = fopen(argv[2], "wb+");
+    if (fptr == NULL) {
+      perror("error opening file");
+      exit(-1);
+    }
+  }
 
   file_name = strrchr(argv[1], '/');
+
   lists = create_scope_lists();
-  emit(jump,NULL,NULL,NULL,1,0);
   symtable = create_table();
-
   stack = create_scope_stack();
-
   loop_stack = create_scope_stack();
-
   func_scopes = create_scope_stack();
+
+  emit(jump,NULL,NULL,NULL,1,0);
 
   add_lib_func(symtable, lists);
   yyparse();
   
-  print_scopes(lists);
+  print_scopes(lists, (fptr == NULL) ? stdout : fptr);
 
- 
-  printf("\n\n\n");
+  fprintf((fptr == NULL) ? stdout : fptr, "\n\n\n");
 
-  print_quads();
+  print_quads((fptr == NULL) ? stdout : fptr);
 
   free_table(symtable);
 
   return 0;
 }
-

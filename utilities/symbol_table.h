@@ -57,7 +57,7 @@ typedef struct SymbolTableEntry {
 
 typedef struct scopeLists {
   unsigned int max_scope;
-  SymbolTableEntry **slist;   //slist[0];
+  SymbolTableEntry **slist;
 } scopeLists;
 
 typedef struct SymTable {
@@ -81,7 +81,7 @@ int insert_to_scope(scopeLists *scope_list, SymbolTableEntry *token, unsigned in
 
 int exists_in_scope(SymbolTableEntry *head, char *token);
 
-void print_scopes(scopeLists *scope_list);
+void print_scopes(scopeLists *scope_list, FILE *ptr);
 
 void add_lib_func(SymTable *table, scopeLists *lists);
 

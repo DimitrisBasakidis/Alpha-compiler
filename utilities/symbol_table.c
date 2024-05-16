@@ -279,23 +279,21 @@ int insert_to_scope(scopeLists *scope_list, SymbolTableEntry *token, unsigned in
   return TRUE;
 }
 
-void print_scopes(scopeLists *scope_list) {
+void print_scopes(scopeLists *scope_list, FILE *fptr) {
   for (int i = 0; i < scope_list->max_scope; i++) {
     SymbolTableEntry *ptr = scope_list->slist[i]; 
     if (ptr == NULL) continue;
 
-    if (i > 0) printf("\n");
-    printf("-----------     Scope #%d     -----------\n", i);
+    if (i > 0) fprintf(fptr, "\n");
+    fprintf(fptr, "-----------     Scope #%d     -----------\n", i);
 
     while (ptr != NULL) {
       if (ptr->type == GLOBALVAR || ptr->type == LOCALVAR) {
-        
-        // printf("\"%s\", %d, %d, %d, %d, %p, %p, %d\n", ptr->value.varVal->name, ptr->value.varVal->scope, ptr->value.varVal->line, ptr->type, ptr->isActive, ptr->next, ptr->snext, ptr->hash_value);
-        printf("\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
+        fprintf(fptr, "\"%s\" [%s variable] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->value.varVal->scope == 0) ? "global" : "local", ptr->value.varVal->line, ptr->value.varVal->scope);
       } else if (ptr->type == FORMAL) {
-        printf("\"%s\" [formal argument] (line %d) (scope %d)\n", ptr->value.varVal->name, ptr->value.varVal->line, ptr->value.varVal->scope);
+        fprintf(fptr, "\"%s\" [formal argument] (line %d) (scope %d)\n", ptr->value.varVal->name, ptr->value.varVal->line, ptr->value.varVal->scope);
       } else {
-        printf("\"%s\" [%s function] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->type == USERFUNC) ? "user" : "library", ptr->value.varVal->line, ptr->value.varVal->scope);
+        fprintf(fptr, "\"%s\" [%s function] (line %d) (scope %d)\n", ptr->value.varVal->name, (ptr->type == USERFUNC) ? "user" : "library", ptr->value.varVal->line, ptr->value.varVal->scope);
       }
       ptr = ptr->snext;
     }

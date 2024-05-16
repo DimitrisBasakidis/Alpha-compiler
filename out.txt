@@ -1,0 +1,338 @@
+-----------     Scope #0     -----------
+"print" [library function] (line 0) (scope 0)
+"input" [library function] (line 0) (scope 0)
+"objectmemberkeys" [library function] (line 0) (scope 0)
+"objectotalmembers" [library function] (line 0) (scope 0)
+"objectcopy" [library function] (line 0) (scope 0)
+"totalarguments" [library function] (line 0) (scope 0)
+"argument" [library function] (line 0) (scope 0)
+"typeof" [library function] (line 0) (scope 0)
+"strtonum" [library function] (line 0) (scope 0)
+"sqrt" [library function] (line 0) (scope 0)
+"cos" [library function] (line 0) (scope 0)
+"sin" [library function] (line 0) (scope 0)
+"printLine" [user function] (line 1) (scope 0)
+"_t0" [global variable] (line 5) (scope 0)
+"names" [global variable] (line 8) (scope 0)
+"_t1" [global variable] (line 8) (scope 0)
+"surnames" [global variable] (line 11) (scope 0)
+"i" [global variable] (line 28) (scope 0)
+"_t2" [global variable] (line 28) (scope 0)
+"_t3" [global variable] (line 28) (scope 0)
+"_t4" [global variable] (line 28) (scope 0)
+"keys_names" [global variable] (line 35) (scope 0)
+"objecttotalmembers" [global variable] (line 40) (scope 0)
+"_func_0" [user function] (line 50) (scope 0)
+"_func_1" [user function] (line 73) (scope 0)
+
+-----------     Scope #1     -----------
+"_t0" [local variable] (line 2) (scope 1)
+"_t5" [local variable] (line 29) (scope 1)
+"_t6" [local variable] (line 29) (scope 1)
+"_t7" [local variable] (line 29) (scope 1)
+"_t8" [local variable] (line 29) (scope 1)
+"_t4" [local variable] (line 41) (scope 1)
+"_t5" [local variable] (line 41) (scope 1)
+"_t6" [local variable] (line 41) (scope 1)
+"_t0" [local variable] (line 42) (scope 1)
+"_t1" [local variable] (line 42) (scope 1)
+"_t2" [local variable] (line 42) (scope 1)
+"_t3" [local variable] (line 42) (scope 1)
+"this" [formal argument] (line 50) (scope 1)
+"before" [formal argument] (line 50) (scope 1)
+"middle" [formal argument] (line 50) (scope 1)
+"after" [formal argument] (line 50) (scope 1)
+"keys" [local variable] (line 51) (scope 1)
+"_t0" [local variable] (line 51) (scope 1)
+"_t1" [local variable] (line 51) (scope 1)
+"_t2" [local variable] (line 52) (scope 1)
+"_t3" [local variable] (line 52) (scope 1)
+"this" [formal argument] (line 73) (scope 1)
+"keys" [local variable] (line 74) (scope 1)
+"_t0" [local variable] (line 74) (scope 1)
+"_t1" [local variable] (line 74) (scope 1)
+"_t2" [local variable] (line 75) (scope 1)
+"_t3" [local variable] (line 75) (scope 1)
+
+-----------     Scope #2     -----------
+"_t4" [local variable] (line 53) (scope 2)
+"_t5" [local variable] (line 53) (scope 2)
+"_t6" [local variable] (line 53) (scope 2)
+"_t7" [local variable] (line 53) (scope 2)
+"_t8" [local variable] (line 53) (scope 2)
+"_t0" [local variable] (line 55) (scope 2)
+"_t1" [local variable] (line 55) (scope 2)
+"_t2" [local variable] (line 55) (scope 2)
+"_t3" [local variable] (line 55) (scope 2)
+"_t4" [local variable] (line 76) (scope 2)
+"_t5" [local variable] (line 76) (scope 2)
+"_t6" [local variable] (line 76) (scope 2)
+"_t7" [local variable] (line 76) (scope 2)
+"_t8" [local variable] (line 76) (scope 2)
+"_t0" [local variable] (line 78) (scope 2)
+"_t1" [local variable] (line 78) (scope 2)
+"_t2" [local variable] (line 78) (scope 2)
+"_t3" [local variable] (line 78) (scope 2)
+
+
+
+quad#              opcode              result              arg1                arg2               label              offset              space
+------------------------------------------------------------------------------------------------------------------------------------------------------
+1:                 JUMP                                                                            0                   
+2:                 FUNCSTART           printLine                                                   0                   
+3:                 PARAM               '-------------------------------------------------------------------------------------------------------------'                                                                                                                                   0                   
+4:                 CALL                print                                                       0                   
+5:                 GETRETVAL           _t0                                                         0                   
+6:                 FUNCEND             printLine                                                   0                   
+7:                 PARAM               'Testing objects'                                           0                   
+8:                 CALL                print                                                       0                   
+9:                 GETRETVAL           _t0                                                         0                   
+10:                CALL                printLine                                                   0                   
+11:                GETRETVAL           _t0                                                         0                   
+12:                TABLECREATE         _t0                                                         0                   
+13:                TABLESETELEM        _t0                 0.00                'Konstantinos'      0                   
+14:                TABLESETELEM        _t0                 1.00                'Dimitris'          0                   
+15:                TABLESETELEM        _t0                 2.00                'Christina'         0                   
+16:                TABLESETELEM        _t0                 3.00                'Giwrgos'           0                   
+17:                TABLESETELEM        _t0                 4.00                'Antonis'           0                   
+18:                TABLESETELEM        _t0                 5.00                'Giannis'           0                   
+19:                TABLESETELEM        _t0                 6.00                'Alkis'             0                   
+20:                ASSIGN              names               _t0                                     0                   
+21:                ASSIGN              _t1                 names                                   0                   
+22:                TABLESETELEM        names               'size'              7.00                0                   
+23:                TABLEGETELEM        _t0                 names               'size'              0                   
+24:                TABLECREATE         _t0                                                         0                   
+25:                TABLESETELEM        _t0                 'Konstantinos'      'Delis'             0                   
+26:                TABLESETELEM        _t0                 'Dimitris'          'Kleinaftakis'      0                   
+27:                TABLESETELEM        _t0                 'Christina'         'Doka'              0                   
+28:                TABLESETELEM        _t0                 'Giwrgos'           'Papadakis'         0                   
+29:                TABLESETELEM        _t0                 'Antonis'           'Patedakis'         0                   
+30:                TABLESETELEM        _t0                 'Giannis'           'Markoulakis'       0                   
+31:                TABLESETELEM        _t0                 'Alkis'             'Soulos'            0                   
+32:                TABLESETELEM        _t0                 'Dont print this'   'Dont print this'   0                   
+33:                ASSIGN              surnames            _t0                                     0                   
+34:                ASSIGN              _t1                 surnames                                0                   
+35:                TABLESETELEM        surnames            'size'              8.00                0                   
+36:                TABLEGETELEM        _t0                 surnames            'size'              0                   
+37:                PARAM               'Printing names and surnames way 1 (name/surname tables)'                                                                             0                   
+38:                CALL                print                                                       0                   
+39:                GETRETVAL           _t0                                                         0                   
+40:                CALL                printLine                                                   0                   
+41:                GETRETVAL           _t0                                                         0                   
+42:                ASSIGN              i                   0.00                                    0                   
+43:                ASSIGN              _t0                 i                                       0                   
+44:                TABLEGETELEM        _t1                 names               'size'              0                   
+45:                IF_LESS                                 i                   _t1                 47                  
+46:                JUMP                                                                            52                  
+47:                TABLEGETELEM        _t2                 surnames            'size'              0                   
+48:                IF_LESS                                 i                   _t2                 50                  
+49:                JUMP                                                                            52                  
+50:                ASSIGN              _t3                 true                                    0                   
+51:                JUMP                                                                            53                  
+52:                ASSIGN              _t3                 false                                   0                   
+53:                IF_EQ               _t3                 true                                    58                  
+54:                JUMP                                                                            68                  
+55:                ASSIGN              i                                       _t4                 0                   
+56:                ADD                 i                   1.00                i                   0                   
+57:                JUMP                                                                            44                  
+58:                TABLEGETELEM        _t5                 names               i                   0                   
+59:                TABLEGETELEM        _t6                 names               i                   0                   
+60:                TABLEGETELEM        _t7                 surnames            _t6                 0                   
+61:                PARAM               _t7                                                         0                   
+62:                PARAM               ' | Surname: '                                              0                   
+63:                PARAM               _t5                                                         0                   
+64:                PARAM               'Name: '                                                    0                   
+65:                CALL                print                                                       0                   
+66:                GETRETVAL           _t8                                                         0                   
+67:                JUMP                                                                            55                  
+68:                CALL                printLine                                                   0                   
+69:                GETRETVAL           _t0                                                         0                   
+70:                PARAM               surnames                                                    0                   
+71:                CALL                objectmemberkeys                                            0                   
+72:                GETRETVAL           _t0                                                         0                   
+73:                ASSIGN              keys_names          _t0                                     0                   
+74:                ASSIGN              _t1                 keys_names                              0                   
+75:                PARAM               'Printing names and surnames way 2 (objectmemberkeys())'                                                                            0                   
+76:                CALL                print                                                       0                   
+77:                GETRETVAL           _t0                                                         0                   
+78:                CALL                printLine                                                   0                   
+79:                GETRETVAL           _t0                                                         0                   
+80:                ASSIGN              i                   0.00                                    0                   
+81:                ASSIGN              _t0                 i                                       0                   
+82:                PARAM               keys_names                                                  0                   
+83:                CALL                objecttotalmembers                                          0                   
+84:                GETRETVAL           _t1                                                         0                   
+85:                IF_LESS                                 i                   _t1                 87                  
+86:                JUMP                                                                            89                  
+87:                ASSIGN              _t2                 true                                    0                   
+88:                JUMP                                                                            90                  
+89:                ASSIGN              _t2                 false                                   0                   
+90:                IF_EQ               _t2                 true                                    95                  
+91:                JUMP                                                                            117                 
+92:                ASSIGN              i                                       _t3                 0                   
+93:                ADD                 i                   1.00                i                   0                   
+94:                JUMP                                                                            82                  
+95:                TABLEGETELEM        _t4                 keys_names          i                   0                   
+96:                IF_EQ                                   _t4                 'Dont print this'   101                 
+97:                JUMP                                                                            98                  
+98:                TABLEGETELEM        _t5                 keys_names          i                   0                   
+99:                IF_EQ                                   _t5                 'size'              101                 
+100:               JUMP                                                                            103                 
+101:               ASSIGN              _t6                 true                                    0                   
+102:               JUMP                                                                            104                 
+103:               ASSIGN              _t6                 false                                   0                   
+104:               MUL                 _t6                 true                                    106                 
+105:               JUMP                                                                            107                 
+106:               JUMP                                                                            92                  
+107:               TABLEGETELEM        _t0                 keys_names          i                   0                   
+108:               TABLEGETELEM        _t1                 keys_names          i                   0                   
+109:               TABLEGETELEM        _t2                 surnames            _t1                 0                   
+110:               PARAM               _t2                                                         0                   
+111:               PARAM               ' | Surname: '                                              0                   
+112:               PARAM               _t0                                                         0                   
+113:               PARAM               'Name: '                                                    0                   
+114:               CALL                print                                                       0                   
+115:               GETRETVAL           _t3                                                         0                   
+116:               JUMP                                                                            92                  
+117:               CALL                printLine                                                   0                   
+118:               GETRETVAL           _t0                                                         0                   
+119:               PARAM               'Printing names and surnames way 3 (using lambda expression-like syntax and method call)'                                                                                                             0                   
+120:               CALL                print                                                       0                   
+121:               GETRETVAL           _t0                                                         0                   
+122:               CALL                printLine                                                   0                   
+123:               GETRETVAL           _t0                                                         0                   
+124:               JUMP                                                                            0                   
+125:               FUNCSTART           _func_0                                                     0                   
+126:               PARAM               this                                                        0                   
+127:               CALL                objectmemberkeys                                            0                   
+128:               GETRETVAL           _t0                                                         0                   
+129:               ASSIGN              keys                _t0                                     0                   
+130:               ASSIGN              _t1                 keys                                    0                   
+131:               ASSIGN              i                   0.00                                    0                   
+132:               ASSIGN              _t0                 i                                       0                   
+133:               PARAM               keys                                                        0                   
+134:               CALL                objecttotalmembers                                          0                   
+135:               GETRETVAL           _t1                                                         0                   
+136:               IF_LESS                                 i                   _t1                 138                 
+137:               JUMP                                                                            140                 
+138:               ASSIGN              _t2                 true                                    0                   
+139:               JUMP                                                                            141                 
+140:               ASSIGN              _t2                 false                                   0                   
+141:               IF_EQ               _t2                 true                                    146                 
+142:               JUMP                                                                            175                 
+143:               ASSIGN              i                                       _t3                 0                   
+144:               ADD                 i                   1.00                i                   0                   
+145:               JUMP                                                                            133                 
+146:               TABLEGETELEM        _t4                 keys                i                   0                   
+147:               IF_EQ                                   _t4                 'Dont print this'   158                 
+148:               JUMP                                                                            149                 
+149:               TABLEGETELEM        _t5                 keys                i                   0                   
+150:               IF_EQ                                   _t5                 'size'              158                 
+151:               JUMP                                                                            152                 
+152:               TABLEGETELEM        _t6                 keys                i                   0                   
+153:               IF_EQ                                   _t6                 'printAll'          158                 
+154:               JUMP                                                                            155                 
+155:               TABLEGETELEM        _t7                 keys                i                   0                   
+156:               IF_EQ                                   _t7                 '()'                158                 
+157:               JUMP                                                                            160                 
+158:               ASSIGN              _t8                 true                                    0                   
+159:               JUMP                                                                            161                 
+160:               ASSIGN              _t8                 false                                   0                   
+161:               MUL                 _t8                 true                                    163                 
+162:               JUMP                                                                            164                 
+163:               JUMP                                                                            143                 
+164:               TABLEGETELEM        _t0                 keys                i                   0                   
+165:               TABLEGETELEM        _t1                 keys                i                   0                   
+166:               TABLEGETELEM        _t2                 this                _t1                 0                   
+167:               PARAM               after                                                       0                   
+168:               PARAM               _t2                                                         0                   
+169:               PARAM               middle                                                      0                   
+170:               PARAM               _t0                                                         0                   
+171:               PARAM               before                                                      0                   
+172:               CALL                print                                                       0                   
+173:               GETRETVAL           _t3                                                         0                   
+174:               JUMP                                                                            143                 
+175:               FUNCEND             _func_0                                                     0                   
+176:               TABLESETELEM        surnames            'printAll'          _func_0             0                   
+177:               TABLEGETELEM        _t0                 surnames            'printAll'          0                   
+178:               TABLEGETELEM        _t0                 surnames            'printAll'          0                   
+179:               PARAM               surnames                                                    0                   
+180:               PARAM               ' | Surname: '                                              0                   
+181:               PARAM               'Name: '                                                    0                   
+182:               CALL                _t0                                                         0                   
+183:               GETRETVAL           _t1                                                         0                   
+184:               CALL                printLine                                                   0                   
+185:               GETRETVAL           _t0                                                         0                   
+186:               PARAM               'Printing names and surnames way 4 (using lambda expression-like syntax and Normal call)'                                                                                                             0                   
+187:               CALL                print                                                       0                   
+188:               GETRETVAL           _t0                                                         0                   
+189:               CALL                printLine                                                   0                   
+190:               GETRETVAL           _t0                                                         0                   
+191:               TABLEGETELEM        _t0                 surnames            'printAll'          0                   
+192:               PARAM               ' | Surname: '                                              0                   
+193:               PARAM               'Name: '                                                    0                   
+194:               PARAM               surnames                                                    0                   
+195:               CALL                _t0                                                         0                   
+196:               GETRETVAL           _t1                                                         0                   
+197:               CALL                printLine                                                   0                   
+198:               GETRETVAL           _t0                                                         0                   
+199:               PARAM               'Printing names and surnames way 5 (using functor)'                                                                       0                   
+200:               CALL                print                                                       0                   
+201:               GETRETVAL           _t0                                                         0                   
+202:               CALL                printLine                                                   0                   
+203:               GETRETVAL           _t0                                                         0                   
+204:               JUMP                                                                            0                   
+205:               FUNCSTART           _func_1                                                     0                   
+206:               PARAM               this                                                        0                   
+207:               CALL                objectmemberkeys                                            0                   
+208:               GETRETVAL           _t0                                                         0                   
+209:               ASSIGN              keys                _t0                                     0                   
+210:               ASSIGN              _t1                 keys                                    0                   
+211:               ASSIGN              i                   0.00                                    0                   
+212:               ASSIGN              _t0                 i                                       0                   
+213:               PARAM               keys                                                        0                   
+214:               CALL                objecttotalmembers                                          0                   
+215:               GETRETVAL           _t1                                                         0                   
+216:               IF_LESS                                 i                   _t1                 218                 
+217:               JUMP                                                                            220                 
+218:               ASSIGN              _t2                 true                                    0                   
+219:               JUMP                                                                            221                 
+220:               ASSIGN              _t2                 false                                   0                   
+221:               IF_EQ               _t2                 true                                    226                 
+222:               JUMP                                                                            254                 
+223:               ASSIGN              i                                       _t3                 0                   
+224:               ADD                 i                   1.00                i                   0                   
+225:               JUMP                                                                            213                 
+226:               TABLEGETELEM        _t4                 keys                i                   0                   
+227:               IF_EQ                                   _t4                 'Dont print this'   238                 
+228:               JUMP                                                                            229                 
+229:               TABLEGETELEM        _t5                 keys                i                   0                   
+230:               IF_EQ                                   _t5                 'size'              238                 
+231:               JUMP                                                                            232                 
+232:               TABLEGETELEM        _t6                 keys                i                   0                   
+233:               IF_EQ                                   _t6                 'printAll'          238                 
+234:               JUMP                                                                            235                 
+235:               TABLEGETELEM        _t7                 keys                i                   0                   
+236:               IF_EQ                                   _t7                 '()'                238                 
+237:               JUMP                                                                            240                 
+238:               ASSIGN              _t8                 true                                    0                   
+239:               JUMP                                                                            241                 
+240:               ASSIGN              _t8                 false                                   0                   
+241:               MUL                 _t8                 true                                    243                 
+242:               JUMP                                                                            244                 
+243:               JUMP                                                                            223                 
+244:               TABLEGETELEM        _t0                 keys                i                   0                   
+245:               TABLEGETELEM        _t1                 keys                i                   0                   
+246:               TABLEGETELEM        _t2                 this                _t1                 0                   
+247:               PARAM               _t2                                                         0                   
+248:               PARAM               ' | Surname: '                                              0                   
+249:               PARAM               _t0                                                         0                   
+250:               PARAM               'Name: '                                                    0                   
+251:               CALL                print                                                       0                   
+252:               GETRETVAL           _t3                                                         0                   
+253:               JUMP                                                                            223                 
+254:               FUNCEND             _func_1                                                     0                   
+255:               TABLESETELEM        surnames            '()'                _func_1             0                   
+256:               TABLEGETELEM        _t0                 surnames            '()'                0                   
+257:               CALL                surnames                                                    0                   
+258:               GETRETVAL           _t0                                                         0                   

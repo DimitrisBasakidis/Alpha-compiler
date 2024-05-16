@@ -92,9 +92,9 @@ int newlist (int i);
 int mergelist (int l1, int l2);
 void patchlist (int list, int label);
 
-char* print_expr(expr* e);
-void print_quads(void);
-int printOpcode(int value);
+char* print_expr(expr* e, FILE *ptr);
+void print_quads(FILE *ptr);
+int print_opcode(int value, FILE *ptr);
 void check_arith(expr* e, const char* context);
 
 char *newtempname(void);

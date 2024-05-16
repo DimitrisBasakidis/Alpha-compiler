@@ -31,17 +31,6 @@ expr *newexpr_constnum(double i) {
     return  create_expr(constnum_e, NULL, NULL, i, NULL, '\0');
 }
 
-void print_li2st(expr* head){
-    expr* head1 = head;
-    printf("list :: ");
-    while(head1!=NULL){
-        print_expr(head1);
-        printf(", ");
-        head1 = head1->next;
-    }
-    printf(" end of list\n");
-}
-
 expr *get_last(expr* head){
     expr* tmp = head;
     if(head == NULL){
@@ -51,9 +40,7 @@ expr *get_last(expr* head){
         tmp = tmp->next;
         
     }
-    printf("START OF LIST:");
-    print_li2st(head);
-    printf("END OF LIST:");
+    
     return tmp;
 }
 

@@ -59,9 +59,6 @@ expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numCon
 
 expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
     SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
-    // entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
-    // entry->offset = currscopeoffset(); 
-    // incurrscopeoffset();
     expr* result = create_expr(arithexpr_e, entry, NULL, 0, NULL, '\0');
     emit(op, result, arg1, arg2, 0, yylineno);
     return result;
@@ -69,15 +66,9 @@ expr* create_and_emit_arith_expr(SymTable* symtable,scopeLists *lists,int scope,
 
 expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,int yylineno,expr* arg1, expr* arg2,iopcode op){
     SymbolTableEntry *entry = newtemp(symtable, lists, scope, yylineno);
-    // entry->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
-    // entry->offset = currscopeoffset(); 
-    // incurrscopeoffset();
     expr* result = create_expr(boolexpr_e, entry, NULL, 0, NULL, '\0');
     
     emit(op,NULL, arg1, arg2, nextquadlabel() + 3, yylineno);
-    // emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'0'),NULL,0,yylineno);
-    // emit(jump,NULL,NULL,NULL,nextquadlabel()+2,yylineno);
-    // emit(assign,result,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
     return result;
 
 }
@@ -135,7 +126,7 @@ void check_arith(expr* e, const char* context){
         }
 }
 
-void print_quads(void){
+void print_quads(FILE *ptr) {
     quad* tmp = quads;
     expr_t type ;
     int total_space = 20;
@@ -143,86 +134,84 @@ void print_quads(void){
     char str[10];
     int len = 0 ;
     tmp++;
-    printf("quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
-    printf("------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    fprintf(ptr, "quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
+    fprintf(ptr, "------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for(int i = 1; i< currQuad;i++){
         sprintf(str,"%d",i);
-        printf("%d:%-*s",i,(int) (18-strlen(str)),"");
+        fprintf(ptr, "%d:%-*s",i,(int) (18-strlen(str)),"");
         memset(str,'\0',10);
-        int opcodeLength = printOpcode(tmp->op);
-        printf("%-*s", 20 - opcodeLength, "");
+        int opcodeLength = print_opcode(tmp->op, ptr);
+        fprintf(ptr, "%-*s", 20 - opcodeLength, "");
         
         if(tmp->result != NULL){
-          //  printf("here pointer::%d\n",tmp->result );
-
-            len = strlen(print_expr(tmp->result));
+            len = strlen(print_expr(tmp->result, ptr));
             if(tmp->result->type == conststring_e){
                 len+=2;
             }
         }else{
             len = 0;
         }
-        printf("%-*s", 20-len,"");
+        fprintf(ptr, "%-*s", 20-len,"");
          if(tmp->arg1 !=NULL){
 
-            len = strlen(print_expr(tmp->arg1));
+            len = strlen(print_expr(tmp->arg1, ptr));
             if(tmp->arg1->type == conststring_e){
                 len+=2;
             }
         }else{
             len = 0;
         }
-        printf("%-*s", 20-len,"");
+        fprintf(ptr, "%-*s", 20-len,"");
         if(tmp->arg2 !=NULL){
-          len = strlen(print_expr(tmp->arg2));
+          len = strlen(print_expr(tmp->arg2, ptr));
             if(tmp->arg2->type == conststring_e){
                 len+=2;
             }
         }else{
             len = 0;
         }
-        printf("%-*s", 20-len,"");
+        fprintf(ptr, "%-*s", 20-len,"");
 
-        printf("%d", tmp->label);
+        fprintf(ptr, "%d", tmp->label);
         sprintf(str,"%d",tmp->label);
-        printf("%-*s",(int)(20-strlen(str)),"");
+        fprintf(ptr, "%-*s",(int)(20-strlen(str)),"");
         memset(str,'\0',10);
         // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
         // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
         tmp++;
-        printf("\n");
+        fprintf(ptr, "\n");
     }
 }
 
-char* print_expr(expr* e){
+char* print_expr(expr* e, FILE *ptr){
     char *str = malloc(20);
 
     switch(e->type){
         case var_e:
         case arithexpr_e:
         case boolexpr_e:
-        if(e->sym!=NULL){
-            printf("%s", e->sym->value.varVal->name);
-            return e->sym->value.varVal->name;
-        }else{
-            return "";
-        }    
+            if(e->sym!=NULL){
+                fprintf(ptr, "%s", e->sym->value.varVal->name);
+                return e->sym->value.varVal->name;
+            }else{
+                return "";
+            }    
         case constnum_e:
-        printf("%.2f", e->numConst);
-        sprintf(str,"%.2f",e->numConst);
-        return str;
+            fprintf(ptr, "%.2f", e->numConst);
+            sprintf(str,"%.2f",e->numConst);
+            return str;
         case constbool_e:
-        printf("%s", (e->boolConst == '1') ? "true" : "false");
+            fprintf(ptr, "%s", (e->boolConst == '1') ? "true" : "false");
         return (e->boolConst == '1') ? "true" : "false";
         case conststring_e:
-        printf("'%s'", e->strConst);
+            fprintf(ptr, "'%s'", e->strConst);
         return e->strConst;
         case programfunc_e:
         case libraryfunc_e:
         case newtable_e:
         case tableitem_e:
         case assignexpr_e:
-        printf("%s", e->sym->value.funcVal->name);
+            fprintf(ptr, "%s", e->sym->value.funcVal->name);
         return e->sym->value.funcVal->name;
         default:
         return "";
@@ -231,88 +220,88 @@ char* print_expr(expr* e){
 
 
 
-int printOpcode(int value) {
+int print_opcode(int value, FILE *ptr) {
     switch(value) {
         case assign:
-            printf("ASSIGN");
+            fprintf(ptr, "ASSIGN");
             return 6;
         case add:
-            printf("ADD");
+            fprintf(ptr, "ADD");
             return 3;
         case sub:
-            printf("SUB");
+            fprintf(ptr, "SUB");
             return 3;
         case mul:
-            printf("MUL");
+            fprintf(ptr, "MUL");
             return 3;
         case divide:
-            printf("DIVIDE");
+            fprintf(ptr, "DIVIDE");
             return 6;
         case mod:
-            printf("MOD");
+            fprintf(ptr, "MOD");
             return 3;
         case uminus:
-            printf("UMINUS");
+            fprintf(ptr, "UMINUS");
             return 6;
         case and:
-            printf("AND");
+            fprintf(ptr, "AND");
             return 3;
         case or:
-            printf("OR");
+            fprintf(ptr, "OR");
             return 2;
         case not:
-            printf("NOT");
+            fprintf(ptr, "NOT");
             return 3;
         case if_eq:
-            printf("IF_EQ");
+            fprintf(ptr, "IF_EQ");
             return 5;
         case if_noteq:
-            printf("IF_NOTEQ");
+            fprintf(ptr, "IF_NOTEQ");
             return 8;
         case if_lesseq:
-            printf("if_lesseq");
+            fprintf(ptr, "if_lesseq");
             return 8;
         case if_greatereq:
-            printf("IF_GREATEREQ");
+            fprintf(ptr, "IF_GREATEREQ");
             return 12;
         case if_less:
-            printf("IF_LESS");
+            fprintf(ptr, "IF_LESS");
             return 7;
         case if_greater:
-            printf("IF_GREATER");
+            fprintf(ptr, "IF_GREATER");
             return 10;
         case call:
-            printf("CALL");
+            fprintf(ptr, "CALL");
             return 4;
         case param:
-            printf("PARAM");
+            fprintf(ptr, "PARAM");
             return 5;
         case ret:
-            printf("RET");
+            fprintf(ptr, "RET");
             return 3;
         case getretval:
-            printf("GETRETVAL");
+            fprintf(ptr, "GETRETVAL");
             return 9;
         case funcstart:
-            printf("FUNCSTART");
+            fprintf(ptr, "FUNCSTART");
             return 9;
         case funcend:
-            printf("FUNCEND");
+            fprintf(ptr, "FUNCEND");
             return 7;
         case tablecreate:
-            printf("TABLECREATE");
+            fprintf(ptr, "TABLECREATE");
             return 11;
         case tablegetelem:
-            printf("TABLEGETELEM");
+            fprintf(ptr, "TABLEGETELEM");
             return 12;
         case tablesetelem:
-            printf("TABLESETELEM");
+            fprintf(ptr, "TABLESETELEM");
             return 12;
         case jump:
-            printf("JUMP");
+            fprintf(ptr, "JUMP");
             return 4; 
         default:
-            printf("O baggelis sou xakare ton upologisth!\n");
+            fprintf(ptr, "O baggelis sou xakare ton upologisth!\n");
             return 0;
     }
 }
