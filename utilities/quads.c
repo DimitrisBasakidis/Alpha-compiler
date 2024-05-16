@@ -176,8 +176,10 @@ void print_quads(FILE *ptr) {
         sprintf(str,"%d",tmp->label);
         fprintf(ptr, "%-*s",(int)(20-strlen(str)),"");
         memset(str,'\0',10);
-        // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
-        // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
+        if (tmp->result != NULL) {
+        fprintf(ptr, "\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
+        fprintf(ptr, "\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
+        }
         tmp++;
         fprintf(ptr, "\n");
     }

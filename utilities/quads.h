@@ -46,9 +46,7 @@ typedef enum iopcode{
     if_greater,call,param,
     ret,getretval,funcstart,
     funcend,tablecreate,
-    tablegetelem,tablesetelem,jump,
-
-    dummy
+    tablegetelem,tablesetelem,jump
 } iopcode;
 
 typedef struct expr{
@@ -66,6 +64,7 @@ typedef struct expr{
 typedef struct stmt_t {
     int breakList;
     int contList;
+    int retList;
 } stmt_t;
 
 typedef struct quad {
@@ -75,6 +74,7 @@ typedef struct quad {
     expr* arg2;
    unsigned label;
    unsigned line;
+   unsigned taddress;
 
 } quad;
 

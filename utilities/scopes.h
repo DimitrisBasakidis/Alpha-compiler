@@ -10,12 +10,6 @@ typedef enum scopespace_t {
     formalarg
 } scopespace_t;
 
-
-// unsigned programVarOffset = 0;
-// unsigned functionLocalOffset = 0;
-// unsigned formalArgOffset = 0;
-// unsigned scopeSpaceCounter = 1;
-
 extern unsigned programVarOffset;
 extern unsigned functionLocalOffset;
 extern unsigned formalArgOffset;

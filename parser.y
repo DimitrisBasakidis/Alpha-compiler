@@ -7,7 +7,7 @@
 #include "grammatical_rules/grammar_functions.h"
 
 #include "utilities/quads.h"
-
+#include "utilities/final_code.h"
 #include "utilities/elist.h"
 
 #define YYERROR_VERBOSE 1
@@ -20,6 +20,13 @@ const char *file_name;
 quad* quads = (quad*)0;
 unsigned total = 0;
 unsigned int currQuad = 0;
+
+incomplete_jump *ij_head = (incomplete_jump *) 0;
+unsigned ij_total = 0;
+
+instruction* instructions = (instruction*) 0;
+unsigned total_f = 0;
+unsigned int currInstruction = 0 ;
 
 int scope = 0;
 int func_in_between = 0;
@@ -112,19 +119,23 @@ statements: statements stmt {
         $$ = malloc(sizeof(struct stmt_t));
         int brk_statemenets = 0, brk_stmt = 0;
         int cont_statements = 0, cont_stmt = 0;
+        int ret_statements = 0, ret_stmt = 0;
 
         if ($1) {
           brk_statemenets = $1->breakList;
           cont_statements = $1->contList;
+          ret_statements = $1->retList;
         }
 
         if ($2) {
           brk_stmt = $2->breakList;
           cont_stmt = $2->contList;
+          ret_stmt = $2->retList;
         }
 
         $$->breakList = mergelist(brk_statemenets, brk_stmt);
         $$->contList = mergelist(cont_statements , cont_stmt);
+        $$->retList = mergelist(ret_statements,ret_stmt);
   }
 | stmt { resettemp();   $$ = $1; };
 
@@ -468,9 +479,9 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
 // alliws ta vazoume sto table
   
   $$ = manage_function(symtable, lists, $2, print_errors, yylineno);
-  /* gia tin epomenh fash */ 
+  /* gia tin epomenh fash */
+  $$->iaddress = nextquadlabel(); // deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
   emit(jump, NULL, NULL, NULL, 0, yylineno); // GOTO
-  //$$->iaddress = nextquadlabel();// deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
   emit(funcstart, lvalue_expr($$), NULL, NULL, 0, 0);
   push(stack, currscopeoffset());
   enterscopespace();
@@ -480,7 +491,7 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
 funcargs: idlist  { enterscopespace(); resetfunctionlocaloffset(); }
                 | { enterscopespace(); resetfunctionlocaloffset(); };
 
-funcbody: block { $$ = currscopeoffset(); exitscopespace(); };
+funcbody: block { $$ = currscopeoffset(); patchlist($1->retList,nextquadlabel()); exitscopespace(); };
 
 funcblockstart: { push(func_scopes, scope); push(loop_stack, in_loop); in_loop = 0; }
 
@@ -493,8 +504,9 @@ funcdef: funcprefix LEFT_PARENTHESIS funcargs RIGHT_PARENTHESIS { func_in_betwee
   int offset = temp->x;
   restorecurrentscopeoffset(offset);
   $$ = $1;
+
   emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
-  
+  patchlabel($1->iaddress, nextquadlabel());
   func_in_between--;
 };
 
@@ -598,6 +610,7 @@ N_right_par: RIGHT_PARENTHESIS N { $$ = $2; };
 
 forstmt: forprefix N elist N_right_par loopstmt { in_loop--; for_loop--;} N {
   $$ = make_stmt($$);
+
   patchlabel($1->enter,$4+1);
   patchlabel($2,nextquadlabel());
   patchlabel($4,$1->test);
@@ -607,15 +620,17 @@ forstmt: forprefix N elist N_right_par loopstmt { in_loop--; for_loop--;} N {
   if ($5) patchlist($5->contList,$2+1);
 };
 
-returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON {emit(ret,NULL,NULL,NULL,0,0);
-                                      $$ = make_stmt($$);
-                                      emit(jump,NULL,NULL,NULL,0,yylineno);
-                                    }
+returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON { emit(ret,NULL,NULL,NULL,0,0);
+                        $$ = make_stmt($$);
+                        $$->retList = newlist(nextquadlabel());
+                        emit(jump,NULL,NULL,NULL,0,yylineno);
+                      }
 | RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,$3,NULL,NULL,0,0); is_return_kw = 1; 
-                                  $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
-                                  $$ = make_stmt($$);
-                                  emit(jump,NULL,NULL,NULL,0,yylineno);
-                                }
+                        $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
+                        $$ = make_stmt($$);
+                        $$->retList = newlist(nextquadlabel());
+                        emit(jump,NULL,NULL,NULL,0,yylineno);
+                      }
 
 %%
 
