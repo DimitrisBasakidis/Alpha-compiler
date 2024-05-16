@@ -163,7 +163,7 @@ void print_hash(SymTable *table) {
     if (table->table[i] == NULL) continue;
     
     SymbolTableEntry *ptr = table->table[i];
-    printf("bucket %d\n", i);
+
     while (ptr != NULL) {
 
       if (ptr->type == GLOBALVAR || ptr->type == LOCALVAR) {
@@ -239,7 +239,6 @@ scopeLists *create_scope_lists(void) {
    
   new_lists->max_scope = SCOPE_SIZE;
   new_lists->slist = malloc(SCOPE_SIZE * sizeof(SymbolTableEntry));
-    // new_lists->slist = malloc(sizeof(struct SymbolTableEntry ));
 
   for (int i = 0; i < SCOPE_SIZE; i++) {
     new_lists->slist[i] = NULL;

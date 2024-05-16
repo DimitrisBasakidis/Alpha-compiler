@@ -159,11 +159,9 @@ SymbolTableEntry *manage_function(SymTable *symtable, scopeLists *lists, char *t
         SymbolTableEntry *node = create_node(token, scope, line, USERFUNC, ACTIVE);
         insert_symbol(symtable, node);
         insert_to_scope(lists, node, scope);
-        printf("before: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
         node->space = FUNC_SPACE;  // dialeksh 9 slide 49 sto site tou pratikakh
         node->offset = FUNC_SPACE; 
         incurrscopeoffset();
-        printf("after: currenct scope space enum %d, current scope offset %d\n", currscopespace(), currscopeoffset());
 
         return node;
     } else {
@@ -241,26 +239,11 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
      
     assert(scope >= 0);
 
-   // printf("IN MANAGE ID THE LAST FUNC SCOPE IS %d AND THE SCOPE IS %d\n", last_func_scope + 1, scope);
-
-    // printf("searching from scope to delimiter %d to %d\n", scope, delimiter);
-    // for (index = scope; index >= delimiter; index--) {
-    //     entry = lookup(symtable, lists, token, (index == 0) ? GLOBALVAR : LOCALVAR, index, SCOPE);
-
-    //     if (entry != NULL) break;
-    // }
-
-    // if (delimiter != 0 && entry == NULL) {
-    //     entry = lookup(symtable, lists, token, GLOBALVAR, index, SCOPE);
-    // }
-
     for (index = scope; index >= 0; index--) {
         entry = lookup(symtable, lists, token, (index == 0) ? GLOBALVAR : LOCALVAR, index, SCOPE);
 
         if (entry != NULL) break;
     }
-
-    printf("searching from scope to delimiter %d to %d and the entrt ptr is %d\n", scope, delimiter, (entry == NULL) ? 0 : entry->type);
 
     if (entry == NULL) {
         SymbolTableEntry *node = create_node(token, scope, line, (scope == 0) ? GLOBALVAR : LOCALVAR, ACTIVE);

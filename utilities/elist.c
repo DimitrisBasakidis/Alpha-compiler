@@ -16,7 +16,7 @@ expr *insert_node(expr *head, expr *expression) {
 
 expr *make_call(expr *lv, expr *reversed_elist, unsigned line,SymTable *symtable,scopeLists *lists, unsigned int scope){
     expr* func = emit_iftableitem(lv,symtable,lists,scope,line);
-    printf("%p\n",reversed_elist);
+    
     while (reversed_elist) {
         emit(param, reversed_elist, NULL, NULL, 0, line);
         reversed_elist = reversed_elist->next;
@@ -40,7 +40,7 @@ expr *get_last(expr* head){
         tmp = tmp->next;
         
     }
-    
+
     return tmp;
 }
 
