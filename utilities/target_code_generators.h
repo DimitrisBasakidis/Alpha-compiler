@@ -2,6 +2,7 @@
 #define target_code generators
 
 #include "final_code.h"
+#include "func_stack.h"
 
 void generate_ADD(quad* q);
 void generate_SUB(quad* q);
@@ -33,38 +34,16 @@ void generate_UMINUS(quad* q);
 
 typedef void (*generator_func_t) (quad*);
 
-generator_func_t generators[] = {
-    generate_ASSIGN,
-    generate_ADD,
-    generate_SUB,
-    generate_MUL,
-    generate_DIV,
-    generate_MOD,
-    generate_UMINUS,
-    generate_AND,
-    generate_OR,
-    generate_NOT,
-    generate_IF_EQ,
-    generate_IF_NOTEQ,
-    generate_IF_LESSEQ,
-    generate_IF_GREATEREQ,
-    generate_IF_LESS,
-    generate_IF_GREATER, 
-    generate_CALL,
-    generate_PARAM,
-    generate_RETURN,
-    generate_GETRETVAL,
-    generate_FUNCSTART,
-    generate_FUNCEND
-    generate_TABLECREATE,
-    generate_TABLEGETELEM,
-    generate_TABLESETELEM,
-    generate_NOP,
-    generate_JUMP,
-}
+
+
+extern funcstack * funcs; 
 
 void generate_targetcode(void);
 void generate(vmopcode op, quad *q);
+void generate_relational(vmopcode op, quad *q);
+void printInstructions();
+void printVMarg(vmarg* v);
+void printOpcode(vmopcode vop);
 
 
 #endif

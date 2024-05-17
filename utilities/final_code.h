@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum vmarg_t {label_a,global_a,local_a,formal_a,bool_a,string_a,number_a,nil_a,userfunc_a,libfunc_a,retval_a }vmarg_t;
+typedef enum vmarg_t { label_a,global_a,local_a,formal_a,bool_a,string_a,number_a,nil_a,userfunc_a,libfunc_a,retval_a,noarg_a=-69 }vmarg_t;
 
 typedef enum vmopcode {
     assign_v, add_v, sub_v,
@@ -94,6 +94,11 @@ void fexpand (void);
 unsigned consts_newstring(char* str);
 unsigned consts_newnumber(double num);
 unsigned libfuncs_newused(char* libfunc_name);
+unsigned userfuncs_newused(SymbolTableEntry *sym);
 unsigned nextinstructionlabel();
+void make_numberoperand(vmarg* arg, double val);
+void make_booloperand(vmarg* arg , unsigned val);
+void make_retvaloperand(vmarg* arg);
+void femit(instruction* t);
 
 #endif

@@ -7,8 +7,8 @@
 #include "grammatical_rules/grammar_functions.h"
 
 #include "utilities/quads.h"
-#include "utilities/final_code.h"
 #include "utilities/elist.h"
+#include "utilities/target_code_generators.h"
 
 #define YYERROR_VERBOSE 1
 
@@ -27,6 +27,7 @@ unsigned ij_total = 0;
 instruction* instructions = (instruction*) 0;
 unsigned total_f = 0;
 unsigned int currInstruction = 0 ;
+funcstack * funcs; 
 
 int scope = 0;
 int func_in_between = 0;
@@ -491,7 +492,7 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
 funcargs: idlist  { enterscopespace(); resetfunctionlocaloffset(); }
                 | { enterscopespace(); resetfunctionlocaloffset(); };
 
-funcbody: block { $$ = currscopeoffset(); patchlist($1->retList,nextquadlabel()); exitscopespace(); };
+funcbody: block { $$ = currscopeoffset(); if($1) patchlist($1->retList,nextquadlabel()); exitscopespace(); };
 
 funcblockstart: { push(func_scopes, scope); push(loop_stack, in_loop); in_loop = 0; }
 
@@ -690,7 +691,7 @@ int main(int argc, char **argv) {
   }
 
   file_name = strrchr(argv[1], '/');
-
+  funcs = create_func_stack();
   lists = create_scope_lists();
   symtable = create_table();
   stack = create_scope_stack();
@@ -708,6 +709,8 @@ int main(int argc, char **argv) {
 
   print_quads((fptr == NULL) ? stdout : fptr);
 
+ // generate_targetcode();
+  printInstructions();
   free_table(symtable);
 
   return 0;

@@ -75,15 +75,17 @@ expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,i
 
 void check_expr(expr* a , expr* b,void (*print_errors)(const char *, char *, const char *)){
    if(a->type == programfunc_e || a->type == libraryfunc_e || a->type == boolexpr_e || a->type == newtable_e || a->type == constbool_e
-        || a->type == conststring_e || a->type == nil_e){
-            print_errors("invalid arithmetic operation operand",a->sym->value.varVal->name,"grammar");
-            exit(0);
+        || a->type == conststring_e || a->type == nil_e)
+    {
+        print_errors("invalid arithmetic operation operand","try harder next time !!","grammar");
+        exit(0);
     }
 
     if(b->type == programfunc_e || b->type == libraryfunc_e || b->type == boolexpr_e || b->type == newtable_e || b->type == constbool_e
-        || b->type == conststring_e || b->type == nil_e){
-            print_errors("invalid arithmetic operation operand", b->sym->value.varVal->name,"grammar");
-            exit(0);
+        || b->type == conststring_e || b->type == nil_e)
+    {
+        print_errors("invalid arithmetic operation operand", "try harder next time !!","grammar");
+        exit(0);
     } 
 }
 
@@ -134,7 +136,7 @@ void print_quads(FILE *ptr) {
     char str[10];
     int len = 0 ;
     tmp++;
-    fprintf(ptr, "quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
+    fprintf(ptr, "quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 23, "", 11, "");
     fprintf(ptr, "------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for(int i = 1; i< currQuad;i++){
         sprintf(str,"%d",i);
@@ -397,10 +399,16 @@ expr* manage_bool_expr(expr* boolean,SymTable *symtable, scopeLists *lists, int 
 
 expr* do_bool(expr* e,int yylineno){
     if(e->type != boolexpr_e){
-        expr* new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
+        expr* new; 
+        new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
+         
         new->trueList = newlist(nextquadlabel());
         new->falseList = newlist(nextquadlabel() + 1);
-        emit(if_eq,new,create_expr(constbool_e, NULL, NULL, 0,"",'1'),NULL,0,yylineno);
+        // if(e->type == constbool_e){
+            emit(if_eq,NULL,e,create_expr(constbool_e, NULL, NULL, 0,"",'1'),0,yylineno);
+        // }else{
+        //     emit(if_eq,NULL,new,create_expr(constbool_e, NULL, NULL, 0,"",'1'),0,yylineno);
+        // } 
         emit(jump,NULL,NULL,NULL,0,yylineno);
         return new;
    }

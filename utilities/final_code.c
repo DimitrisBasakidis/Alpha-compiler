@@ -121,7 +121,7 @@ unsigned userfuncs_newused(SymbolTableEntry *sym) {
 }
 
 void fexpand(void){
-    assert (total == currInstruction);
+    assert (total_f == currInstruction);
     instruction* i = (instruction*) malloc(NEW_SIZE);
 
     if(instructions){
@@ -137,22 +137,49 @@ unsigned nextinstructionlabel(){
 }
 
 void make_operand(expr* e, vmarg* arg){
+    if(e == NULL){
+        arg->type = noarg_a;
+        return;
+    }
+    if(e->sym!=NULL)
+    if(e->sym->space == -1){
+        switch(e->sym->type){
+            case LIBFUNC:
+                e->type = libraryfunc_e;
+                break;
+            case USERFUNC:
+                e->type = programfunc_e;
+                break;
+            default:
+                assert(0);        
+        }
+    }
+
+    
+    fflush(stdout);
     switch(e->type){
         case var_e:
         case tableitem_e:
         case arithexpr_e:
         case boolexpr_e:
         case newtable_e:{
+            //if (e->sym == NULL) break;
             arg->val = e->sym->offset;
             switch (e->sym->space) {
                 case programvar:    arg->type = global_a; break;
                 case functionlocal: arg->type = local_a;  break;
                 case formalarg:     arg->type = formal_a; break;
-                default: assert(0);
+                case -1:    arg->type = userfunc_a;        break;
+                default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);//assert(0);
             }
+            break;
         }
         case constbool_e: {
-            arg->val = e->boolConst;
+            if(e->boolConst == '0' ){
+                arg->val = 0;
+            }else{
+                arg->val = 1;
+            }
             arg->type = bool_a; break;
         }
 
@@ -188,9 +215,13 @@ void make_operand(expr* e, vmarg* arg){
 }
 
 void femit(instruction* t){
-    if(currInstruction == total) expand();
-    instruction* p = instructions + currInstruction++;
-
+    if(currInstruction == total_f) fexpand();
+    instruction *p = instructions + currInstruction++;
+    p->arg1 = t->arg1;
+    p->arg2 = t->arg2;
+    p->opcode = t->opcode;
+    p->result = t->result;
+    p->srcLine = t->srcLine;
 } 
 
 void make_numberoperand(vmarg* arg, double val){
@@ -206,3 +237,4 @@ void make_booloperand(vmarg* arg , unsigned val){
 void make_retvaloperand(vmarg* arg){
     arg->type = retval_a;
 }
+
