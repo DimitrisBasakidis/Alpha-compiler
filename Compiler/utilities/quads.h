@@ -37,11 +37,11 @@ typedef enum expr_t {
     nil_e
 } expr_t;
 
-typedef enum iopcode{
+typedef enum iopcode {
     assign,add,sub,
     mul,divide,mod,
-    uminus,and,or,
-    not,if_eq,if_noteq,
+    uminus,and_op,or_op,
+    not_op,if_eq,if_noteq,
     if_lesseq,if_greatereq,if_less,
     if_greater,call,param,
     ret,getretval,funcstart,

@@ -4,17 +4,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "grammatical_rules/grammar_functions.h"
+#include "Compiler/grammatical_rules/grammar_functions.h"
 
-#include "utilities/quads.h"
-#include "utilities/elist.h"
-#include "utilities/target_code_generators.h"
+#include "Compiler/utilities/quads.h"
+#include "Compiler/utilities/elist.h"
+#include "Compiler/utilities/target_code_generators.h"
+#include "Compiler/utilities/binary_file.h"
 
 #define YYERROR_VERBOSE 1
 
 int yylex(void);
 void yyerror(const char *error_msg);
 void print_errors(const char *error_msg, char *token, const char *error_type);
+void convert_to_binary(void);
+void write_to_file(void); 
+
 const char *file_name;
 
 quad* quads = (quad*)0;
@@ -481,8 +485,10 @@ funcprefix: FUNCTION funcname { // elegxoume ama uparxoyn ta entries sto hashtab
   
   $$ = manage_function(symtable, lists, $2, print_errors, yylineno);
   /* gia tin epomenh fash */
-  $$->iaddress = nextquadlabel(); // deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
-  emit(jump, NULL, NULL, NULL, 0, yylineno); // GOTO
+   $$->iaddress = nextquadlabel(); 
+   emit(jump, NULL, NULL, NULL, 0, yylineno); 
+ // deixnei sto funcstart command tou quad poy antistoixei sthn sunarthsh poy orizetai
+ // GOTO
   emit(funcstart, lvalue_expr($$), NULL, NULL, 0, 0);
   push(stack, currscopeoffset());
   enterscopespace();
@@ -710,7 +716,10 @@ int main(int argc, char **argv) {
   print_quads((fptr == NULL) ? stdout : fptr);
 
  // generate_targetcode();
-  printInstructions();
+  printInstructions();  
+
+  convert_to_binary();
+  // write_to_file();
   free_table(symtable);
 
   return 0;

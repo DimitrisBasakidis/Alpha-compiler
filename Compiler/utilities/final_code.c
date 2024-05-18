@@ -115,7 +115,7 @@ unsigned userfuncs_newused(SymbolTableEntry *sym) {
 
     userFuncs[currUserFuncs].id = strdup(sym->value.funcVal->name);
     userFuncs[currUserFuncs].address = sym->iaddress;
-    userFuncs[currUserFuncs].localSize = sym->offset;
+    userFuncs[currUserFuncs].localSize = sym->total_locals;
 
     return currUserFuncs++;
 }
@@ -142,7 +142,7 @@ void make_operand(expr* e, vmarg* arg){
         return;
     }
     if(e->sym!=NULL)
-    if(e->sym->space == -1){
+    if(e->sym->space == -1) {
         switch(e->sym->type){
             case LIBFUNC:
                 e->type = libraryfunc_e;
@@ -166,9 +166,9 @@ void make_operand(expr* e, vmarg* arg){
             //if (e->sym == NULL) break;
             arg->val = e->sym->offset;
             switch (e->sym->space) {
-                case programvar:    arg->type = global_a; break;
+                case programvar:   arg->type = global_a; break;
                 case functionlocal: arg->type = local_a;  break;
-                case formalarg:     arg->type = formal_a; break;
+                case formalarg:    arg->type = formal_a; break;
                 case -1:    arg->type = userfunc_a;        break;
                 default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);//assert(0);
             }

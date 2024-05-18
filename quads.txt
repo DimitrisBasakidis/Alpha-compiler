@@ -11,77 +11,49 @@
 "sqrt" [library function] (line 0) (scope 0)
 "cos" [library function] (line 0) (scope 0)
 "sin" [library function] (line 0) (scope 0)
-"a" [global variable] (line 1) (scope 0)
 "x" [global variable] (line 1) (scope 0)
-"y" [global variable] (line 1) (scope 0)
 "_t0" [global variable] (line 1) (scope 0)
-"z" [global variable] (line 1) (scope 0)
-"w" [global variable] (line 1) (scope 0)
-"_t1" [global variable] (line 1) (scope 0)
-"_t2" [global variable] (line 1) (scope 0)
-"_t3" [global variable] (line 1) (scope 0)
+"y" [global variable] (line 2) (scope 0)
 "f" [user function] (line 3) (scope 0)
-"g" [user function] (line 4) (scope 0)
-"b" [global variable] (line 6) (scope 0)
+"z" [global variable] (line 4) (scope 0)
+"w" [global variable] (line 5) (scope 0)
+"_t1" [global variable] (line 5) (scope 0)
+"v" [global variable] (line 8) (scope 0)
 
 -----------     Scope #1     -----------
-"_t3" [local variable] (line 11) (scope 1)
+"x" [formal argument] (line 3) (scope 1)
+"y" [formal argument] (line 3) (scope 1)
+"d" [local variable] (line 3) (scope 1)
+"_t0" [local variable] (line 3) (scope 1)
 
 
 
 quad#              opcode              result              arg1                arg2               label                       offset           space
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-1:                 ADD                 _t0                 x                   y                   0                   		3		0
-2:                 MUL                 _t1                 z                   w                   0                   		6		0
-3:                 SUB                 _t2                 _t0                 _t1                 0                   		7		0
-4:                 ASSIGN              a                   _t2                                     0                   		0		0
-5:                 ASSIGN              _t3                 a                                       0                   		8		0
-6:                 IF_GREATEREQ                            x                   y                   8                   
-7:                 JUMP                                                                            10                  
-8:                 ASSIGN              _t0                 true                                    0                   		3		0
-9:                 JUMP                                                                            11                  
-10:                ASSIGN              _t0                 false                                   0                   		3		0
-11:                ASSIGN              a                   _t0                                     0                   		0		0
-12:                ASSIGN              _t1                 a                                       0                   		6		0
-13:                JUMP                                                                            16                  
-14:                FUNCSTART           f                                                           0                   		-1		-1
-15:                FUNCEND             f                                                           0                   		-1		-1
-16:                JUMP                                                                            19                  
-17:                FUNCSTART           g                                                           0                   		-1		-1
-18:                FUNCEND             g                                                           0                   		-1		-1
-19:                CALL                f                                                           0                   		-1		-1
-20:                GETRETVAL           _t0                                                         0                   		3		0
-21:                CALL                g                                                           0                   		-1		-1
-22:                GETRETVAL           _t1                                                         0                   		6		0
-23:                IF_GREATEREQ                            _t0                 _t1                 25                  
-24:                JUMP                                                                            27                  
-25:                ASSIGN              _t2                 true                                    0                   		7		0
-26:                JUMP                                                                            28                  
-27:                ASSIGN              _t2                 false                                   0                   		7		0
-28:                ASSIGN              b                   _t2                                     0                   		11		0
-29:                ASSIGN              _t3                 b                                       0                   		8		0
-30:                IF_EQ                                   x                   true                36                  
-31:                JUMP                                                                            32                  
-32:                IF_EQ                                   y                   true                34                  
-33:                JUMP                                                                            38                  
-34:                IF_EQ                                   z                   true                36                  
-35:                JUMP                                                                            38                  
-36:                ASSIGN              _t0                 true                                    0                   		3		0
-37:                JUMP                                                                            39                  
-38:                ASSIGN              _t0                 false                                   0                   		3		0
-39:                ASSIGN              a                   _t0                                     0                   		0		0
-40:                ASSIGN              _t1                 a                                       0                   		6		0
-41:                ADD                 _t0                 x                   y                   0                   		3		0
-42:                SUB                 _t1                 z                   w                   0                   		6		0
-43:                IF_GREATEREQ                            _t0                 _t1                 45                  
-44:                JUMP                                                                            47                  
-45:                ASSIGN              _t2                 true                                    0                   		7		0
-46:                JUMP                                                                            48                  
-47:                ASSIGN              _t2                 false                                   0                   		7		0
-48:                IF_EQ               _t2                 true                                    50                  		7		0
-49:                JUMP                                                                            55                  
-50:                PARAM               z                                                           0                   		4		0
-51:                PARAM               y                                                           0                   		2		0
-52:                PARAM               x                                                           0                   		1		0
-53:                CALL                f                                                           0                   		-1		-1
-54:                GETRETVAL           _t3                                                         0                   		12		0
+1:                 ASSIGN              x                   10.00                                   0                   		0		0
+2:                 ASSIGN              _t0                 x                                       0                   		1		0
+3:                 ASSIGN              y                   'hello'                                 0                   		2		0
+4:                 ASSIGN              _t0                 y                                       0                   		1		0
+5:                 JUMP                                                                            13                  
+6:                 FUNCSTART           f                                                           0                   		-1		-1
+7:                 ASSIGN              d                   2.00                                    0                   		0		1
+8:                 ASSIGN              _t0                 d                                       0                   		1		1
+9:                 ADD                 _t0                 x                   y                   0                   		1		1
+10:                RET                 _t0                                                         0                   		1		1
+11:                JUMP                                                                            12                  
+12:                FUNCEND             f                                                           0                   		-1		-1
+13:                ASSIGN              z                   'world'                                 0                   		4		0
+14:                ASSIGN              _t0                 z                                       0                   		1		0
+15:                PARAM               3.14                                                        0                   		0		0
+16:                CALL                cos                                                         0                   		0		0
+17:                GETRETVAL           _t0                                                         0                   		1		0
+18:                ASSIGN              w                   _t0                                     0                   		5		0
+19:                ASSIGN              _t1                 w                                       0                   		6		0
+20:                PARAM               w                                                           0                   		5		0
+21:                PARAM               z                                                           0                   		4		0
+22:                PARAM               y                                                           0                   		2		0
+23:                PARAM               x                                                           0                   		0		0
+24:                CALL                print                                                       0                   		0		0
+25:                GETRETVAL           _t0                                                         0                   		1		0
+26:                ASSIGN              v                   '!'                                     0                   		7		0
+27:                ASSIGN              _t0                 v                                       0                   		1		0

@@ -35,7 +35,6 @@ void generate_UMINUS(quad* q);
 typedef void (*generator_func_t) (quad*);
 
 
-
 extern funcstack * funcs; 
 
 void generate_targetcode(void);

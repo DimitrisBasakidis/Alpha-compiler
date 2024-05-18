@@ -247,13 +247,13 @@ int print_opcode(int value, FILE *ptr) {
         case uminus:
             fprintf(ptr, "UMINUS");
             return 6;
-        case and:
+        case and_op:
             fprintf(ptr, "AND");
             return 3;
-        case or:
+        case or_op:
             fprintf(ptr, "OR");
             return 2;
-        case not:
+        case not_op:
             fprintf(ptr, "NOT");
             return 3;
         case if_eq:

@@ -84,7 +84,7 @@ void generate_PARAM(quad* q){
     instruction *t = malloc(sizeof(instruction));
     q->taddress = nextinstructionlabel();
     t->opcode = pusharg_v;
-    make_operand(q->arg1,&(t->arg1));
+    make_operand(q->result,&(t->arg1));
     femit(t);
 }
 
@@ -92,7 +92,7 @@ void generate_CALL(quad* q){
     instruction *t = malloc(sizeof(instruction));
     q->taddress = nextinstructionlabel();
     t->opcode = call_v;
-    make_operand(q->arg1,&(t->arg1));
+    make_operand(q->result,&(t->arg1));
     femit(t);
 }
 
