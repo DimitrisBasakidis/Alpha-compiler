@@ -543,8 +543,8 @@ char *yytext;
 
 #include "parser.h"
 
-#include "utilities/token_list.h"
-#include "utilities/comment_stack.h"
+#include "Compiler/utilities/token_list.h"
+#include "Compiler/utilities/comment_stack.h"
 
 #define BUFSIZE 1024
 

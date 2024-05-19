@@ -1,21 +1,29 @@
-all: scanner
-	 ./alphac ../test.txt 
+all: compiler vm
+	 ./alphac ../test.txt quads.txt
+	 ./vm "binary.abc"
 
-gdb: scanner
+vm: 
+	g++ Virtual-Machine/decodeBinary.cpp -c
+	g++ Virtual-Machine/main.cpp decodeBinary.o -o vm
+	./vm "binary.abc"
+
+gdb: compiler
 	sudo gdb ./alphac  ../test.txt
 
 flex:
 	flex --outfile=scanner.c scanner.l 
 
-scanner: flex yacc
-	gcc utilities/token_list.c -c 
-	gcc grammatical_rules/grammar_functions.c -c 
-	gcc utilities/comment_stack.c utilities/symbol_table.c utilities/quads.c utilities/elist.c utilities/scopes.c utilities/scope_stack.c -c
-	gcc scanner.c parser.c token_list.o comment_stack.o symbol_table.o grammar_functions.o quads.o elist.o scopes.o scope_stack.o -o alphac -g
-	# gdb ./alphac ../test.txt
+compiler: flex yacc
+	gcc Compiler/utilities/token_list.c -c 
+	gcc Compiler/grammatical_rules/grammar_functions.c -c 
+	gcc Compiler/utilities/comment_stack.c Compiler/utilities/symbol_table.c Compiler/utilities/quads.c Compiler/utilities/elist.c Compiler/utilities/scopes.c Compiler/utilities/scope_stack.c Compiler/utilities/final_code.c Compiler/utilities/func_stack.c Compiler/utilities/target_code_generators.c Compiler/utilities/binary_file.c -c
+	gcc scanner.c parser.c token_list.o comment_stack.o symbol_table.o grammar_functions.o quads.o elist.o scopes.o scope_stack.o final_code.o func_stack.o  target_code_generators.o binary_file.o -o alphac -g
+	./alphac ../test.txt quads.txt
+
 
 yacc:
 	bison --yacc --defines --output=parser.c parser.y -v -Wconflicts-rr
 
 clean:
-	rm -f scanner.c *.o alphac
+	rm -f *.o parser.c parser.output scanner.c alphac vm
+	rm -f quads.txt

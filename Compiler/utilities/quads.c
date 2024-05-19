@@ -75,15 +75,17 @@ expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,i
 
 void check_expr(expr* a , expr* b,void (*print_errors)(const char *, char *, const char *)){
    if(a->type == programfunc_e || a->type == libraryfunc_e || a->type == boolexpr_e || a->type == newtable_e || a->type == constbool_e
-        || a->type == conststring_e || a->type == nil_e){
-            print_errors("invalid arithmetic operation operand",a->sym->value.varVal->name,"grammar");
-            exit(0);
+        || a->type == conststring_e || a->type == nil_e)
+    {
+        print_errors("invalid arithmetic operation operand","try harder next time !!","grammar");
+        exit(0);
     }
 
     if(b->type == programfunc_e || b->type == libraryfunc_e || b->type == boolexpr_e || b->type == newtable_e || b->type == constbool_e
-        || b->type == conststring_e || b->type == nil_e){
-            print_errors("invalid arithmetic operation operand", b->sym->value.varVal->name,"grammar");
-            exit(0);
+        || b->type == conststring_e || b->type == nil_e)
+    {
+        print_errors("invalid arithmetic operation operand", "try harder next time !!","grammar");
+        exit(0);
     } 
 }
 
@@ -134,7 +136,7 @@ void print_quads(FILE *ptr) {
     char str[10];
     int len = 0 ;
     tmp++;
-    fprintf(ptr, "quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 14, "", 14, "");
+    fprintf(ptr, "quad#%-*sopcode%-*sresult%-*sarg1%-*sarg2%-*slabel%-*soffset%-*sspace\n", 14, "", 14, "", 14, "", 16, "", 15, "", 23, "", 11, "");
     fprintf(ptr, "------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for(int i = 1; i< currQuad;i++){
         sprintf(str,"%d",i);
@@ -176,8 +178,10 @@ void print_quads(FILE *ptr) {
         sprintf(str,"%d",tmp->label);
         fprintf(ptr, "%-*s",(int)(20-strlen(str)),"");
         memset(str,'\0',10);
-        // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
-        // printf("\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
+        if (tmp->result != NULL) {
+        fprintf(ptr, "\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->offset : 0);
+        fprintf(ptr, "\t\t%d", (tmp->result->sym != NULL) ? tmp->result->sym->space : 0);    
+        }
         tmp++;
         fprintf(ptr, "\n");
     }
@@ -243,13 +247,13 @@ int print_opcode(int value, FILE *ptr) {
         case uminus:
             fprintf(ptr, "UMINUS");
             return 6;
-        case and:
+        case and_op:
             fprintf(ptr, "AND");
             return 3;
-        case or:
+        case or_op:
             fprintf(ptr, "OR");
             return 2;
-        case not:
+        case not_op:
             fprintf(ptr, "NOT");
             return 3;
         case if_eq:
@@ -260,7 +264,7 @@ int print_opcode(int value, FILE *ptr) {
             return 8;
         case if_lesseq:
             fprintf(ptr, "if_lesseq");
-            return 8;
+            return 9;
         case if_greatereq:
             fprintf(ptr, "IF_GREATEREQ");
             return 12;
@@ -395,10 +399,16 @@ expr* manage_bool_expr(expr* boolean,SymTable *symtable, scopeLists *lists, int 
 
 expr* do_bool(expr* e,int yylineno){
     if(e->type != boolexpr_e){
-        expr* new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
+        expr* new; 
+        new = create_expr(boolexpr_e,e->sym,NULL,0.0f,"",'9');
+         
         new->trueList = newlist(nextquadlabel());
         new->falseList = newlist(nextquadlabel() + 1);
-        emit(if_eq,new,create_expr(constbool_e, NULL, NULL, 0,"",'1'),NULL,0,yylineno);
+        // if(e->type == constbool_e){
+            emit(if_eq,NULL,e,create_expr(constbool_e, NULL, NULL, 0,"",'1'),0,yylineno);
+        // }else{
+        //     emit(if_eq,NULL,new,create_expr(constbool_e, NULL, NULL, 0,"",'1'),0,yylineno);
+        // } 
         emit(jump,NULL,NULL,NULL,0,yylineno);
         return new;
    }
