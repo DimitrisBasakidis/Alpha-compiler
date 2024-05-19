@@ -161,16 +161,16 @@ void make_operand(expr* e, vmarg* arg){
         case var_e:
         case tableitem_e:
         case arithexpr_e:
+        case assignexpr_e:
         case boolexpr_e:
         case newtable_e:{
-            //if (e->sym == NULL) break;
             arg->val = e->sym->offset;
             switch (e->sym->space) {
                 case programvar:   arg->type = global_a; break;
                 case functionlocal: arg->type = local_a;  break;
                 case formalarg:    arg->type = formal_a; break;
                 case -1:    arg->type = userfunc_a;        break;
-                default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);//assert(0);
+                default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);assert(0);
             }
             break;
         }
@@ -210,7 +210,7 @@ void make_operand(expr* e, vmarg* arg){
             arg->val = libfuncs_newused(e->sym->value.funcVal->name);
             break;
         }
-        default: assert(0);
+        default: printf("the type is: %d\n", e->type); assert(0);
     }
 }
 
