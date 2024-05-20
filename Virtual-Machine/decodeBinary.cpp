@@ -1,5 +1,4 @@
 #include "decodeBinary.hpp"
-#include "../Compiler/utilities/final_code.h"
 #include <iostream>
 #include <vector>
 
@@ -10,6 +9,7 @@ unsigned currNumConsts = 0U;
 unsigned currStringConsts = 0U;
 unsigned currNamedLibFuncs = 0U;
 unsigned currUserFuncs = 0U;
+unsigned globalVarsNo = 0U;
 
 vector<instruction> instr;
 vector<double> num;
@@ -45,7 +45,6 @@ void decode_binary_file(const char *binary) {
         instruction temp;
         fread(&temp, sizeof(instruction), 1, ptr);
         instr.push_back(temp);
-        //cout << temp.opcode << endl;
     }
 
     fread(&currNumConsts, sizeof(unsigned), 1, ptr);
@@ -61,14 +60,12 @@ void decode_binary_file(const char *binary) {
     cout << "currStringConsts: " << currStringConsts << endl;
     for (int i = 0; i < currStringConsts; i++) {
         strings.push_back(read_string(ptr));
-        // cout << read_string(ptr) << endl;
     }
 
     fread(&currNamedLibFuncs,sizeof(currNamedLibFuncs),1,ptr);
     cout << "currNamedLibFuncs: " << currStringConsts << endl;
     for (int i = 0; i < currNamedLibFuncs; i++){ 
         lib_funcs.push_back(read_string(ptr));
-        // cout << read_string(ptr) << endl;
     }
 
     fread(&currUserFuncs, sizeof(currUserFuncs), 1, ptr);
@@ -79,10 +76,13 @@ void decode_binary_file(const char *binary) {
         fread(&usrf.localSize, sizeof(unsigned), 1, ptr);
         string s = read_string(ptr);
         usrf.id = (char *)s.c_str();
-        // user_funcs.push_back(usrf);
+        user_funcs.push_back(usrf);
         cout << usrf.id <<  " " <<  usrf.localSize << " " << usrf.address <<  endl;
     }
 
+    fread(&globalVarsNo, sizeof(globalVarsNo), 1, ptr);
+
+    // cout << "global var no " << globalVarsNo << endl;
     return;
 
 }

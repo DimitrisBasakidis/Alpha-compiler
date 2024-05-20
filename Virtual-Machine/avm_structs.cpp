@@ -7,3 +7,6 @@ static void avm_initstack(void){
         stack[i].type = undef_m;
     }
 }
+
+
+

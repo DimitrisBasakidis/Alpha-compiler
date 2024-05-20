@@ -17,7 +17,8 @@ extern int while_loop;
 extern int for_loop;
 extern int if_stmt;
 extern int global_val_exists;
-extern int is_local_kw;
+extern int is_local_kw;  
+
 
 int manage_break(void (*print_errors)(const char *, char *, const char *));
 int manage_continue(void (*print_errors)(const char *, char *, const char *));

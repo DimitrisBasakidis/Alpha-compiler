@@ -86,6 +86,8 @@ extern unsigned total;
 extern unsigned int currQuad;
 extern int temp_count;
 
+extern int global_vars_no;
+
 expr* create_expr(expr_t type, SymbolTableEntry* sym, expr* index, double numConst,char* strConst,unsigned char boolConst);
 stmt_t *make_stmt (struct stmt_t* s);
 int newlist (int i);

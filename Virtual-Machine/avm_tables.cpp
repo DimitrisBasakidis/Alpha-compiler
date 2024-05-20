@@ -1,5 +1,17 @@
 #include "avm_tables.hpp"
 
+memclear_func_t memclearFuncs[]= {
+    0,
+    memclear_string,
+    0,
+    memclear_table,
+    0,
+    0,
+    0,
+    0
+};
+
+
 void avm_tableincrefcounter(avm_table* t){
     ++t->refCounter;
 }
@@ -44,4 +56,32 @@ void avm_tabledestroy (avm_table* t ){
     avm_tablebucketsdestroy(t->strIndexed);
     avm_tablebucketsdestroy(t->numIndexed);
     free(t);
+}
+
+void memclear_table(avm_memcell* m) {
+    assert(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
+}
+
+
+void memclear_string(avm_memcell* m) {
+    assert(m->data.strVal);
+    free(m->data.strVal);
+}
+
+void avm_memcellclear (avm_memcell* m){
+    if(m->type != undef_m){
+        memclear_func_t f = memclearFuncs[m->type];
+        if(f)
+            (*f)(m);
+        m->type = undef_m;
+    }
+}
+
+void avm_tablesetelem(avm_memcell *key, avm_memcell *value) {
+    return;
+}
+
+avm_memcell* avm_tablegetelem(avm_table *t, avm_memcell* key) {
+    return nullptr;
 }

@@ -1,6 +1,4 @@
 #include "binary_file.h"
-#include "final_code.h"
-
 
 void convert_to_binary(void) {
     FILE *ptr = NULL;
@@ -52,6 +50,7 @@ void convert_to_binary(void) {
         fwrite(user_func.id, strlen(user_func.id) + 1, 1, ptr);
     }
 
+    fwrite(&global_vars_no, sizeof(global_vars_no), 1, ptr);
 
     fclose(ptr);
 }

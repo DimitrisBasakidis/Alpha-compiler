@@ -1,5 +1,7 @@
 #include "quads.h"
 
+int global_vars_no  = 0;
+
 void expand (void){
     assert (total == currQuad);
     quad* p = (quad*) malloc(NEW_SIZE);

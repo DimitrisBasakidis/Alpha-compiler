@@ -2789,6 +2789,8 @@ int main(int argc, char **argv) {
  // generate_targetcode();
   printInstructions();  
 
+  printf("NUMBER OF GLOBALS :: %d\n",global_vars_no );
+
   convert_to_binary();
   // write_to_file();
   free_table(symtable);
