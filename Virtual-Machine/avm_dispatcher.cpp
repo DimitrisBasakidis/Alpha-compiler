@@ -330,12 +330,24 @@ void execute_tablegetelem(instruction* inst){
         else {
             char *ts = avm_tostring(t);
             char *is = avm_tostring(i);
-            cout << "``notfound"
+            cout << "notfound"<< endl;
+            free(ts);
+            free(is);
         }
     }
 }
 void execute_tablesetelem(instruction* inst){
-    
+    avm_memcell *t = avm_translate_operand(&inst->result, (avm_memcell * )0);
+    avm_memcell *t = avm_translate_operand(&inst->arg1, &ax);
+    avm_memcell *t = avm_translate_operand(&inst->arg2, &bx);
+
+    assert(t && &stack[AVM_STACKSIZE - 1] >= t && t > &stack[top]);
+    assert(i && c);
+
+    if (t->type != table_m) 
+        cout << "illeagal use of type" << endl;
+    else 
+        avm_tablesetelem(t->data.numVal, i , c);
 }
 void execute_nop(instruction* inst){
     
