@@ -320,7 +320,7 @@ void execute_tablegetelem(instruction* inst){
     assert(i);
 
     avm_memcellclear(lv);
-    lv->type = nill_m;
+    lv->type = nil_m;
 
     if (t->type != table_m){
         cout << "illeagal use of type" << endl;
@@ -338,8 +338,8 @@ void execute_tablegetelem(instruction* inst){
 }
 void execute_tablesetelem(instruction* inst){
     avm_memcell *t = avm_translate_operand(&inst->result, (avm_memcell * )0);
-    avm_memcell *t = avm_translate_operand(&inst->arg1, &ax);
-    avm_memcell *t = avm_translate_operand(&inst->arg2, &bx);
+    avm_memcell *i = avm_translate_operand(&inst->arg1, &ax);
+    avm_memcell *c = avm_translate_operand(&inst->arg2, &bx);
 
     assert(t && &stack[AVM_STACKSIZE - 1] >= t && t > &stack[top]);
     assert(i && c);
