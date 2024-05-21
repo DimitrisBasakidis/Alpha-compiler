@@ -7,7 +7,6 @@
 
 using namespace std;
 
-avm_memcell stack[AVM_STACKSIZE];
 avm_memcell ax, bx, cx;
 avm_memcell retval;
 unsigned top, topsp;
@@ -16,6 +15,9 @@ unsigned pc = 1;
 unsigned currLine = 0;
 unsigned codeSize = 0;
 unsigned totalActuals=0;
+
+avm_memcell stack[AVM_STACKSIZE];
+
 
 
 instruction* code = (instruction *)0;
@@ -34,6 +36,8 @@ int main(int argc, char **argv) {
     while(executionFinished == 0){
         execute_cycle();
     }
+
+    cout << "\nIN MAIN STACK: " << stack << endl; 
 
     return 0;
 }

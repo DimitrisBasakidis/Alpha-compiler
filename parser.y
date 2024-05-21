@@ -273,7 +273,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   } else {
     emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, NULL, $$, 0, yylineno);
+    emit(assign, $2, $$,NULL, 0, yylineno);
   }
 }
 | lvalue INCREMENT {
@@ -283,11 +283,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-    emit(assign, val, NULL, $$, 0, yylineno);
+    emit(assign, val, $$, NULL, 0, yylineno);
     emit(add, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, NULL, $$, 0, yylineno);
+    emit(assign, $1, $$, NULL, 0, yylineno);
     emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
   }
   
@@ -302,7 +302,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   } else {
     emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, NULL, $$, 0, yylineno);
+    emit(assign, $2, $$,NULL, 0, yylineno);
   }
 }
 | lvalue DECREMENT {
@@ -312,11 +312,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-    emit(assign, val, NULL, $$, 0, yylineno);
+    emit(assign, val, $$, NULL, 0, yylineno);
     emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, NULL, $$, 0, yylineno);
+    emit(assign, $1, $$,NULL, 0, yylineno);
     emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
   }
 }
@@ -550,7 +550,8 @@ whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 ifprefix :  IF  { if_stmt++; } LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
         $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
-        emit (if_eq, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+        emit (if_eq,NULL, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),nextquadlabel() + 2, yylineno);
+        // filippe peiraja thn emit an exw kanei malakia sorry <3
         $$ = nextquadlabel();
         emit(jump,NULL,NULL,NULL,0,yylineno);
       };
@@ -599,8 +600,7 @@ whilestmt: open_while whilecond loopstmt {
                                       patchlabel($2,nextquadlabel());
                                       if($3) {patchlist($3->breakList,nextquadlabel()); //$3->breaklist: index tou quad opou briskontai ta breaks, nextquadlabel(): quad label opou bazoume ta brakes na deixnoun 
                                             patchlist($3->contList,$1);}
-                                      } 
-         ;
+                                      };
 
 N: {$$ = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno);}
 M: {$$ = nextquadlabel();}
@@ -610,7 +610,8 @@ forprefix : FOR {for_loop++; in_loop++; } LEFT_PARENTHESIS elist SEMICOLON M exp
               $7 = manage_bool_expr($7,symtable,lists,scope,yylineno);
               $$->test = $6;
               $$->enter = nextquadlabel();
-              emit(if_eq,$7,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
+              emit(if_eq,NULL,$7,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),0,yylineno);
+          // filippe o vaggelis peirakse kai auth thn emit <3
           }
           ;
 

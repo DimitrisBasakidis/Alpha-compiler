@@ -145,7 +145,7 @@ void execute_jeq(instruction* inst){
 
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
-   cout << "rv1 " << rv1 << " rv2 " << rv2 << endl;
+  // cout << "rv1 " << rv1 << " rv2 " << rv2 << endl;
     unsigned char result = 0;
     if(rv1->type == undef_m || rv2->type == undef_m){
         printf("error ! undef involved in equality");
@@ -158,13 +158,12 @@ void execute_jeq(instruction* inst){
     }else if(rv1->type != rv2->type ){
             printf("error please be better\n");
             exit(-1);
-    }else{
-  
-        // if(rv1->type == number_m){
-        //     if(rv1->data.numVal != 0){
-        //         result = 1;
-        //     }
-        // } //slide 31
+    }else{ 
+        if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal ==  rv2->data.numVal){
+                result = 1;
+            }
+        } 
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -559,7 +558,6 @@ void avm_registerlibfunc(char * id, library_func_t addr){
     lib_map.insert({id, addr});
 }
 
-
 void execute_arithmetic(instruction *inst) {
     avm_memcell *lv = avm_translate_operand(&inst->result, (avm_memcell *) 0);
     avm_memcell *rv1 = avm_translate_operand(&inst->arg1, &ax);
@@ -568,6 +566,7 @@ void execute_arithmetic(instruction *inst) {
     assert(lv && (&stack[AVM_STACKSIZE - 1] >= lv && lv > &stack[top] || lv == &retval)); // GOTO
     assert(rv1 && rv2);
 
+    cout<<"rv1   "<<rv1<<"rv2   " << rv2<<"result  "<<lv<< endl;
     if (rv1->type != number_m || rv2->type != number_m) {
         // avm_error()
         cout << "not a number in arithmetic!" << endl;
@@ -576,8 +575,11 @@ void execute_arithmetic(instruction *inst) {
         arithmetic_func_t op = arithmeticFuncs[inst->opcode - add_v];
         avm_memcellclear(lv);
         lv->type = number_m;
+        printf("lv ->data.numval 11:: %f\n", lv->data.numVal);
         lv->data.numVal = (*op)(rv1->data.numVal, rv2->data.numVal);
+        printf("lv ->data.numval :: %f\n", lv->data.numVal);
     }
+    cout << "\nIN avm_dispatcher STACK: " << stack << endl; 
 
 }
 
@@ -588,6 +590,8 @@ void execute_arithmetic(instruction *inst) {
 string number_tostring (avm_memcell* m) {
     ostringstream out;
     out << fixed << setprecision(2) << m->data.numVal;
+    //case ama exei dekadika pshfia
+    // out << (int)m->data.numVal;
     return out.str();
 }
 
