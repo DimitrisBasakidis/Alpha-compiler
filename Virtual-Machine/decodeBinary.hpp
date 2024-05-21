@@ -22,4 +22,6 @@ extern unsigned globalVarsNo;
 
 void decode_binary_file(const char *binary);
 
+void printInstructions(void);
+
 #endif

@@ -25,19 +25,19 @@ struct avm_table;
 
 typedef struct avm_memcell {
     avm_memcell_t type;
-    union{
+    union {
         double numVal;
-        char* strVal;
+        char *strVal;
         unsigned char boolVal;
-        struct avm_table* tableVal;
+        struct avm_table *tableVal;
         unsigned funcVal;
-        char* libfuncVal;
-    }data;
+        char *libfuncVal;
+    } data;
 } avm_memcell;
 
 extern avm_memcell stack[AVM_STACKSIZE];
 
-static void avm_initstack(void);
+void avm_initstack(void);
 
 void avm_memclear(avm_memcell* m);
 

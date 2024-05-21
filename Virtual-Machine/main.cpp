@@ -3,6 +3,7 @@
 #include "avm_dispatcher.hpp"
 #include "avm_structs.hpp"
 #include "avm_utilities.hpp"
+#include <stdio.h>
 
 using namespace std;
 
@@ -16,23 +17,23 @@ unsigned currLine = 0;
 unsigned codeSize = 0;
 unsigned totalActuals=0;
 
+
 instruction* code = (instruction *)0;
 
 int main(int argc, char **argv) {
+
     decode_binary_file(argv[1]);
+    printInstructions();
+    avm_initialize();
 
-    codeSize = instr.size()-1;
-    code = &instr[1];
-    cout<< "\ninstr size :: " << codeSize << endl;
+    codeSize = instr.size();
+    code = &instr[0];
 
-    top = topsp = AVM_STACKSIZE - 1 - globalVarsNo;
+    top = topsp = AVM_STACKSIZE - 2 - globalVarsNo;
 
     while(executionFinished == 0){
-        printf("executing\n");
         execute_cycle();
     }
 
-
-    cout << "top of the stack: " << top << topsp << endl;
     return 0;
 }

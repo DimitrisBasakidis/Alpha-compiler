@@ -37,7 +37,7 @@ generator_func_t generators[] = {
 
 
 void generate_targetcode(void){
-    for(unsigned i = 0;i<total;++i){
+    for(unsigned i = 0;i<nextquadlabel();i++){
         (*generators[quads[i].op]) (quads+i);
     }
 }
@@ -85,6 +85,8 @@ void generate_PARAM(quad* q){
     q->taddress = nextinstructionlabel();
     t->opcode = pusharg_v;
     make_operand(q->result,&(t->arg1));
+    t->result.type = noarg_a;
+    t->arg2.type = noarg_a;
     femit(t);
 }
 
@@ -93,6 +95,8 @@ void generate_CALL(quad* q){
     q->taddress = nextinstructionlabel();
     t->opcode = call_v;
     make_operand(q->result,&(t->arg1));
+    t->result.type = noarg_a;
+    t->arg2.type = noarg_a;
     femit(t);
 }
 
@@ -102,6 +106,7 @@ void generate_GETRETVAL(quad* q){
     t->opcode = assign_v;
     make_operand(q->result,&(t->result));
     make_retvaloperand(&(t->arg1));
+    t->arg2.type = noarg_a;
     femit(t);
 }
 
@@ -271,9 +276,8 @@ void printVMarg(vmarg* v){
 
 void printInstructions(){
     int i;
-    printf("#quads :: %d\n", nextquadlabel());
-    for(i = 0; i<nextquadlabel(); i++){
-       (*generators[quads[i].op])(quads+i);
+    for(i = 0; i<nextinstructionlabel(); i++){
+    //    (*generators[quads[i].op])(quads+i);
        if (i == 0) continue;
         printf("%-4d| ",i);
         printOpcode(instructions[i].opcode);
@@ -304,6 +308,5 @@ void printInstructions(){
         if(userFuncs)
         for(int j=0; j<currUserFuncs; j++){
             printf("%-4d| \"%s\" address=%d | local=%d\n",j, userFuncs[j].id, userFuncs[j].address, userFuncs[j].localSize);
-        }
-    
+        }   
 }

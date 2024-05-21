@@ -5,6 +5,9 @@ extern unsigned pc;
 extern unsigned currLine;
 extern unsigned codeSize;
 
+map<string, library_func_t> lib_map;
+
+
 // unsigned totalActuals = 0;
 
 extern instruction* code;
@@ -39,6 +42,7 @@ execute_func_t executeFuncs[] = {
     execute_and,
     execute_or,
     execute_not,
+    execute_jump,
     execute_jeq,
     execute_jne,
     execute_jle,
@@ -64,7 +68,7 @@ double mod_impl(double x, double y) {
 }
 
 
-char *avm_tostring(avm_memcell *m) {
+string avm_tostring(avm_memcell *m) {
     assert(m->type >= 0 && m->type <= undef_m);
     return (*tostringFuncs[m->type])(m);
 }
@@ -93,7 +97,9 @@ void execute_cycle(void){
 void execute_assign(instruction* inst){
     avm_memcell* lv = avm_translate_operand(&(inst->result),(avm_memcell*) 0);
     avm_memcell *rv = avm_translate_operand(&(inst->arg1),&ax);
-//  assert(lv && (&stack[N-1] >= lv && lv > &stack[top] || lv == &retval));
+    // printf("STACK[AVM_STACKSIZE-1] :: %p , lv :: %p , stack[top] :: %p\n", &stack[AVM_STACKSIZE-1], lv, &stack[top]);
+    
+    assert(lv && ((&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] )|| lv == &retval));
     assert(rv); 
     avm_assign(lv,rv);
 }
@@ -125,23 +131,40 @@ void execute_or(instruction* inst){
 void execute_not(instruction* inst){
     
 }
+
+void execute_jump(instruction* inst){
+    assert(inst->result.type == label_a);
+    pc = inst->result.val;
+
+
+}
+
 void execute_jeq(instruction* inst){
     assert(inst->result.type == label_a);
+   // cout << "arg1 " << inst->arg1.type << " arg2 " << inst->arg2.type << " result " << inst->result.type << endl;
+
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
+   cout << "rv1 " << rv1 << " rv2 " << rv2 << endl;
     unsigned char result = 0;
     if(rv1->type == undef_m || rv2->type == undef_m){
         printf("error ! undef involved in equality");
         exit(-1);
-    }else if(rv1->type == bool_m || rv2->type == bool_m){
+    }else if(rv1->type == bool_m || rv2->type == bool_m){       
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     }else if(rv1->type == nil_m || rv2->type == nil_m){
+        
         result = rv1->type == nil_m && rv2->type == nil_m;
     }else if(rv1->type != rv2->type ){
             printf("error please be better\n");
             exit(-1);
     }else{
-        /*Equality check with dispatching*/ //slide 31
+  
+        // if(rv1->type == number_m){
+        //     if(rv1->data.numVal != 0){
+        //         result = 1;
+        //     }
+        // } //slide 31
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -236,26 +259,35 @@ void execute_jgt(instruction* inst){
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
     unsigned char result = 0;
-    if(rv1->type == undef_m || rv2->type == undef_m){
-        printf("error ! undef involved in equality");
-        exit(-1);
-    }else if(rv1->type == bool_m || rv2->type == bool_m){
-        result = (avm_tobool(rv1)  > avm_tobool(rv2));
-    }else if(rv1->type == nil_m || rv2->type == nil_m){
-        result = rv1->type == nil_m && rv2->type == nil_m;
-    }else if(rv1->type != rv2->type ){
-            printf("error please be better\n");
-            exit(-1);
-    }else{
-        /*Equality check with dispatching*/ //slide 31
+    //printf("rv1 type :: %d , rv2 type :: %d\n",rv1->type,rv2->type);
+    if(rv1->type != number_m || rv2->type != number_m){
+        printf("Error:non arithmetic operands used in comparison operation\n");
+        exit(0);
     }
+
+    if(rv1->data.numVal>rv2->data.numVal){
+        result = 1;
+    }
+    // if(rv1->type == undef_m || rv2->type == undef_m){
+    //     printf("error ! undef involved in equality");
+    //     exit(-1);
+    // }else if(rv1->type == bool_m || rv2->type == bool_m){
+    //     result = (avm_tobool(rv1)  > avm_tobool(rv2));
+    // }else if(rv1->type == nil_m || rv2->type == nil_m){
+    //     result = rv1->type == nil_m && rv2->type == nil_m;
+    // }else if(rv1->type != rv2->type ){
+    //         printf("error please be better\n");
+    //         exit(-1);
+    // }else{
+    //     /*Equality check with dispatching*/ //slide 31
+    // }
     if(!executionFinished && result)
         pc = inst->result.val;
 }
 
 
 void execute_call(instruction* inst){
-    avm_memcell* func = avm_translate_operand(&(inst->result),&ax);
+    avm_memcell* func = avm_translate_operand(&(inst->arg1),&ax);
     assert(func);
     switch(func->type){
         case userfunc_m: {
@@ -270,7 +302,8 @@ void execute_call(instruction* inst){
         case table_m: avm_call_functor(func->data.tableVal); break;
 
         default:{
-            char* s = avm_tostring(func);
+            // char* s = avm_tostring(func);
+            string s = avm_tostring(func);
             cout << "error" << endl;  // write runtime error
             executionFinished = 1;
         }
@@ -328,11 +361,13 @@ void execute_tablegetelem(instruction* inst){
         avm_memcell *content = avm_tablegetelem(t->data.tableVal ,i);
         if (content) avm_assign(lv,content);
         else {
-            char *ts = avm_tostring(t);
-            char *is = avm_tostring(i);
+            // char *ts = avm_tostring(t);
+            // char *is = avm_tostring(i);
+            string ts = avm_tostring(t);
+            string is = avm_tostring(i);
             cout << "notfound"<< endl;
-            free(ts);
-            free(is);
+            // free(ts);
+            // free(is);
         }
     }
 }
@@ -346,9 +381,13 @@ void execute_tablesetelem(instruction* inst){
 
     if (t->type != table_m) 
         cout << "illeagal use of type" << endl;
-    else 
-        avm_tablesetelem(t->data.numVal, i , c);
+    else {
+        // avm_tablesetelem(t->data.tableVal, i);
+    } 
+        // avm_tablesetelem(t->data.numVal, i , c);
 }
+
+
 void execute_nop(instruction* inst){
     
 }
@@ -372,8 +411,45 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
         cout << "Warning" << endl;   //avm_warning("assigning from undefined content!!");
     
     avm_memcellclear(lv);
+    switch(rv->type){
+        case number_m:{
+            lv->type = number_m;
+            lv->data.numVal = rv->data.numVal;
+            break;
+        }
+        case nil_m: {
+            lv->type = nil_m;
+            break;
+        }
+        case string_m: {
+            lv->type = string_m;
+            lv->data.strVal = strdup(rv->data.strVal);
+            break;
+        }
+        case bool_m: {
+            lv->type = bool_m;
+            lv->data.boolVal = rv->data.boolVal;
+            break;
+        }
 
-    memcpy(lv,rv,sizeof(avm_memcell));
+        case table_m: {
+            lv->type = table_m;
+            lv->data.tableVal = rv->data.tableVal;
+            break; 
+        }
+
+        case userfunc_m: {
+            lv->type = userfunc_m;
+            lv->data.funcVal = rv->data.funcVal;
+            break;
+        }
+
+        case libfunc_m: {
+            lv->type = libfunc_m;
+            lv->data.libfuncVal = strdup(rv->data.libfuncVal);
+            break;
+        }
+    }
 
     if(lv->type == string_m)
         lv->data.strVal = strdup(rv->data.strVal);
@@ -383,9 +459,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
 
 void avm_call_functor(avm_table *t){
     cx.type = string_m;
-    // string s = "()";
-    // cx.data.strVal = (char *)s.c_str();
-    cx.data.strVal = (char *) ("()");
+    cx.data.strVal = (char *)"()";
 
     avm_memcell *f = avm_tablegetelem(t,&cx);
 
@@ -414,11 +488,13 @@ void avm_dec_top (void) {
     else
     --top;
 }
+
 void avm_push_envvalue (unsigned val) {
     stack[top].type = number_m;
     stack[top].data.numVal = val;
     avm_dec_top();
 }
+
 void avm_callsaveenvironment (void) {
     avm_push_envvalue (totalActuals);
     assert(code[pc].opcode == call_v);
@@ -440,8 +516,7 @@ unsigned avm_get_envvalue(unsigned i){
 }
 
 void avm_calllibfunc (char * id){
-    library_func_t f = avm_getlibraryfunc(id);
-
+    library_func_t f = avm_getlibraryfunc((char *) id);
     if (!f){
         cout << "unsupported lib func " << id << " called" << endl;
         exit(0);
@@ -466,17 +541,22 @@ avm_memcell *avm_getactual(unsigned i){
     return &stack[topsp + AVM_STACKENV_SIZE + 1 + i]; 
 }
 
-void libfunc_print ( void){
+void libfunc_print(void){
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i<n; ++i){
-        char * s = avm_tostring(avm_getactual(i)); //tostring????
-        puts(s);
-        free(s);
+        string s = avm_tostring(avm_getactual(i)); 
+
+        // puts(s);
+        cout << s;
     }
 }
 
+void libfunc_typeof(void) {
+
+}
+
 void avm_registerlibfunc(char * id, library_func_t addr){
-    
+    lib_map.insert({id, addr});
 }
 
 
@@ -501,16 +581,52 @@ void execute_arithmetic(instruction *inst) {
 
 }
 
-char *number_tostring (avm_memcell* m) { return (char *)""; }
-char *string_tostring (avm_memcell* m ) { return (char *)""; }
-char *bool_tostring (avm_memcell* m) { return (char *)""; }
-char *table_tostring (avm_memcell*m) { return (char *)""; }
-char *userfunc_tostring (avm_memcell*m) { return (char *)""; }
-char *libfunc_tostring (avm_memcell*m) { return (char *)""; }
-char *nil_tostring (avm_memcell*m) { return (char *)""; }
-char *undef_tostring (avm_memcell*m) { return (char *)""; }
+// string number_tostring (avm_memcell* m){
+//     return to_string(m->data.numVal).format("%.2f");
+// }
 
-unsigned char number_tobool(avm_memcell *m){return m->data.numVal !=0;}
+string number_tostring (avm_memcell* m) {
+    ostringstream out;
+    out << fixed << setprecision(2) << m->data.numVal;
+    return out.str();
+}
+
+
+string string_tostring (avm_memcell* m ){return m->data.strVal;}
+
+string bool_tostring (avm_memcell* m){
+
+    if(m->data.boolVal == '0'){
+        return (char*) "false";
+    }else{
+        return (char*) "true";
+    }
+}
+
+string table_tostring (avm_memcell*m){
+    return (char *)"table"; 
+}
+string userfunc_tostring (avm_memcell*m){
+    // userfunc f = userfuncs_getfunc(m->data.funcVal);
+
+    
+    // if (!f) return f.id;
+    // else return "";
+    printf("retuigng userfuncs_getfunc %s\n", userfuncs_getfunc(m->data.funcVal - 1).id);
+    return userfuncs_getfunc(m->data.funcVal - 1).id; 
+}
+string libfunc_tostring (avm_memcell*m) { return m->data.libfuncVal;}
+string nil_tostring (avm_memcell*m) { return "nil"; }
+string undef_tostring (avm_memcell*m) { return "undef"; }
+
+unsigned char number_tobool(avm_memcell *m){
+    if(m->data.numVal != 0 ){
+        return '1';
+    }else{
+        return '0';
+    }
+}
+
 unsigned char string_tobool(avm_memcell *m){return m->data.strVal[0]!=0;}
 unsigned char bool_tobool(avm_memcell *m){return m->data.boolVal;}
 unsigned char table_tobool(avm_memcell *m){return 1;}
@@ -518,8 +634,6 @@ unsigned char userfunc_tobool(avm_memcell *m){return 1;}
 unsigned char libfunc_tobool(avm_memcell *m){return 1;}
 unsigned char nil_tobool(avm_memcell *m){return 0;}
 unsigned char undef_tobool(avm_memcell *m) {return 0;}
-
-typedef unsigned char (*tobool_func_t)(avm_memcell*);
 
 tobool_func_t toboolFuncs[] = {
     number_tobool,
@@ -538,5 +652,31 @@ unsigned char avm_tobool(avm_memcell *m){
 }
 
 
-library_func_t avm_getlibraryfunc(char *id) {return (library_func_t) 0;}
+library_func_t avm_getlibraryfunc(char *id) { 
+    return lib_map[id];
+}
 
+void avm_initialize(void) {
+    avm_initstack();
+
+    avm_registerlibfunc((char *) "print", libfunc_print);
+    avm_registerlibfunc((char *) "typeof", libfunc_typeof);
+
+//    for (const auto& [k, v] : lib_map) {
+//         std::cout << "m[" << k << "] = " << reinterpret_cast<void*>(v) << std::endl;
+//     }
+    // TODO: prepei na to valoume kai gia tis upoloipes
+}
+
+void libfunc_totalarguments(void) {
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
+    avm_memcellclear(&retval);
+
+    if (!p_topsp) {
+        cout << "total arguments called outside a function " << endl;
+        retval.type = nil_m;
+    } else {
+        retval.type = number_m;
+        retval.data.numVal = avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
+    }
+}

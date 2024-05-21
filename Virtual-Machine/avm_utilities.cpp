@@ -21,7 +21,11 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
         }
         case bool_a: {
             reg->type = bool_m;
-            reg->data.boolVal = arg->val;
+            if(arg->val == 0){
+                reg->data.boolVal = '0';
+            }else{
+                reg->data.boolVal = '1';
+            }
             return reg;
         }
         case nil_a: reg->type = nil_m; return reg;
@@ -41,7 +45,10 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return reg;
         }
 
-        default: printf("TYPE :: %d\n",arg->type) ;assert(0);
+        case noarg_a: 
+            return NULL;
+
+        default: printf("TYPE = %d\n",arg->type) ;assert(0);
     }
 }
 
@@ -58,6 +65,8 @@ char* libfuncs_getused(unsigned index){
 }
 
 userfunc userfuncs_getfunc(unsigned index){
+    // printf("index: %d\n", index);
+    // printf("userfuncs: %p\n", user_funcs[index]);
+    // cout << user_funcs[index] << endl; 
     return user_funcs[index];
 }
-

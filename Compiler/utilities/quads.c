@@ -339,6 +339,9 @@ SymbolTableEntry* newtemp(SymTable *symtable, scopeLists *lists, int scope, int 
         insert_to_scope(lists, node, scope);
         node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou mpila
         node->offset = currscopeoffset(); 
+        if(currscopespace() == programvar && currscopeoffset() > global_vars_no ){
+            global_vars_no = currscopeoffset();
+        }
         incurrscopeoffset();
     } else {
         return sym;

@@ -126,7 +126,7 @@ SymbolTableEntry *manage_local_id(SymTable *symtable, scopeLists *lists, char *t
         insert_to_scope(lists, node, scope);
         node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
         node->offset = currscopeoffset(); 
-        if(scope == 0 && currscopeoffset() > global_vars_no ){
+        if(currscopespace() == programvar && currscopeoffset() > global_vars_no ){
             global_vars_no = currscopeoffset();
         }
         incurrscopeoffset();
@@ -225,7 +225,7 @@ int manage_id_list(SymTable *symtable, scopeLists *lists, SymbolTableEntry *entr
     insert_to_scope(lists, node, scope + 1);
     node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
     node->offset = currscopeoffset(); 
-    if(scope == 0 && currscopeoffset() > global_vars_no ){
+    if(currscopespace() == programvar && currscopeoffset() > global_vars_no ){
         global_vars_no = currscopeoffset();
     }
     incurrscopeoffset();
@@ -257,7 +257,7 @@ SymbolTableEntry *manage_id(SymTable *symtable, scopeLists *lists, char *token, 
         insert_to_scope(lists, node, scope);
         node->space = currscopespace();  // dialeksh 9 slide 49 sto site tou pratikakh
         node->offset = currscopeoffset(); 
-        if(scope == 0 && currscopeoffset() > global_vars_no ){
+        if(currscopespace() == programvar && currscopeoffset() > global_vars_no ){
             global_vars_no = currscopeoffset();
         }
         incurrscopeoffset();

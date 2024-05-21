@@ -14,6 +14,7 @@ extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern unsigned top, topsp;
 
+
 double consts_getnumber(unsigned index);
 char* consts_getstring(unsigned index);
 char* libfuncs_getused(unsigned index);

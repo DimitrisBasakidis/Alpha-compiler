@@ -349,6 +349,7 @@ primary: lvalue {
   if (from_elist) from_elist = 0;
 }
 | call { 
+  printf("curr scope space :: %d\n",currscopespace());
   entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
   manage_call(symtable, lists, entry, $1->sym->value.varVal->name, print_errors, yylineno);
 }
@@ -542,7 +543,7 @@ open_while: WHILE {while_loop++; $$ = nextquadlabel();};
 whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
     { 
       $2 = manage_bool_expr($2,symtable,lists,scope,yylineno);
-      emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
+      emit(if_eq,NULL,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),nextquadlabel()+2,yylineno);
       $$ = nextquadlabel();
       emit(jump,NULL,NULL,NULL,0,yylineno);
     };
@@ -715,8 +716,8 @@ int main(int argc, char **argv) {
 
   print_quads((fptr == NULL) ? stdout : fptr);
 
- // generate_targetcode();
-  printInstructions();  
+ generate_targetcode();
+// printInstructions();  
 
   printf("NUMBER OF GLOBALS :: %d\n",global_vars_no );
 
