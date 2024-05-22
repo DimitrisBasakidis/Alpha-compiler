@@ -165,6 +165,11 @@ void execute_jeq(instruction* inst){
                 result = 1;
             }
         } 
+        if(rv1->type == table_m && rv2->type == table_m){
+            if(rv1->data.tableVal ==  rv2->data.tableVal){
+                result = 1;
+            }
+        } 
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -185,7 +190,11 @@ void execute_jne(instruction* inst){
             printf("error please be better\n");
             exit(-1);
     }else{
-        /*Equality check with dispatching*/ //slide 31
+         if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal !=  rv2->data.numVal){
+                result = 1;
+            }
+        }
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -312,7 +321,7 @@ void execute_call(instruction* inst){
         default:{
             // char* s = avm_tostring(func);
             string s = avm_tostring(func);
-            cout << "error" << endl;  // write runtime error
+            cout << "cannot bind " << s << "  to a function !" << endl;  // write runtime error
             executionFinished = 1;
         }
     }

@@ -1,6 +1,6 @@
 all: compiler vm
 	./alphac ../test.txt quads.txt
-	 ./vm "binary.abc"
+	./vm "binary.abc"
 
 vm: 
 	g++ Virtual-Machine/decodeBinary.cpp -c

@@ -47,17 +47,28 @@ void avm_memcellclear (avm_memcell* m){
 
 void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *value) {
     avm_memcell *temp = (avm_memcell *) malloc(sizeof(avm_memcell));
-    temp->type = value->type;
 
+    //temp->type = value->type;
+    memcpy(temp,value,sizeof(avm_memcell));
     switch (key->type) {    
-        case number_m:
-            temp->data.numVal = value->data.numVal;
-            table->indexedDouble.insert(pair<double, avm_memcell*>(key->data.numVal, temp));
+        case number_m: {
+            std::map<double, avm_memcell*>::iterator it = (table->indexedDouble).find(key->data.numVal);
+            if(it == table->indexedDouble.end()){
+                table->indexedDouble.insert(pair<double, avm_memcell*>(key->data.numVal, temp));
+            } else {
+                it->second = temp;
+            }
             break;
-        
+        }
         case string_m:
-            temp->data.strVal = value->data.strVal;
-            table->indexedStrVal.insert(pair<string, avm_memcell*>(key->data.strVal, temp));
+            std::map<string, avm_memcell*>::iterator it = (table->indexedStrVal).find(key->data.strVal);
+            if(it == table->indexedStrVal.end()){
+                table->indexedStrVal.insert(pair<string, avm_memcell*>(key->data.strVal, temp));
+            } else {
+                it->second = temp;
+            }
+            //temp->data.strVal = value->data.strVal;
+            // table->indexedStrVal.insert(pair<string, avm_memcell*>(key->data.strVal, temp));
             break;
     }
 }
@@ -89,12 +100,10 @@ string print_avm_memcell(const avm_memcell* cell, string tablestr) {
     
     switch (cell->type) {
         case number_m:
-            // std::cout << "numVal: " << cell->data.numVal;
             tablestr += to_string(cell->data.numVal);
             tablestr += ", ";
             break;
         case string_m:
-            // std::cout << "strVal: " << cell->data.strVal;
             tablestr += cell->data.strVal;
             tablestr += ", ";
             break;
@@ -106,8 +115,6 @@ string print_avm_memcell(const avm_memcell* cell, string tablestr) {
             tablestr += avm_printtable(cell->data.tableVal) + "], ";
             break;
         case userfunc_m:
-            // cout << "index "  << cell->data.funcVal << endl; 
-            // tablestr += instr[cell->data.funcVal].result.val;
             tablestr += lookup_based_on_instr_addr(cell->data.funcVal);
             tablestr += ", ";
             break;            
@@ -122,68 +129,26 @@ string print_avm_memcell(const avm_memcell* cell, string tablestr) {
             tablestr += "undef, ";
             break;
         default:
-            // std::cout << "Unknown type";
             tablestr += "[], ";
     }
-    // tablestr += ", ";
 
     return tablestr;
 }
 
-// Function to print avm_table
 string avm_printtable(const avm_table* table) {
     string tablestr;
 
     if (table == nullptr) {
-        // std::cout << "Table is null" << std::endl;
         return "undef";
     }
     
-    // std::cout << "refCounter: " << table->refCounter << std::endl;
-    
-    // std::cout << "indexedDouble:" << std::endl;
     for (const auto& pair : table->indexedDouble) {
-        // std::cout << "  Key: " << pair.first << " -> Value: ";
         tablestr = print_avm_memcell(pair.second, tablestr);
-        // std::cout << std::endl;
     }
     
-    // std::cout << "indexedStrVal:" << std::endl;
     for (const auto& pair : table->indexedStrVal) {
-        // std::cout << "  Key: " << pair.first << " -> Value: ";
         tablestr =  print_avm_memcell(pair.second, tablestr);
-        // std::cout << std::endl;
     }
 
-    return tablestr;
+    return tablestr.substr(0, tablestr.size() - 2) + " ";
 }
-
-// int main() {
-
-//     avm_table *t = avm_tablenew();
-//     avm_memcell *n = (avm_memcell *) malloc(sizeof(avm_memcell));
-//     n->data.strVal = (char *)malloc(sizeof(char *));
-//     n->data.strVal = (char *)"index";
-//     n->type = string_m;
-
-//     avm_memcell *nn = (avm_memcell *) malloc(sizeof(avm_memcell));
-//     nn->data.strVal = (char *)malloc(sizeof(char *));
-//     nn->data.strVal = (char *)"vaggelis kai mitsos";
-//     nn->type = string_m;
-
-//     avm_memcell *n2 = (avm_memcell *) malloc(sizeof(avm_memcell));
-//     n2->data.numVal = 3.343;
-//     n2->type = number_m;
-
-//     avm_memcell *nn2 = (avm_memcell *) malloc(sizeof(avm_memcell));
-//     nn2->data.numVal = 3.3;
-//     nn2->type = number_m;
-
-//    avm_tablesetelem(t, n, nn);
-//     avm_tablesetelem(t, n2, nn2);
-
-//     print_avm_table(t);
-
-//     cout << "index: 3.343 = " << avm_tablegetelem(t, n2)->data.numVal << endl;
-//     cout << "index: index = " << avm_tablegetelem(t, n)->data.strVal << endl;
-// }
