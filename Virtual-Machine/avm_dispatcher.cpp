@@ -352,24 +352,25 @@ void execute_newtable(instruction* inst){
     avm_memcellclear(lv);
     lv->type = table_m;
     lv->data.tableVal = avm_tablenew();
-    avm_tableincrefcounter(lv->data.tableVal);
 }
 void execute_tablegetelem(instruction* inst){
     avm_memcell *lv = avm_translate_operand(&inst->result, (avm_memcell *) 0);
     avm_memcell *t = avm_translate_operand(&inst->arg1, (avm_memcell *) 0);
-    avm_memcell *i = avm_translate_operand(&inst->arg2, (avm_memcell *) 0);
+    avm_memcell *i = avm_translate_operand(&inst->arg2, (avm_memcell *) &ax);
 
     assert(lv && &stack[AVM_STACKSIZE - 1] >= lv && lv > &stack[top] || lv == &retval);
     assert (t && &stack[AVM_STACKSIZE - 1] >= t && t> &stack[top]);
     assert(i);
 
-    avm_memcellclear(lv);
+    // avm_memcellclear(lv);
     lv->type = nil_m;
 
     if (t->type != table_m){
-        cout << "illeagal use of type" << endl;
+        cout << "illegal use of type" << endl;
     }else {
         avm_memcell *content = avm_tablegetelem(t->data.tableVal ,i);
+        // cout << "i index: " << i->type << endl;
+        // cout << "content: " << content->type << endl;
         if (content) avm_assign(lv,content);
         else {
             // char *ts = avm_tostring(t);
@@ -390,12 +391,14 @@ void execute_tablesetelem(instruction* inst){
     assert(t && &stack[AVM_STACKSIZE - 1] >= t && t > &stack[top]);
     assert(i && c);
 
-    if (t->type != table_m) 
-        cout << "illeagal use of type" << endl;
-    else {
-        // avm_tablesetelem(t->data.tableVal, i);
+    if (t->type != table_m) {
+        cout << "illegal use of type" << endl;
+        exit(0);
+    } else {
+        avm_tablesetelem(t->data.tableVal, i , c);
     } 
-        // avm_tablesetelem(t->data.numVal, i , c);
+
+    // print_avm_table(t->data.tableVal);
 }
 
 
@@ -406,7 +409,6 @@ void execute_nop(instruction* inst){
 
 void avm_push_table_arg(avm_table* t){
     stack[top].type = table_m;
-    avm_tableincrefcounter(stack[top].data.tableVal = t);
     ++totalActuals;
     avm_dec_top();
 }
@@ -463,9 +465,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
     }
 
     if(lv->type == string_m)
-        lv->data.strVal = strdup(rv->data.strVal);
-    else if(lv->type == table_m)
-        avm_tableincrefcounter(lv->data.tableVal);    
+        lv->data.strVal = strdup(rv->data.strVal);    
 }
 
 void avm_call_functor(avm_table *t){
@@ -617,7 +617,10 @@ string bool_tostring (avm_memcell* m){
 }
 
 string table_tostring (avm_memcell*m){
-    return (char *)"table"; 
+    string t = "[ ";
+    t += avm_printtable(m->data.tableVal);
+    t += "]";
+    return t;
 }
 string userfunc_tostring (avm_memcell*m){
     // userfunc f = userfuncs_getfunc(m->data.funcVal);

@@ -2,7 +2,10 @@
 
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
+
     switch (arg->type) {
+
+        // cout << "arg " << arg << " reg " << reg << endl;
 
         case global_a: return &stack[AVM_STACKSIZE-1-(arg->val)];
         case local_a: return &stack[topsp-arg->val];
@@ -32,9 +35,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
 
         case userfunc_a: {
             reg->type = userfunc_m;
-            /* If function address is directly stored */
-             reg->data.funcVal = arg->val;
-            /* If function index in func table is stored */
+            // reg->data.funcVal = arg->val;
             reg->data.funcVal = userfuncs_getfunc(arg->val).address;
             return reg;
         }
@@ -65,8 +66,5 @@ char* libfuncs_getused(unsigned index){
 }
 
 userfunc userfuncs_getfunc(unsigned index){
-    // printf("index: %d\n", index);
-    // printf("userfuncs: %p\n", user_funcs[index]);
-    // cout << user_funcs[index] << endl; 
     return user_funcs[index];
 }

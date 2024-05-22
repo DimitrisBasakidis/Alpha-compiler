@@ -558,7 +558,7 @@ idlist_id: ID {
   manage_id_list(symtable, lists, entry, entry_l, $1, print_errors, yylineno);
 };
 
-open_while: WHILE {while_loop++; $$ = nextquadlabel();};
+open_while: WHILE {while_loop++; in_loop++; $$ = nextquadlabel();};
 
 whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
     { 

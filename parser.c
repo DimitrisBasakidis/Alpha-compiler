@@ -2331,7 +2331,7 @@ yyreduce:
 
   case 97: /* open_while: WHILE  */
 #line 561 "parser.y"
-                  {while_loop++; (yyval.int_val) = nextquadlabel();}
+                  {while_loop++; in_loop++; (yyval.int_val) = nextquadlabel();}
 #line 2336 "parser.c"
     break;
 
