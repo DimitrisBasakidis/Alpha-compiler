@@ -36,8 +36,7 @@ int main(int argc, char **argv) {
     while(executionFinished == 0){
         execute_cycle();
     }
-
-    cout << "\nIN MAIN STACK: " << stack << endl; 
-
+    //cout << "\nIN MAIN STACK: " << stack << endl; 
+    //print_stack();
     return 0;
 }

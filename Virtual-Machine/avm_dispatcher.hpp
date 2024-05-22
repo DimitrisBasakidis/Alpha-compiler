@@ -126,4 +126,7 @@ void avm_initialize(void);
 void libfunc_totalarguments(void);
 library_func_t avm_getlibraryfunc(char *id);
 
+void print_stack();
+void print_memcell(avm_memcell *m);
+
 #endif

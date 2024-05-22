@@ -97,11 +97,14 @@ void execute_cycle(void){
 void execute_assign(instruction* inst){
     avm_memcell* lv = avm_translate_operand(&(inst->result),(avm_memcell*) 0);
     avm_memcell *rv = avm_translate_operand(&(inst->arg1),&ax);
-    // printf("STACK[AVM_STACKSIZE-1] :: %p , lv :: %p , stack[top] :: %p\n", &stack[AVM_STACKSIZE-1], lv, &stack[top]);
     
     assert(lv && ((&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] )|| lv == &retval));
-    assert(rv); 
-    avm_assign(lv,rv);
+    // cout << "PROGRAM COUNTER = " << pc << endl; 
+    fflush(stdout);
+    // cout << "rv = " << rv << " lv = " << lv << endl;
+    assert(rv || lv  == &retval); 
+    
+    if(rv) avm_assign(lv,rv);
 }
 
 // void execute_add(instruction* inst){
@@ -135,8 +138,6 @@ void execute_not(instruction* inst){
 void execute_jump(instruction* inst){
     assert(inst->result.type == label_a);
     pc = inst->result.val;
-
-
 }
 
 void execute_jeq(instruction* inst){
@@ -199,14 +200,18 @@ void execute_jle(instruction* inst){
         printf("error ! undef involved in equality");
         exit(-1);
     }else if(rv1->type == bool_m || rv2->type == bool_m){
-        result = (avm_tobool(rv1) <= avm_tobool(rv2));
+        result = (avm_tobool(rv1) < avm_tobool(rv2));
     }else if(rv1->type == nil_m || rv2->type == nil_m){
         result = rv1->type == nil_m && rv2->type == nil_m;
     }else if(rv1->type != rv2->type ){
             printf("error please be better\n");
             exit(-1);
     }else{
-        /*Equality check with dispatching*/ //slide 31
+        if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal <= rv2->data.numVal){
+                result = 1;
+            }
+        }
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -220,14 +225,18 @@ void execute_jge(instruction* inst){
         printf("error ! undef involved in equality");
         exit(-1);
     }else if(rv1->type == bool_m || rv2->type == bool_m){
-        result = (avm_tobool(rv1) >= avm_tobool(rv2));
+        result = (avm_tobool(rv1) < avm_tobool(rv2));
     }else if(rv1->type == nil_m || rv2->type == nil_m){
         result = rv1->type == nil_m && rv2->type == nil_m;
     }else if(rv1->type != rv2->type ){
             printf("error please be better\n");
             exit(-1);
     }else{
-        /*Equality check with dispatching*/ //slide 31
+        if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal >= rv2->data.numVal){
+                result = 1;
+            }
+        }
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -248,7 +257,11 @@ void execute_jlt(instruction* inst){
             printf("error please be better\n");
             exit(-1);
     }else{
-        /*Equality check with dispatching*/ //slide 31
+        if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal <  rv2->data.numVal){
+                result = 1;
+            }
+        }
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -258,28 +271,23 @@ void execute_jgt(instruction* inst){
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
     unsigned char result = 0;
-    //printf("rv1 type :: %d , rv2 type :: %d\n",rv1->type,rv2->type);
-    if(rv1->type != number_m || rv2->type != number_m){
-        printf("Error:non arithmetic operands used in comparison operation\n");
-        exit(0);
+    if(rv1->type == undef_m || rv2->type == undef_m){
+        printf("error ! undef involved in equality");
+        exit(-1);
+    }else if(rv1->type == bool_m || rv2->type == bool_m){
+        result = (avm_tobool(rv1) < avm_tobool(rv2));
+    }else if(rv1->type == nil_m || rv2->type == nil_m){
+        result = rv1->type == nil_m && rv2->type == nil_m;
+    }else if(rv1->type != rv2->type ){
+            printf("error please be better\n");
+            exit(-1);
+    }else{
+        if(rv1->type == number_m && rv2->type == number_m){
+            if(rv1->data.numVal > rv2->data.numVal){
+                result = 1;
+            }
+        }
     }
-
-    if(rv1->data.numVal>rv2->data.numVal){
-        result = 1;
-    }
-    // if(rv1->type == undef_m || rv2->type == undef_m){
-    //     printf("error ! undef involved in equality");
-    //     exit(-1);
-    // }else if(rv1->type == bool_m || rv2->type == bool_m){
-    //     result = (avm_tobool(rv1)  > avm_tobool(rv2));
-    // }else if(rv1->type == nil_m || rv2->type == nil_m){
-    //     result = rv1->type == nil_m && rv2->type == nil_m;
-    // }else if(rv1->type != rv2->type ){
-    //         printf("error please be better\n");
-    //         exit(-1);
-    // }else{
-    //     /*Equality check with dispatching*/ //slide 31
-    // }
     if(!executionFinished && result)
         pc = inst->result.val;
 }
@@ -291,7 +299,8 @@ void execute_call(instruction* inst){
     switch(func->type){
         case userfunc_m: {
             avm_callsaveenvironment();
-            pc = func->data.funcVal;
+            pc = func->data.funcVal+1;
+            // /printf("OPCODE :: %d\n", code[pc].opcode);
             assert(pc<AVM_ENDING_PC);
             assert(code[pc].opcode == funcenter_v);
             break;
@@ -317,13 +326,16 @@ void execute_pusharg(instruction* inst){
 }
 
 void execute_funcenter(instruction* inst){
+
     avm_memcell* func = avm_translate_operand(&inst->result,&ax);
     assert(func);
-    assert(pc == func->data.funcVal);
+    assert(pc-1 == func->data.funcVal);
     totalActuals = 0; 
     userfunc* funcInfo = avm_getfuncinfo(pc);
+   // printf("FUNCINFO locals :: %d\n", funcInfo->localSize);
     topsp = top;
     top = top - funcInfo->localSize;
+   // print_stack();
 }
 void execute_funcexit(instruction* inst){
     unsigned oldTop = top;
@@ -504,7 +516,7 @@ void avm_callsaveenvironment (void) {
 
 
 userfunc* avm_getfuncinfo(unsigned address){
-    return nullptr;
+    return &user_funcs[code[address].result.val];
 }
 
 unsigned avm_get_envvalue(unsigned i){
@@ -565,8 +577,7 @@ void execute_arithmetic(instruction *inst) {
 
     assert(lv && (&stack[AVM_STACKSIZE - 1] >= lv && lv > &stack[top] || lv == &retval)); // GOTO
     assert(rv1 && rv2);
-
-    cout<<"rv1   "<<rv1<<"rv2   " << rv2<<"result  "<<lv<< endl;
+   // cout<<"rv1   "<<rv1<<"rv2   " << rv2<<"result  "<<lv<< endl;
     if (rv1->type != number_m || rv2->type != number_m) {
         // avm_error()
         cout << "not a number in arithmetic!" << endl;
@@ -575,11 +586,9 @@ void execute_arithmetic(instruction *inst) {
         arithmetic_func_t op = arithmeticFuncs[inst->opcode - add_v];
         avm_memcellclear(lv);
         lv->type = number_m;
-        printf("lv ->data.numval 11:: %f\n", lv->data.numVal);
         lv->data.numVal = (*op)(rv1->data.numVal, rv2->data.numVal);
-        printf("lv ->data.numval :: %f\n", lv->data.numVal);
     }
-    cout << "\nIN avm_dispatcher STACK: " << stack << endl; 
+   // cout << "\nIN avm_dispatcher STACK: " << stack << endl; 
 
 }
 
@@ -682,5 +691,47 @@ void libfunc_totalarguments(void) {
     } else {
         retval.type = number_m;
         retval.data.numVal = avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
+    }
+}
+
+
+void print_memcell(avm_memcell *m) {
+    switch (m->type) {
+        case number_m:
+            printf("number: %f\n", m->data.numVal);
+            break;
+        case string_m:
+            printf("string: %s\n", m->data.strVal);
+            break;
+        case bool_m:
+            printf("bool: %s\n", m->data.boolVal ? "true" : "false");
+            break;
+        case table_m:
+            printf("table: %p\n", m->data.tableVal);
+            break;
+        case userfunc_m:
+            printf("userfunc: %u\n", m->data.funcVal);
+            break;
+        case libfunc_m:
+            printf("libfunc: %s\n", m->data.libfuncVal);
+            break;
+        case nil_m:
+            printf("nil\n");
+            break;
+        case undef_m:
+            printf("undef\n");
+            break;
+        default:
+            printf("unknown type\n");
+            break;
+    }
+}
+
+void print_stack() {
+    printf("Stack from top address (highest) to topsp (%u):\n", topsp);
+    for (unsigned i = AVM_STACKSIZE - 1; i > topsp; --i) {
+        printf("stack[%u]: ", i);
+        print_memcell(&stack[i]);
+        if (i == 0) break;  // To prevent underflow of unsigned
     }
 }

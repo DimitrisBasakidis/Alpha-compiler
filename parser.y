@@ -273,7 +273,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   } else {
     emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, $$,NULL, 0, yylineno);
+    emit(assign, $$, $2,NULL, 0, yylineno);
   }
 }
 | lvalue INCREMENT {
@@ -287,7 +287,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
     emit(add, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, $$, NULL, 0, yylineno);
+    emit(assign, $$, $1, NULL, 0, yylineno);
     emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
   }
   
@@ -297,13 +297,23 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   check_arith($2, "--lvalue");
   if ($2->type == tableitem_e) {
     $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
-    emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+    emit(sub, $$,$$, newexpr_constnum(1),  0, yylineno);
     emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
   } else {
-    emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
+    emit(sub, $2,$2, newexpr_constnum(1), 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, $$,NULL, 0, yylineno);
+    emit(assign, $$, $2,NULL, 0, yylineno);
   }
+
+  // if ($2->type == tableitem_e) {
+  //   $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
+  //   emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+  //   emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+  // } else {
+  //   emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
+  //   $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
+  //   emit(assign, $$, $2,NULL, 0, yylineno);
+  // }
 }
 | lvalue DECREMENT {
 
@@ -313,12 +323,22 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
     emit(assign, val, $$, NULL, 0, yylineno);
-    emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+    emit(sub, val,val, newexpr_constnum(1), 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, $$,NULL, 0, yylineno);
-    emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+    emit(assign, $$, $1, NULL, 0, yylineno);
+    emit(sub, $1,$1, newexpr_constnum(1), 0, yylineno);
   }
+  // $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
+  // if ($1->type == tableitem_e) {
+  //   expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
+  //   emit(assign, val, $$, NULL, 0, yylineno);
+  //   emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+  //   emit(tablesetelem, $1, $1->index, val, 0, yylineno);
+  // } else {
+  //   emit(assign, $1, $$,NULL, 0, yylineno);
+  //   emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+  // }
 }
 | primary { $$ = $1;}
 ; 
@@ -512,9 +532,9 @@ funcdef: funcprefix LEFT_PARENTHESIS funcargs RIGHT_PARENTHESIS { func_in_betwee
   int offset = temp->x;
   restorecurrentscopeoffset(offset);
   $$ = $1;
-
   emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
   patchlabel($1->iaddress, nextquadlabel());
+
   func_in_between--;
 };
 
@@ -573,19 +593,24 @@ ifstmt: ifprefix stmt { if_stmt--; patchlabel($1,nextquadlabel()); $$=$2; } %pre
         
         int brk_statemenets = 0, cont_statements = 0;
         int brk_stmt = 0, cont_stmt = 0;
+        int ret_statements = 0, ret_stmt = 0;
+
 
         if($2){
           brk_statemenets = $2->breakList;
           if($4) cont_statements = $4->contList;
+          ret_statements = $2->retList;
         }
 
         if($4){
           brk_stmt = $4->breakList;
           if($2) cont_stmt = $2->contList;
+          ret_stmt = $4->retList;
         }
-
+  
         $$->breakList = mergelist(brk_statemenets, brk_stmt);
         $$->contList = mergelist(cont_statements , cont_stmt);
+        $$->retList = mergelist(ret_statements, ret_stmt);
       };
 
 loopstart: { in_loop++; };
@@ -634,7 +659,7 @@ returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON { emit(ret,NULL
                         $$->retList = newlist(nextquadlabel());
                         emit(jump,NULL,NULL,NULL,0,yylineno);
                       }
-| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,$3,NULL,NULL,0,0); is_return_kw = 1; 
+| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,NULL,$3, NULL,0,0); is_return_kw = 1; 
                         $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
                         $$ = make_stmt($$);
                         $$->retList = newlist(nextquadlabel());
