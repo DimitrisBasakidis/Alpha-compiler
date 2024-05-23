@@ -170,6 +170,13 @@ void execute_jeq(instruction* inst){
                 result = 1;
             }
         } 
+
+        if(rv1->type == string_m && rv2->type == string_m){
+            if(strcmp(rv1->data.strVal,rv2->data.strVal) == 0 ){
+                result = 1;
+            }
+        } 
+
     }
     if(!executionFinished && result)
         pc = inst->result.val;
@@ -309,7 +316,6 @@ void execute_call(instruction* inst){
         case userfunc_m: {
             avm_callsaveenvironment();
             pc = func->data.funcVal+1;
-            // /printf("OPCODE :: %d\n", code[pc].opcode);
             assert(pc<AVM_ENDING_PC);
             assert(code[pc].opcode == funcenter_v);
             break;
@@ -478,6 +484,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
 }
 
 void avm_call_functor(avm_table *t){
+    exit(0);
     cx.type = string_m;
     cx.data.strVal = (char *)"()";
 
@@ -637,8 +644,6 @@ string userfunc_tostring (avm_memcell*m){
     return lookup_based_on_instr_addr(m->data.funcVal - 1); 
 }
 
-
-
 string libfunc_tostring (avm_memcell*m) { return m->data.libfuncVal;}
 string nil_tostring (avm_memcell*m) { return "nil"; }
 string undef_tostring (avm_memcell*m) { return "undef"; }
@@ -685,6 +690,7 @@ void avm_initialize(void) {
 
     avm_registerlibfunc((char *) "print", libfunc_print);
     avm_registerlibfunc((char *) "typeof", libfunc_typeof);
+    avm_registerlibfunc((char *) "totalarguments", libfunc_totalarguments);
 
 //    for (const auto& [k, v] : lib_map) {
 //         std::cout << "m[" << k << "] = " << reinterpret_cast<void*>(v) << std::endl;
@@ -701,9 +707,11 @@ void libfunc_totalarguments(void) {
         retval.type = nil_m;
     } else {
         retval.type = number_m;
-        retval.data.numVal = avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
+        retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
     }
 }
+
+
 
 
 void print_memcell(avm_memcell *m) {

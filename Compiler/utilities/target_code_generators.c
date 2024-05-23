@@ -144,7 +144,7 @@ void generate_RETURN(quad* q){
     instruction *t = malloc(sizeof(instruction));
     t->opcode = assign_v;
     make_retvaloperand(&(t->result));
-    make_operand(q->result,&(t->arg1));
+    make_operand(q->arg1,&(t->arg1));
     femit(t);
     userfunc *f = peek_func(funcs)->s; 
 }
