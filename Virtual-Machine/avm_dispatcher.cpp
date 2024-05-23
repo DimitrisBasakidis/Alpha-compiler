@@ -502,7 +502,8 @@ void avm_call_functor(avm_table *t){
 
 void avm_dec_top (void) {
     if (!top) { 
-        cout << "stack overflow" << endl; 
+        cout << "stack overflow" << endl;
+        exit(0);
         executionFinished = 1;
     }
     else
@@ -631,15 +632,13 @@ string table_tostring (avm_memcell*m){
     t += "]";
     return t;
 }
-string userfunc_tostring (avm_memcell*m){
-    // userfunc f = userfuncs_getfunc(m->data.funcVal);
 
-    
-    // if (!f) return f.id;
-    // else return "";
-    printf("retuigng userfuncs_getfunc %s\n", userfuncs_getfunc(m->data.funcVal - 1).id);
-    return userfuncs_getfunc(m->data.funcVal - 1).id; 
+string userfunc_tostring (avm_memcell*m){
+    return lookup_based_on_instr_addr(m->data.funcVal - 1); 
 }
+
+
+
 string libfunc_tostring (avm_memcell*m) { return m->data.libfuncVal;}
 string nil_tostring (avm_memcell*m) { return "nil"; }
 string undef_tostring (avm_memcell*m) { return "undef"; }
