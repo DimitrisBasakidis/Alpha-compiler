@@ -137,7 +137,8 @@ unsigned nextinstructionlabel(){
 }
 
 void make_operand(expr* e, vmarg* arg){
-    if(e == NULL){
+    if(e == NULL ){
+        if(arg == NULL) return;
         arg->type = noarg_a;
         return;
     }

@@ -2,35 +2,33 @@
 #define AVM_TABLES
 
 #include "avm_structs.hpp"
+#include <map>
+#include <string>
+#include <stdlib.h>
+#include <assert.h>
+#include <iostream>
 
-#define AVM_TABLE_HASHSIZE 211
+using namespace std;
+
+extern memclear_func_t memclearFuncs[];
+
+typedef struct avm_table {
+    unsigned refCounter;
+    map<double, avm_memcell*> indexedDouble;
+    map<string, avm_memcell*> indexedStrVal;
+} avm_table;
+
+struct avm_memcell;
 
 struct avm_table* avm_tablenew(void);
+void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *value);
+avm_memcell* avm_tablegetelem(avm_table *t, avm_memcell* key);
+void memclear_string(avm_memcell* m);
+void memclear_table(avm_memcell* m);
 void avm_tabledestroy (avm_table* t);
-avm_memcell* avm_tablegetelem(avm_memcell* key);
-void  avm_tablesetelem(avm_memcell *key, avm_memcell *value);
+void avm_memcellclear (avm_memcell* m);
 
-struct avm_table_bucket{
-    avm_memcell key;
-    avm_memcell value;
-    struct avm_table_bucket* next;
-};
-
-struct avm_table{
-    unsigned refCounter;
-    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
-    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
-    unsigned total;
-};
-
-void avm_tableincrefcounter(avm_table* t);
-
-void avm_tabledecrefcounter(avm_table* t);
-
-void avm_tablebucketsinit(avm_table_bucket ** p);
-
-void avm_memcellclear(avm_memcell* m);
-void avm_tablebucketsdestroy(avm_table_bucket **p);
+string avm_printtable(const avm_table* table);
 
 
 #endif

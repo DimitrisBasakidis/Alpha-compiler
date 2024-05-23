@@ -1,14 +1,16 @@
 all: compiler vm
-	 ./alphac ../test.txt quads.txt
-	 ./vm "binary.abc"
+	./alphac ../test.txt quads.txt
+	./vm "binary.abc"
 
 vm: 
 	g++ Virtual-Machine/decodeBinary.cpp -c
-	g++ Virtual-Machine/main.cpp decodeBinary.o -o vm
+	g++ Virtual-Machine/avm_structs.cpp Virtual-Machine/avm_utilities.cpp Virtual-Machine/avm_dispatcher.cpp Virtual-Machine/avm_tables.cpp -c
+	g++ Virtual-Machine/main.cpp avm_structs.o avm_utilities.o decodeBinary.o avm_tables.o avm_dispatcher.o -o vm
 	./vm "binary.abc"
 
-gdb: compiler
-	sudo gdb ./alphac  ../test.txt
+gdb: compiler vm
+	 ./alphac  ../test.txt quads.txt
+	sudo gdb ./vm 
 
 flex:
 	flex --outfile=scanner.c scanner.l 

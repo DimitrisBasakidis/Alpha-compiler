@@ -23,7 +23,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum vmarg_t { label_a,global_a,local_a,formal_a,bool_a,string_a,number_a,nil_a,userfunc_a,libfunc_a,retval_a,noarg_a=-69 }vmarg_t;
+typedef enum vmarg_t {
+    label_a,global_a,local_a,
+    formal_a,bool_a,string_a,
+    number_a,nil_a,userfunc_a,
+    libfunc_a,retval_a,noarg_a = -69 
+} vmarg_t;
 
 typedef enum vmopcode {
     assign_v, add_v, sub_v,

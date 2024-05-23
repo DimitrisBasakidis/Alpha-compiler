@@ -273,7 +273,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   } else {
     emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, NULL, $$, 0, yylineno);
+    emit(assign, $$, $2,NULL, 0, yylineno);
   }
 }
 | lvalue INCREMENT {
@@ -283,11 +283,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-    emit(assign, val, NULL, $$, 0, yylineno);
+    emit(assign, val, $$, NULL, 0, yylineno);
     emit(add, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, NULL, $$, 0, yylineno);
+    emit(assign, $$, $1, NULL, 0, yylineno);
     emit(add, $1, newexpr_constnum(1), $1, 0, yylineno);
   }
   
@@ -297,13 +297,23 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   check_arith($2, "--lvalue");
   if ($2->type == tableitem_e) {
     $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
-    emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+    emit(sub, $$,$$, newexpr_constnum(1),  0, yylineno);
     emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
   } else {
-    emit(add, $2, newexpr_constnum(1), $2, 0, yylineno);
+    emit(sub, $2,$2, newexpr_constnum(1), 0, yylineno);
     $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
-    emit(assign, $2, NULL, $$, 0, yylineno);
+    emit(assign, $$, $2,NULL, 0, yylineno);
   }
+
+  // if ($2->type == tableitem_e) {
+  //   $$ = emit_iftableitem($2, symtable, lists, scope, yylineno);
+  //   emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+  //   emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+  // } else {
+  //   emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
+  //   $$ = create_expr(arithexpr_e, newtemp(symtable, lists, scope, yylineno), $2, 0.0f, NULL, '\0');
+  //   emit(assign, $$, $2,NULL, 0, yylineno);
+  // }
 }
 | lvalue DECREMENT {
 
@@ -312,13 +322,23 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-    emit(assign, val, NULL, $$, 0, yylineno);
-    emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+    emit(assign, val, $$, NULL, 0, yylineno);
+    emit(sub, val,val, newexpr_constnum(1), 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
-    emit(assign, $1, NULL, $$, 0, yylineno);
-    emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+    emit(assign, $$, $1, NULL, 0, yylineno);
+    emit(sub, $1,$1, newexpr_constnum(1), 0, yylineno);
   }
+  // $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
+  // if ($1->type == tableitem_e) {
+  //   expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
+  //   emit(assign, val, $$, NULL, 0, yylineno);
+  //   emit(sub, val, newexpr_constnum(1), val, 0, yylineno);
+  //   emit(tablesetelem, $1, $1->index, val, 0, yylineno);
+  // } else {
+  //   emit(assign, $1, $$,NULL, 0, yylineno);
+  //   emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+  // }
 }
 | primary { $$ = $1;}
 ; 
@@ -349,6 +369,7 @@ primary: lvalue {
   if (from_elist) from_elist = 0;
 }
 | call { 
+  printf("curr scope space :: %d\n",currscopespace());
   entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
   manage_call(symtable, lists, entry, $1->sym->value.varVal->name, print_errors, yylineno);
 }
@@ -511,9 +532,9 @@ funcdef: funcprefix LEFT_PARENTHESIS funcargs RIGHT_PARENTHESIS { func_in_betwee
   int offset = temp->x;
   restorecurrentscopeoffset(offset);
   $$ = $1;
-
   emit(funcend, lvalue_expr($1), NULL, NULL, 0, 0);
   patchlabel($1->iaddress, nextquadlabel());
+
   func_in_between--;
 };
 
@@ -537,19 +558,20 @@ idlist_id: ID {
   manage_id_list(symtable, lists, entry, entry_l, $1, print_errors, yylineno);
 };
 
-open_while: WHILE {while_loop++; $$ = nextquadlabel();};
+open_while: WHILE {while_loop++; in_loop++; $$ = nextquadlabel();};
 
 whilecond: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
     { 
       $2 = manage_bool_expr($2,symtable,lists,scope,yylineno);
-      emit(if_eq,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel()+2,yylineno);
+      emit(if_eq,NULL,$2,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),nextquadlabel()+2,yylineno);
       $$ = nextquadlabel();
       emit(jump,NULL,NULL,NULL,0,yylineno);
     };
 
 ifprefix :  IF  { if_stmt++; } LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
         $4 = manage_bool_expr($4,symtable,lists,scope,yylineno);
-        emit (if_eq, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,nextquadlabel() + 2, yylineno);
+        emit (if_eq,NULL, $4, create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),nextquadlabel() + 2, yylineno);
+        // filippe peiraja thn emit an exw kanei malakia sorry <3
         $$ = nextquadlabel();
         emit(jump,NULL,NULL,NULL,0,yylineno);
       };
@@ -571,19 +593,24 @@ ifstmt: ifprefix stmt { if_stmt--; patchlabel($1,nextquadlabel()); $$=$2; } %pre
         
         int brk_statemenets = 0, cont_statements = 0;
         int brk_stmt = 0, cont_stmt = 0;
+        int ret_statements = 0, ret_stmt = 0;
+
 
         if($2){
           brk_statemenets = $2->breakList;
           if($4) cont_statements = $4->contList;
+          ret_statements = $2->retList;
         }
 
         if($4){
           brk_stmt = $4->breakList;
           if($2) cont_stmt = $2->contList;
+          ret_stmt = $4->retList;
         }
-
+  
         $$->breakList = mergelist(brk_statemenets, brk_stmt);
         $$->contList = mergelist(cont_statements , cont_stmt);
+        $$->retList = mergelist(ret_statements, ret_stmt);
       };
 
 loopstart: { in_loop++; };
@@ -598,8 +625,7 @@ whilestmt: open_while whilecond loopstmt {
                                       patchlabel($2,nextquadlabel());
                                       if($3) {patchlist($3->breakList,nextquadlabel()); //$3->breaklist: index tou quad opou briskontai ta breaks, nextquadlabel(): quad label opou bazoume ta brakes na deixnoun 
                                             patchlist($3->contList,$1);}
-                                      } 
-         ;
+                                      };
 
 N: {$$ = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno);}
 M: {$$ = nextquadlabel();}
@@ -609,7 +635,8 @@ forprefix : FOR {for_loop++; in_loop++; } LEFT_PARENTHESIS elist SEMICOLON M exp
               $7 = manage_bool_expr($7,symtable,lists,scope,yylineno);
               $$->test = $6;
               $$->enter = nextquadlabel();
-              emit(if_eq,$7,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),NULL,0,yylineno);
+              emit(if_eq,NULL,$7,create_expr(constbool_e,NULL,NULL,0.0f,"",'1'),0,yylineno);
+          // filippe o vaggelis peirakse kai auth thn emit <3
           }
           ;
 
@@ -632,7 +659,7 @@ returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON { emit(ret,NULL
                         $$->retList = newlist(nextquadlabel());
                         emit(jump,NULL,NULL,NULL,0,yylineno);
                       }
-| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,$3,NULL,NULL,0,0); is_return_kw = 1; 
+| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,NULL,$3, NULL,0,0); is_return_kw = 1; 
                         $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
                         $$ = make_stmt($$);
                         $$->retList = newlist(nextquadlabel());
@@ -715,8 +742,10 @@ int main(int argc, char **argv) {
 
   print_quads((fptr == NULL) ? stdout : fptr);
 
- // generate_targetcode();
-  printInstructions();  
+ generate_targetcode();
+// printInstructions();  
+
+  printf("NUMBER OF GLOBALS :: %d\n",global_vars_no );
 
   convert_to_binary();
   // write_to_file();
