@@ -5,6 +5,7 @@ extern unsigned pc;
 extern unsigned currLine;
 extern unsigned codeSize;
 
+
 map<string, library_func_t> lib_map;
 
 
@@ -583,6 +584,7 @@ void libfunc_typeof(void) {
 
     if (n != 1) {
       cout << "typeof is expected 1 argument" << endl;
+      exit(0);
     }
 
     avm_memcellclear(&retval);
@@ -600,9 +602,94 @@ void libfunc_typeof(void) {
       case undef_m:    s = "undef";    break;
       case nil_m:      s = "nil";      break;
     }
+
     retval.data.strVal = new char[s.size() + 1];
     strcpy(retval.data.strVal, s.c_str());  
 }
+
+double to_radian(double num) {
+  return num * 3.14159 / 180;
+}
+
+void libfunc_cos(void) {
+  unsigned n = avm_totalactuals();
+  avm_memcell *arg = avm_getactual(0);
+  avm_memcellclear(&retval);
+  retval.type = nil_m;
+
+  if (n != 1) {
+    cout << "cos function is expected to have 1 argument" << endl;
+    exit(0);
+  }
+
+  if (arg->type != number_m) {
+    cout << "cos function is expected a number as an argument" << endl;
+    exit(0);
+  }
+
+  retval.type = number_m;
+  retval.data.numVal = (double)cos(to_radian(arg->data.numVal));
+
+}
+
+void libfunc_sin(void) {
+  unsigned n = avm_totalactuals();
+  avm_memcell *arg = avm_getactual(0);
+  avm_memcellclear(&retval);
+  retval.type = nil_m;
+
+  if (n != 1) {
+    cout << "sin function is expected to have 1 argument" << endl;
+    exit(0);
+  }
+
+  if (arg->type != number_m) {
+    cout << "sin function is expected a number as an argument" << endl;
+    exit(0);
+  }
+
+  retval.type = number_m;
+  retval.data.numVal = (double)sin(to_radian(arg->data.numVal));
+}
+
+void libfunc_argument(void) {
+  unsigned n = avm_totalactuals();
+  unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
+  avm_memcell *arg = avm_getactual(0);
+
+  avm_memcellclear(&retval);
+  retval.type = nil_m;
+
+  if (!p_topsp) {
+    cout << "total arguments called outside a function " << endl;
+    retval.type = nil_m;
+    exit(0);
+  } 
+
+  if (n != 1) {
+    cout << "argument function is expected 1 argument" << endl;
+    exit(0);
+  }
+
+  if (arg->type) {
+    cout << "argument function is expected a number as an argument" << endl;
+    exit(0);
+  }
+
+  if (arg->data.numVal < 0) {
+    cout << "cannot access a negative argument" << endl;
+    exit(0);
+  }
+
+  if (arg->data.numVal >= avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET)) {
+    cout << "the function does not have " << arg->data.numVal << " arguments" << endl;
+    exit(0);
+  }
+
+  avm_memcell *argument = &stack[p_topsp + (int)avm_getactual(0)->data.numVal + 1 + AVM_STACKENV_SIZE];
+  avm_assign(&retval, argument);
+}
+
 
 void avm_registerlibfunc(char * id, library_func_t addr){
     lib_map.insert({id, addr});
@@ -615,9 +702,7 @@ void execute_arithmetic(instruction *inst) {
 
     assert(lv && (&stack[AVM_STACKSIZE - 1] >= lv && lv > &stack[top] || lv == &retval)); // GOTO
     assert(rv1 && rv2);
-   // cout<<"rv1   "<<rv1<<"rv2   " << rv2<<"result  "<<lv<< endl;
     if (rv1->type != number_m || rv2->type != number_m) {
-        // avm_error()
         cout << "not a number in arithmetic!" << endl;
         executionFinished = 1;
     } else {
@@ -626,13 +711,9 @@ void execute_arithmetic(instruction *inst) {
         lv->type = number_m;
         lv->data.numVal = (*op)(rv1->data.numVal, rv2->data.numVal);
     }
-   // cout << "\nIN avm_dispatcher STACK: " << stack << endl; 
 
 }
 
-// string number_tostring (avm_memcell* m){
-//     return to_string(m->data.numVal).format("%.2f");
-// }
 
 string number_tostring (avm_memcell* m) {
     ostringstream out;
@@ -712,7 +793,9 @@ void avm_initialize(void) {
     avm_registerlibfunc((char *) "print", libfunc_print);
     avm_registerlibfunc((char *) "typeof", libfunc_typeof);
     avm_registerlibfunc((char *) "totalarguments", libfunc_totalarguments);
-
+    avm_registerlibfunc((char *) "argument", libfunc_argument);
+    avm_registerlibfunc((char *) "cos", libfunc_cos);
+    avm_registerlibfunc((char *) "sin", libfunc_sin);
 //    for (const auto& [k, v] : lib_map) {
 //         std::cout << "m[" << k << "] = " << reinterpret_cast<void*>(v) << std::endl;
 //     }
@@ -731,9 +814,6 @@ void libfunc_totalarguments(void) {
         retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
     }
 }
-
-
-
 
 void print_memcell(avm_memcell *m) {
     switch (m->type) {
