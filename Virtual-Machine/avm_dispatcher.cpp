@@ -573,14 +573,35 @@ void libfunc_print(void){
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i<n; ++i){
         string s = avm_tostring(avm_getactual(i)); 
-
-        // puts(s);
         cout << s;
     }
 }
 
 void libfunc_typeof(void) {
+    unsigned n = avm_totalactuals();
+    string s = "";
 
+    if (n != 1) {
+      cout << "typeof is expected 1 argument" << endl;
+    }
+
+    avm_memcellclear(&retval);
+    retval.type = string_m;
+
+    avm_memcell *m = avm_getactual(0);
+    cout << "memcell m " << m->type << endl; 
+    switch (m->type) {
+      case string_m:   s = "string";   break;
+      case number_m:   s = "number";   break;
+      case bool_m:     s = "bool";     break;
+      case table_m:    s = "table";    break;
+      case userfunc_m: s = "userfunc"; break;
+      case libfunc_m:  s = "libfunc";  break;
+      case undef_m:    s = "undef";    break;
+      case nil_m:      s = "nil";      break;
+    }
+    retval.data.strVal = new char[s.size() + 1];
+    strcpy(retval.data.strVal, s.c_str());  
 }
 
 void avm_registerlibfunc(char * id, library_func_t addr){
