@@ -7,6 +7,7 @@
 #include "avm_tables.hpp"
 #include "decodeBinary.hpp"
 #include <cassert>
+#include <sstream>
 #include <assert.h>
 #include <iomanip>
 #include <map>

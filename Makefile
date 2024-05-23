@@ -3,9 +3,9 @@ all: compiler vm
 	./vm "binary.abc"
 
 vm: 
-	g++ Virtual-Machine/decodeBinary.cpp -c
-	g++ Virtual-Machine/avm_structs.cpp Virtual-Machine/avm_utilities.cpp Virtual-Machine/avm_dispatcher.cpp Virtual-Machine/avm_tables.cpp -c
-	g++ Virtual-Machine/main.cpp avm_structs.o avm_utilities.o decodeBinary.o avm_tables.o avm_dispatcher.o -o vm
+	g++ -std=c++11 Virtual-Machine/decodeBinary.cpp -c
+	g++ -std=c++11 Virtual-Machine/avm_structs.cpp Virtual-Machine/avm_utilities.cpp Virtual-Machine/avm_dispatcher.cpp Virtual-Machine/avm_tables.cpp -c
+	g++ -std=c++11 Virtual-Machine/main.cpp avm_structs.o avm_utilities.o decodeBinary.o avm_tables.o avm_dispatcher.o -o vm
 	./vm "binary.abc"
 
 gdb: compiler vm
@@ -24,7 +24,7 @@ compiler: flex yacc
 
 
 yacc:
-	bison --yacc --defines --output=parser.c parser.y -v -Wconflicts-rr
+	bison --yacc --defines --output=parser.c parser.y -v
 
 clean:
 	rm -f *.o parser.c parser.output scanner.c alphac vm
