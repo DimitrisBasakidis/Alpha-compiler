@@ -198,6 +198,7 @@ expr: assignexpr {$$ = $1;}
       $$ = create_expr(boolexpr_e, NULL, NULL, 0, NULL, '\0');
       $$->trueList = newlist(nextquadlabel());
       $$->falseList = newlist(nextquadlabel() + 1);
+      check_operands(if_greater,$1,$3);
       emit(if_greater,NULL,$1,$3,0,yylineno);
       emit(jump,NULL,NULL,NULL,0,yylineno);
     }
@@ -205,6 +206,7 @@ expr: assignexpr {$$ = $1;}
       $$ = create_expr(boolexpr_e, NULL, NULL, 0, NULL, '\0');
       $$->trueList = newlist(nextquadlabel());
       $$->falseList = newlist(nextquadlabel() + 1);
+      check_operands(if_greatereq,$1,$3);
       emit(if_greatereq,NULL,$1,$3,0,yylineno);
       emit(jump,NULL,NULL,NULL,0,yylineno);
     }
@@ -212,6 +214,7 @@ expr: assignexpr {$$ = $1;}
       $$ = create_expr(boolexpr_e, NULL, NULL, 0, NULL, '\0');
       $$->trueList = newlist(nextquadlabel());
       $$->falseList = newlist(nextquadlabel() + 1);
+      check_operands(if_less,$1,$3);
       emit(if_less,NULL,$1,$3,0,yylineno);
       emit(jump,NULL,NULL,NULL,0,yylineno);
     }
@@ -219,6 +222,7 @@ expr: assignexpr {$$ = $1;}
       $$ = create_expr(boolexpr_e, NULL, NULL, 0, NULL, '\0');
       $$->trueList = newlist(nextquadlabel());
       $$->falseList = newlist(nextquadlabel() + 1);
+      check_operands(if_lesseq,$1,$3);
       emit(if_lesseq,NULL,$1,$3,0,yylineno);
       emit(jump,NULL,NULL,NULL,0,yylineno);
     }

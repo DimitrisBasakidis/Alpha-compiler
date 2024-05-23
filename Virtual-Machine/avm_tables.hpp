@@ -27,6 +27,7 @@ void memclear_string(avm_memcell* m);
 void memclear_table(avm_memcell* m);
 void avm_tabledestroy (avm_table* t);
 void avm_memcellclear (avm_memcell* m);
+char* lookup_based_on_instr_addr(unsigned addr);
 
 string avm_printtable(const avm_table* table);
 

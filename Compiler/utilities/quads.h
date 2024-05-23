@@ -109,7 +109,7 @@ expr* create_and_emit_bool_expr(SymTable* symtable,scopeLists *lists,int scope,i
 void check_expr(expr* a , expr* b,void (*print_errors)(const char *, char *, const char *));
 expr* manage_bool_expr(expr* boolean,SymTable *symtable, scopeLists *lists, int scope, int yylineno);
 expr* do_bool(expr* e,int yylineno);
-
+void check_operands(enum iopcode op, expr* e1, expr* e2);
 
 #endif
 

@@ -419,3 +419,10 @@ expr* do_bool(expr* e,int yylineno){
    }
    return e;
 }
+
+void check_operands(enum iopcode op, expr* e1, expr* e2){
+    if( (e1->type == constbool_e ||   e2->type == constbool_e ||  e1->type == boolexpr_e || e2->type == boolexpr_e) ){
+        printf("Error, cannot use relative operations with bool exprs in alpha\n");
+        exit(0);
+    }
+}
