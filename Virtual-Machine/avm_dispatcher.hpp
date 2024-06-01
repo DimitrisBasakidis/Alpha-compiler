@@ -10,6 +10,7 @@
 #include <sstream>
 #include <assert.h>
 #include <iomanip>
+#include <math.h>
 #include <map>
 
 typedef void (*execute_func_t) (instruction*);

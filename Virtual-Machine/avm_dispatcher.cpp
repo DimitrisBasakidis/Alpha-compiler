@@ -463,7 +463,12 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
 
         case table_m: {
             lv->type = table_m;
-            lv->data.tableVal = rv->data.tableVal;
+            lv->data.tableVal = rv->data.tableVal; // have to make copies of the table to resolve override
+            // lv->data.tableVal->indexedDouble = new map<double, avm_memcell*>;
+            // lv->data.tableVal->indexedStrVal = new map<string, avm_memcell*>;
+            // lv->data.tableVal->indexedDouble.insert(rv->data.tableVal->indexedDouble.begin(), rv->data.tableVal->indexedDouble.end());
+            // lv->data.tableVal->indexedStrVal.insert(rv->data.tableVal->indexedStrVal.begin(), rv->data.tableVal->indexedStrVal.end());
+            // memcpy(lv->data.tableVal, rv->data.tableVal, sizeof(rv->data.tableVal));
             break; 
         }
 

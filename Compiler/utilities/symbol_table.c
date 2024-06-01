@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char *lib_func_arr[12] = {"print", "input", "ojectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
+const char *lib_func_arr[12] = {"print", "input", "objectmemberkeys", "objecttotalmembers", "objectcopy", "totalarguments", "argument", "typeof", "strtonum", "sqrt", "cos", "sin"};
 
 SymTable *create_table(void) {
     SymTable *new_table = malloc(sizeof(struct SymTable));

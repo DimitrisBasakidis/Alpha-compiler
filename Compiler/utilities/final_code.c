@@ -165,13 +165,15 @@ void make_operand(expr* e, vmarg* arg){
         case assignexpr_e:
         case boolexpr_e:
         case newtable_e:{
-            arg->val = e->sym->offset;
-            switch (e->sym->space) {
-                case programvar:   arg->type = global_a; break;
-                case functionlocal: arg->type = local_a;  break;
-                case formalarg:    arg->type = formal_a; break;
-                case -1:    arg->type = userfunc_a;        break;
-                default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);assert(0);
+            if(e->sym!=NULL){
+                arg->val = e->sym->offset;
+                switch (e->sym->space) {
+                    case programvar:   arg->type = global_a; break;
+                    case functionlocal: arg->type = local_a;  break;
+                    case formalarg:    arg->type = formal_a; break;
+                    case -1:    arg->type = userfunc_a;        break;
+                    default: printf("type :: %d, space :: %d \n",e->type,e->sym->space);assert(0);
+                }
             }
             break;
         }
