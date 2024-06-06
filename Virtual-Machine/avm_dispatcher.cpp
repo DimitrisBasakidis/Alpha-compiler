@@ -646,7 +646,6 @@ void libfunc_typeof(void) {
     retval.type = string_m;
 
     avm_memcell *m = avm_getactual(0);
-    cout << "memcell m " << m->type << endl; 
     switch (m->type) {
       case string_m:   s = "string";   break;
       case number_m:   s = "number";   break;
@@ -853,10 +852,100 @@ void avm_initialize(void) {
     avm_registerlibfunc((char *) "sin", libfunc_sin);
     avm_registerlibfunc((char *) "sqrt",libfunc_sqrt);
     avm_registerlibfunc((char *) "strtonum",libfunc_strtonum);
+    avm_registerlibfunc((char *) "input", libfunc_input);
+    avm_registerlibfunc((char *) "objecttotalmembers", libfunc_objecttotalmembers);
+    avm_registerlibfunc((char *) "objectcopy", libfunc_objectcopy);
 //    for (const auto& [k, v] : lib_map) {
 //         std::cout << "m[" << k << "] = " << reinterpret_cast<void*>(v) << std::endl;
 //     }
     // TODO: prepei na to valoume kai gia tis upoloipes
+}
+
+void libfunc_objectcopy(void){
+    unsigned i = avm_totalactuals();
+    avm_memcellclear(&retval);
+
+    if (i!=1){
+        cout << "Too many args syntekne" <<endl;
+        exit(0);
+    }
+
+    if(avm_getactual(0)->type != table_m){
+        cout << "Pinakes antigrafw! to leei kai to onoma mou :(" << endl;
+        exit(0);
+    }
+
+    avm_assign(&retval,avm_getactual(0));
+}
+
+void libfunc_objecttotalmembers(void){
+    unsigned i = avm_totalactuals();
+    avm_memcellclear(&retval);
+
+    if(i!=1){
+        cout<<"Lathos reeee evales polla args eprepe mono 1 "<< endl;
+        exit(0);
+    }
+    if(avm_getactual(0)->type != table_m){
+        cout << "Pinaka thelw ";
+        exit(0);
+    }
+
+    retval.type = number_m;
+    retval.data.numVal = avm_getactual(0)->data.tableVal->refCounter;
+
+
+
+}
+void libfunc_input(){
+
+    unsigned i = avm_totalactuals();
+    avm_memcellclear (&retval);
+
+    if(i!=0){
+        cout<<"Error no args expected! Ena input eixes na valeis ti phge lathos?"<<endl;
+        exit(0);
+    } 
+
+    string str;
+    cin >> str;
+
+    if ( str.compare("true") == 0){
+        retval.type = bool_m;
+        retval.data.boolVal = true;
+        return;
+    }
+
+    if (str.compare("false") == 0){
+        retval.type = bool_m;
+        retval.data.boolVal = false;
+        return;
+    }
+
+    if (str.compare("nil") == 0){
+        retval.type = nil_m;
+        return;
+    }
+
+
+    double x;
+    char *end;
+    x = strtod(str.c_str(),&end);
+
+    if (!(end == str.c_str() || *end != '\0')){
+        retval.type = number_m;
+        retval.data.numVal = x;
+        return;
+    }
+
+    char *c = new char[str.length()+1];
+    strcpy(c,str.c_str());
+
+    retval.type = string_m;
+    retval.data.strVal = c;
+
+
+
 }
 
 void libfunc_strtonum(){

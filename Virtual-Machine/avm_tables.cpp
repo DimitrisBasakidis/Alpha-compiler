@@ -48,6 +48,7 @@ void avm_memcellclear (avm_memcell* m){
 void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *value) {
     avm_memcell *temp = (avm_memcell *) malloc(sizeof(avm_memcell));
 
+    table->refCounter++;
     //temp->type = value->type;
     memcpy(temp,value,sizeof(avm_memcell));
     switch (key->type) {    

@@ -198,7 +198,7 @@ void add_lib_func(SymTable *symtable, scopeLists *lists) {
   insert_symbol(symtable, node);
   insert_to_scope(lists, node, 0);
 
-  node = create_node("objectotalmembers", 0, 0, LIBFUNC, ACTIVE);
+  node = create_node("objecttotalmembers", 0, 0, LIBFUNC, ACTIVE);
   insert_symbol(symtable, node);
   insert_to_scope(lists, node, 0);
 

@@ -129,6 +129,9 @@ void libfunc_totalarguments(void);
 library_func_t avm_getlibraryfunc(char *id);
 void libfunc_sqrt();
 void libfunc_strtonum();
+void libfunc_objectcopy(void);
+void libfunc_objecttotalmembers(void);
+void libfunc_input();
 
 void print_stack();
 void print_memcell(avm_memcell *m);
