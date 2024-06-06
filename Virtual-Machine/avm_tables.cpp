@@ -73,11 +73,50 @@ void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *va
     }
 }
 
+void print_avm_memceeell(const avm_memcell *cell) {
+    switch (cell->type) {
+        case number_m:
+            std::cout << cell->data.numVal;
+            break;
+        case string_m:
+            std::cout << cell->data.strVal;
+            break;
+        case bool_m:
+            std::cout << (cell->data.boolVal ? "true" : "false");
+            break;
+        case nil_m:
+            std::cout << "nil";
+            break;
+        case undef_m:
+            std::cout << "undefined";
+            break;
+        case userfunc_m:
+            std::cout<<"func";
+            break;
+        // Handle other types as needed
+        default:
+            std::cout << "unsupported type";
+            break;
+    }
+}
+
 avm_memcell* avm_tablegetelem(avm_table *t, avm_memcell* key) {
+        // cout << "double" << endl;
+        // for (const auto& pair : t->indexedDouble) {
+        //     std::cout << pair.first << " => ";
+        //     print_avm_memceeell(pair.second);
+        //     std::cout << std::endl;
+        // }
+        // cout << "str" << endl;
+        // for (const auto& pair : t->indexedStrVal) {
+        //     std::cout << pair.first << " => ";
+        //     print_avm_memceeell(pair.second);
+        //     std::cout << std::endl;
+        // }
     switch (key->type) {
-        case number_m: return t->indexedDouble.at(key->data.numVal);
-        case string_m: return t->indexedStrVal.at(key->data.strVal);
-        default: assert(0);
+        case number_m: /* cout << "key is num "<< key->data.numVal<< endl; */ return t->indexedDouble.at(key->data.numVal);
+        case string_m: /* cout << "key is string"<< key->data.numVal<< endl; */ return t->indexedStrVal.at(key->data.strVal);
+        default:  assert(0);
     }
     return nullptr;
 }

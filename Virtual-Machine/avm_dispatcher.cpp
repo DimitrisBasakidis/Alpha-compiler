@@ -108,21 +108,6 @@ void execute_assign(instruction* inst){
     if(rv) avm_assign(lv,rv);
 }
 
-// void execute_add(instruction* inst){
-
-// }
-// void execute_sub(instruction* inst){
-    
-// }
-// void execute_div(instruction* inst){
-    
-// }
-// void execute_mul(instruction* inst){
-    
-// }
-// void execute_mod(instruction* inst){
-    
-// }
 void execute_uminus(instruction* inst){
     
 }
@@ -142,17 +127,19 @@ void execute_jump(instruction* inst){
 }
 
 void execute_jeq(instruction* inst){
+  
     assert(inst->result.type == label_a);
    // cout << "arg1 " << inst->arg1.type << " arg2 " << inst->arg2.type << " result " << inst->result.type << endl;
-
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
-  // cout << "rv1 " << rv1 << " rv2 " << rv2 << endl;
+  // cout << "rv1 type ::  " << rv1->type << " rv2 type " << rv2->type << endl;
     unsigned char result = 0;
     if(rv1->type == undef_m || rv2->type == undef_m){
         printf("error ! undef involved in equality");
         exit(-1);
-    }else if(rv1->type == bool_m || rv2->type == bool_m){       
+    }else if(rv1->type == bool_m || rv2->type == bool_m){      
+     //   printf("AVM TO BOOL RV1 :: %d\n ", avm_tobool(rv1));
+       // printf("AVM TO BOOL RV2 :: %d\n ", avm_tobool(rv2));
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     }else if(rv1->type == nil_m || rv2->type == nil_m){
         
@@ -160,7 +147,7 @@ void execute_jeq(instruction* inst){
     }else if(rv1->type != rv2->type ){
             printf("error please be better\n");
             exit(-1);
-    }else{ 
+    }else{
         if(rv1->type == number_m && rv2->type == number_m){
             if(rv1->data.numVal ==  rv2->data.numVal){
                 result = 1;
@@ -171,16 +158,17 @@ void execute_jeq(instruction* inst){
                 result = 1;
             }
         } 
-
         if(rv1->type == string_m && rv2->type == string_m){
             if(strcmp(rv1->data.strVal,rv2->data.strVal) == 0 ){
                 result = 1;
             }
-        } 
+        }
+
 
     }
     if(!executionFinished && result)
         pc = inst->result.val;
+   // printf("mphka, to result einai %d , pc :: %d\n", result, pc);    
 }
 void execute_jne(instruction* inst){
     assert(inst->result.type == label_a);
@@ -382,6 +370,7 @@ void execute_tablegetelem(instruction* inst){
     lv->type = nil_m;
 
     if (t->type != table_m){
+   
         cout << "illegal use of type" << endl;
     }else {
         avm_memcell *content = avm_tablegetelem(t->data.tableVal ,i);
@@ -408,6 +397,7 @@ void execute_tablesetelem(instruction* inst){
     assert(i && c);
 
     if (t->type != table_m) {
+        printf("PC :: %d\n", pc);
         cout << "illegal use of type" << endl;
         exit(0);
     } else {
@@ -427,6 +417,30 @@ void avm_push_table_arg(avm_table* t){
     stack[top].type = table_m;
     ++totalActuals;
     avm_dec_top();
+}
+
+void print_avm_memcell(const avm_memcell *cell) {
+    switch (cell->type) {
+        case number_m:
+            std::cout << cell->data.numVal;
+            break;
+        case string_m:
+            std::cout << cell->data.strVal;
+            break;
+        case bool_m:
+            std::cout << (cell->data.boolVal ? "true" : "false");
+            break;
+        case nil_m:
+            std::cout << "nil";
+            break;
+        case undef_m:
+            std::cout << "undefined";
+            break;
+        // Handle other types as needed
+        default:
+            std::cout << "unsupported type";
+            break;
+    }
 }
 
 void avm_assign(avm_memcell* lv, avm_memcell* rv){
@@ -463,12 +477,45 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
 
         case table_m: {
             lv->type = table_m;
-            lv->data.tableVal = rv->data.tableVal; // have to make copies of the table to resolve override
-            // lv->data.tableVal->indexedDouble = new map<double, avm_memcell*>;
-            // lv->data.tableVal->indexedStrVal = new map<string, avm_memcell*>;
-            // lv->data.tableVal->indexedDouble.insert(rv->data.tableVal->indexedDouble.begin(), rv->data.tableVal->indexedDouble.end());
-            // lv->data.tableVal->indexedStrVal.insert(rv->data.tableVal->indexedStrVal.begin(), rv->data.tableVal->indexedStrVal.end());
-            // memcpy(lv->data.tableVal, rv->data.tableVal, sizeof(rv->data.tableVal));
+            lv->data.tableVal = rv->data.tableVal;
+            // avm_table *new_table = new avm_table;
+            // new_table->refCounter = rv->data.tableVal->refCounter;
+            // for (const auto& pair : rv->data.tableVal->indexedDouble) {
+            //   new_table->indexedDouble[pair.first] = pair.second;
+            // }
+            // for (const auto& pair : rv->data.tableVal->indexedStrVal) {
+            //   new_table->indexedStrVal[pair.first] = pair.second;
+            // }
+
+            // std::cout << "\n\nnew table" << std::endl;
+            // std::cout << "double" << std::endl;
+            // for (const auto& pair : new_table->indexedDouble) {
+            //     std::cout << pair.first << " => ";
+            //     print_avm_memcell(pair.second);
+            //     std::cout << std::endl;
+            // }
+            // std::cout << "str" << std::endl;
+            // for (const auto& pair : new_table->indexedStrVal) {
+            //     std::cout << pair.first << " => ";
+            //     print_avm_memcell(pair.second);
+            //     std::cout << std::endl;
+            // }
+
+            // std::cout << "\nold table" << std::endl;
+            // std::cout << "double" << std::endl;
+            // for (const auto& pair : rv->data.tableVal->indexedDouble) {
+            //     std::cout << pair.first << " => ";
+            //     print_avm_memcell(pair.second);
+            //     std::cout << std::endl;
+            // }
+            // std::cout << "str" << std::endl;
+            // for (const auto& pair : rv->data.tableVal->indexedStrVal) {
+            //     std::cout << pair.first << " => ";
+            //     print_avm_memcell(pair.second);
+            //     std::cout << std::endl;
+            // }
+            // cout << "\n\n";
+            //lv->data.tableVal = new_table;
             break; 
         }
 
@@ -487,6 +534,9 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv){
 
     if(lv->type == string_m)
         lv->data.strVal = strdup(rv->data.strVal);    
+        
+    //  if(lv->type == table_m)
+    //     lv->data.tableVal->refCounter++;
 }
 
 void avm_call_functor(avm_table *t){
@@ -665,8 +715,8 @@ void libfunc_argument(void) {
   avm_memcellclear(&retval);
   retval.type = nil_m;
 
-  if (!p_topsp) {
-    cout << "total arguments called outside a function " << endl;
+  if (p_topsp == NO_ACTIVATION_RECORDS) {
+    cout << "argument called outside a function " << endl;
     retval.type = nil_m;
     exit(0);
   } 
@@ -765,11 +815,11 @@ unsigned char number_tobool(avm_memcell *m){
 
 unsigned char string_tobool(avm_memcell *m){return m->data.strVal[0]!=0;}
 unsigned char bool_tobool(avm_memcell *m){return m->data.boolVal;}
-unsigned char table_tobool(avm_memcell *m){return 1;}
-unsigned char userfunc_tobool(avm_memcell *m){return 1;}
-unsigned char libfunc_tobool(avm_memcell *m){return 1;}
-unsigned char nil_tobool(avm_memcell *m){return 0;}
-unsigned char undef_tobool(avm_memcell *m) {return 0;}
+unsigned char table_tobool(avm_memcell *m){return '1';}
+unsigned char userfunc_tobool(avm_memcell *m){return '1';}
+unsigned char libfunc_tobool(avm_memcell *m){return '1';}
+unsigned char nil_tobool(avm_memcell *m){return '0';}
+unsigned char undef_tobool(avm_memcell *m) {return '0';}
 
 tobool_func_t toboolFuncs[] = {
     number_tobool,
@@ -801,17 +851,49 @@ void avm_initialize(void) {
     avm_registerlibfunc((char *) "argument", libfunc_argument);
     avm_registerlibfunc((char *) "cos", libfunc_cos);
     avm_registerlibfunc((char *) "sin", libfunc_sin);
+    avm_registerlibfunc((char *) "sqrt",libfunc_sqrt);
+    avm_registerlibfunc((char *) "strtonum",libfunc_strtonum);
 //    for (const auto& [k, v] : lib_map) {
 //         std::cout << "m[" << k << "] = " << reinterpret_cast<void*>(v) << std::endl;
 //     }
     // TODO: prepei na to valoume kai gia tis upoloipes
 }
 
-void libfunc_totalarguments(void) {
+void libfunc_strtonum(){
+    avm_memcell *m = avm_getactual(0);
+    avm_memcellclear(&retval);
+
+    if(m->type != string_m){
+        cout << "Error! You need to enter a string " << endl;
+        exit(0);
+    }
+    retval.type = number_m;
+    retval.data.numVal = atoi(m->data.strVal);
+    if(m->data.strVal[0] != '0' && retval.data.numVal == 0){
+        retval.type = nil_m;
+    }
+}
+
+void libfunc_sqrt(){
+    avm_memcell *m = avm_getactual(0);
+    avm_memcellclear(&retval);
+    if(m->type != number_m){
+        cout<<"Error! Cannot calculate square root of non arithmetic operand" << endl;
+        exit(0);
+    }
+    if(m->data.numVal>=0){
+        retval.type = number_m;
+        retval.data.numVal = sqrt(m->data.numVal);
+    }else{
+        retval.type = nil_m;
+    }
+}
+
+void libfunc_totalarguments(void) {    
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     avm_memcellclear(&retval);
 
-    if (!p_topsp) {
+    if (p_topsp == NO_ACTIVATION_RECORDS ) {
         cout << "total arguments called outside a function " << endl;
         retval.type = nil_m;
     } else {

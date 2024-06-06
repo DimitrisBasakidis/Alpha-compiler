@@ -142,7 +142,7 @@ statements: statements stmt {
         $$->contList = mergelist(cont_statements , cont_stmt);
         $$->retList = mergelist(ret_statements,ret_stmt);
   }
-| stmt { resettemp();   $$ = $1; };
+| stmt { $$ = $1; };
 
 stmt: expr SEMICOLON {  
           $$ = make_stmt($$);
@@ -287,7 +287,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
   $$ = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), $1, 0.0f, NULL, '\0');
   if ($1->type == tableitem_e) {
     expr *val = emit_iftableitem($1, symtable, lists, scope, yylineno);
-    emit(assign, val, $$, NULL, 0, yylineno);
+    emit(assign, $$, val, NULL, 0, yylineno);
     emit(add, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, $1, $1->index, val, 0, yylineno);
   } else {
@@ -421,12 +421,12 @@ call: call LEFT_PARENTHESIS {from_elist = 1; } elist RIGHT_PARENTHESIS {
     $1 = emit_iftableitem($1,symtable,lists,scope,yylineno);
     if ($2->method) {
       expr* last = get_last($2->elist);
-    
       if(last == NULL){
         $2->elist = $1;
       }else{
         last->next = $1;
       }
+      if (get_count($2->elist) == 2) $2->elist = reverse_elist($2->elist);
       $1 = emit_iftableitem(member_item($$, $2->name,symtable,lists,scope,yylineno),symtable,lists,scope,yylineno);
     }
     $$ = make_call($1, reverse_elist($2->elist) ,yylineno, symtable, lists, scope);
@@ -663,8 +663,9 @@ returnstmt: RETURN_KW { manage_return(print_errors); } SEMICOLON { emit(ret,NULL
                         $$->retList = newlist(nextquadlabel());
                         emit(jump,NULL,NULL,NULL,0,yylineno);
                       }
-| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { emit(ret,NULL,$3, NULL,0,0); is_return_kw = 1; 
+| RETURN_KW { manage_return(print_errors); } expr SEMICOLON { is_return_kw = 1; 
                         $3 = manage_bool_expr($3,symtable,lists,scope,yylineno);
+                        emit(ret,NULL,$3, NULL,0,0);
                         $$ = make_stmt($$);
                         $$->retList = newlist(nextquadlabel());
                         emit(jump,NULL,NULL,NULL,0,yylineno);

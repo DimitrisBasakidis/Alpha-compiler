@@ -31,14 +31,22 @@ expr *newexpr_constnum(double i) {
     return  create_expr(constnum_e, NULL, NULL, i, NULL, '\0');
 }
 
+int get_count(expr *head) {
+    int count = 0;
+
+    for (expr *ptr = head; ptr; ptr = ptr->next) count++;
+
+    return count;
+}
+
 expr *get_last(expr* head){
     expr* tmp = head;
+
     if(head == NULL){
         return NULL;
     }
     while(tmp->next != NULL){
         tmp = tmp->next;
-        
     }
 
     return tmp;

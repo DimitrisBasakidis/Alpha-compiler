@@ -1495,7 +1495,7 @@ yyreduce:
 
   case 5: /* statements: stmt  */
 #line 145 "parser.y"
-       { resettemp();   (yyval.statement_struct) = (yyvsp[0].statement_struct); }
+       { (yyval.statement_struct) = (yyvsp[0].statement_struct); }
 #line 1500 "parser.c"
     break;
 
@@ -1807,7 +1807,7 @@ yyreduce:
   (yyval.ex) = create_expr(var_e, newtemp(symtable, lists, scope, yylineno), (yyvsp[-1].ex), 0.0f, NULL, '\0');
   if ((yyvsp[-1].ex)->type == tableitem_e) {
     expr *val = emit_iftableitem((yyvsp[-1].ex), symtable, lists, scope, yylineno);
-    emit(assign, val, (yyval.ex), NULL, 0, yylineno);
+    emit(assign, (yyval.ex), val, NULL, 0, yylineno);
     emit(add, val, newexpr_constnum(1), val, 0, yylineno);
     emit(tablesetelem, (yyvsp[-1].ex), (yyvsp[-1].ex)->index, val, 0, yylineno);
   } else {
@@ -2032,12 +2032,12 @@ yyreduce:
     (yyvsp[-1].ex) = emit_iftableitem((yyvsp[-1].ex),symtable,lists,scope,yylineno);
     if ((yyvsp[0].elist_call)->method) {
       expr* last = get_last((yyvsp[0].elist_call)->elist);
-    
       if(last == NULL){
         (yyvsp[0].elist_call)->elist = (yyvsp[-1].ex);
       }else{
         last->next = (yyvsp[-1].ex);
       }
+      if (get_count((yyvsp[0].elist_call)->elist) == 2) (yyvsp[0].elist_call)->elist = reverse_elist((yyvsp[0].elist_call)->elist);
       (yyvsp[-1].ex) = emit_iftableitem(member_item((yyval.ex), (yyvsp[0].elist_call)->name,symtable,lists,scope,yylineno),symtable,lists,scope,yylineno);
     }
     (yyval.ex) = make_call((yyvsp[-1].ex), reverse_elist((yyvsp[0].elist_call)->elist) ,yylineno, symtable, lists, scope);
@@ -2538,17 +2538,18 @@ yyreduce:
 
   case 120: /* returnstmt: RETURN_KW $@13 expr SEMICOLON  */
 #line 666 "parser.y"
-                                                            { emit(ret,NULL,(yyvsp[-1].ex), NULL,0,0); is_return_kw = 1; 
+                                                            { is_return_kw = 1; 
                         (yyvsp[-1].ex) = manage_bool_expr((yyvsp[-1].ex),symtable,lists,scope,yylineno);
+                        emit(ret,NULL,(yyvsp[-1].ex), NULL,0,0);
                         (yyval.statement_struct) = make_stmt((yyval.statement_struct));
                         (yyval.statement_struct)->retList = newlist(nextquadlabel());
                         emit(jump,NULL,NULL,NULL,0,yylineno);
                       }
-#line 2548 "parser.c"
+#line 2549 "parser.c"
     break;
 
 
-#line 2552 "parser.c"
+#line 2553 "parser.c"
 
       default: break;
     }
@@ -2741,7 +2742,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 673 "parser.y"
+#line 674 "parser.y"
 
 
 void yyerror(const char *error_msg) {

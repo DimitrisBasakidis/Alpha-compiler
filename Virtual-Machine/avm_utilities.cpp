@@ -2,10 +2,8 @@
 
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
-
     switch (arg->type) {
 
-        // cout << "arg " << arg << " reg " << reg << endl;
 
         case global_a: return &stack[AVM_STACKSIZE-1-(arg->val)];
         case local_a: return &stack[topsp-arg->val];
