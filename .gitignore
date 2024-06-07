@@ -65,3 +65,4 @@ parser.output
 vm
 binary.abc
 quads.txt
+alphac.dSYM/Contents/Info.plist
