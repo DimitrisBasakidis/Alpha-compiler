@@ -923,7 +923,6 @@ void libfunc_input(){
         return;
     }
 
-
     double x;
     char *end;
     x = strtod(str.c_str(),&end);
@@ -939,9 +938,6 @@ void libfunc_input(){
 
     retval.type = string_m;
     retval.data.strVal = c;
-
-
-
 }
 
 void libfunc_strtonum(){

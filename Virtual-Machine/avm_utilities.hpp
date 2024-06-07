@@ -14,13 +14,10 @@ extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern unsigned top, topsp;
 
-
 double consts_getnumber(unsigned index);
 char* consts_getstring(unsigned index);
 char* libfuncs_getused(unsigned index);
 userfunc userfuncs_getfunc(unsigned index);
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);
-
-
 
 #endif

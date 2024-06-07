@@ -1,5 +1,5 @@
 all: compiler vm
-	@echo "\nto create the quads and produce a binary output file:\n ./alphac [testfile] [quads.txt]"
+	@echo "\nto create the quads and produce a binary output file:\n ./alphac [file.txt] [quads.txt]"
 	@echo "to execute the binary file into code:\n./vm \"binary.abc\" "
 
 vm: 

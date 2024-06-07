@@ -23,7 +23,6 @@ instruction* code = (instruction *)0;
 int main(int argc, char **argv) {
 
     decode_binary_file(argv[1]);
-    printInstructions();
     avm_initialize();
 
     codeSize = instr.size();
