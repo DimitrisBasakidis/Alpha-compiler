@@ -44,7 +44,6 @@ void convert_to_binary(void) {
     fwrite(&currUserFuncs, sizeof(currUserFuncs), 1, ptr);
     for (int i = 0; i < currUserFuncs; i++) {
         user_func = userFuncs[i];
-        printf("userfunc localsize %d\n", user_func.localSize);
         fwrite(&user_func.address, sizeof(user_func.address), 1, ptr);
         fwrite(&user_func.localSize, sizeof(user_func.localSize), 1, ptr);
         fwrite(user_func.id, strlen(user_func.id) + 1, 1, ptr);

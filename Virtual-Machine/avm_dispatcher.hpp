@@ -131,7 +131,8 @@ void libfunc_sqrt();
 void libfunc_strtonum();
 void libfunc_objectcopy(void);
 void libfunc_objecttotalmembers(void);
-void libfunc_input();
+void libfunc_input(void);
+void libfunc_objectmemberkeys(void);
 
 void print_stack();
 void print_memcell(avm_memcell *m);

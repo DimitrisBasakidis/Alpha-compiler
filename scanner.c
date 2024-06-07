@@ -1192,16 +1192,15 @@ YY_RULE_SETUP
 #line 284 "scanner.l"
 {
 lineptr = strdup(yytext);
-    if (lineptr == NULL) {
-        fprintf(stderr, "Error: Failed to allocate memory\n");
-        exit(EXIT_FAILURE);
-    }
-
+  if (lineptr == NULL) {
+      fprintf(stderr, "Error: Failed to allocate memory\n");
+      exit(EXIT_FAILURE);
+  }
 }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 293 "scanner.l"
+#line 292 "scanner.l"
 {
   char c, peak, special_char;
   char *token = malloc(sizeof(char *) * BUFSIZE);
@@ -1269,7 +1268,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 358 "scanner.l"
+#line 357 "scanner.l"
 {
   char c;
   while((c=input())!= EOF){
@@ -1281,7 +1280,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 367 "scanner.l"
+#line 366 "scanner.l"
 {
 
   char c, prev_c;
@@ -1328,7 +1327,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 411 "scanner.l"
+#line 410 "scanner.l"
 {
    //print_list(list, output);
    fprintf(stdout, "unrecognized token %s in line %d\n", yytext, yylineno);
@@ -1337,10 +1336,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 417 "scanner.l"
+#line 416 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1344 "scanner.c"
+#line 1343 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2357,7 +2356,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 417 "scanner.l"
+#line 416 "scanner.l"
 
 
 size_t min(size_t a, size_t b) {

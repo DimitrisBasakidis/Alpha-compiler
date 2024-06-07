@@ -2,7 +2,6 @@
 #include "decodeBinary.hpp"
 // #include "avm_utilities.cpp"
 
-
 memclear_func_t memclearFuncs[]= {
     0,
     memclear_string,
@@ -48,14 +47,13 @@ void avm_memcellclear (avm_memcell* m){
 void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *value) {
     avm_memcell *temp = (avm_memcell *) malloc(sizeof(avm_memcell));
 
-    table->refCounter++;
-    //temp->type = value->type;
     memcpy(temp,value,sizeof(avm_memcell));
     switch (key->type) {    
         case number_m: {
             std::map<double, avm_memcell*>::iterator it = (table->indexedDouble).find(key->data.numVal);
             if(it == table->indexedDouble.end()){
                 table->indexedDouble.insert(pair<double, avm_memcell*>(key->data.numVal, temp));
+                table->refCounter++;
             } else {
                 it->second = temp;
             }
@@ -65,6 +63,7 @@ void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *va
             std::map<string, avm_memcell*>::iterator it = (table->indexedStrVal).find(key->data.strVal);
             if(it == table->indexedStrVal.end()){
                 table->indexedStrVal.insert(pair<string, avm_memcell*>(key->data.strVal, temp));
+                table->refCounter++;
             } else {
                 it->second = temp;
             }
@@ -74,49 +73,11 @@ void avm_tablesetelem(struct avm_table *table, avm_memcell *key, avm_memcell *va
     }
 }
 
-void print_avm_memceeell(const avm_memcell *cell) {
-    switch (cell->type) {
-        case number_m:
-            std::cout << cell->data.numVal;
-            break;
-        case string_m:
-            std::cout << cell->data.strVal;
-            break;
-        case bool_m:
-            std::cout << (cell->data.boolVal ? "true" : "false");
-            break;
-        case nil_m:
-            std::cout << "nil";
-            break;
-        case undef_m:
-            std::cout << "undefined";
-            break;
-        case userfunc_m:
-            std::cout<<"func";
-            break;
-        // Handle other types as needed
-        default:
-            std::cout << "unsupported type";
-            break;
-    }
-}
 
 avm_memcell* avm_tablegetelem(avm_table *t, avm_memcell* key) {
-        // cout << "double" << endl;
-        // for (const auto& pair : t->indexedDouble) {
-        //     std::cout << pair.first << " => ";
-        //     print_avm_memceeell(pair.second);
-        //     std::cout << std::endl;
-        // }
-        // cout << "str" << endl;
-        // for (const auto& pair : t->indexedStrVal) {
-        //     std::cout << pair.first << " => ";
-        //     print_avm_memceeell(pair.second);
-        //     std::cout << std::endl;
-        // }
     switch (key->type) {
-        case number_m: /* cout << "key is num "<< key->data.numVal<< endl; */ return t->indexedDouble.at(key->data.numVal);
-        case string_m: /* cout << "key is string"<< key->data.numVal<< endl; */ return t->indexedStrVal.at(key->data.strVal);
+        case number_m: return t->indexedDouble.at(key->data.numVal);
+        case string_m: return t->indexedStrVal.at(key->data.strVal);
         default:  assert(0);
     }
     return nullptr;
@@ -132,7 +93,7 @@ char* lookup_based_on_instr_addr(unsigned addr){
     return (char *)"";
 }
 
-string print_avm_memcell(const avm_memcell* cell, string tablestr) {
+string print_avm_memcell(const avm_memcell* cell, string tablestr, int flag) {
     if (cell == nullptr) {
         std::cout << "null";
         return "nil, ";
@@ -140,37 +101,39 @@ string print_avm_memcell(const avm_memcell* cell, string tablestr) {
     
     switch (cell->type) {
         case number_m:
+            // ostringstream out;
+            // out << fixed << setprecision(2) << m->data.numVal;
+            // return out.str();
             tablestr += to_string(cell->data.numVal);
-            tablestr += ", ";
             break;
         case string_m:
+            tablestr += "\"";
             tablestr += cell->data.strVal;
-            tablestr += ", ";
+            tablestr += "\"";
             break;
         case bool_m:
-            tablestr += (cell->data.boolVal == '1') ? "true, " : "false, ";
+            tablestr += (cell->data.boolVal == '1') ? "true" : "false";
             break;
         case table_m:
             tablestr += "[ ";
-            tablestr += avm_printtable(cell->data.tableVal) + "], ";
+            tablestr += avm_printtable(cell->data.tableVal) + "]";
             break;
         case userfunc_m:
             tablestr += lookup_based_on_instr_addr(cell->data.funcVal);
-            tablestr += ", ";
             break;            
         case libfunc_m:
             tablestr += cell->data.libfuncVal;
-            tablestr += ", ";
             break;
         case nil_m:
-            tablestr += "nil, ";
+            tablestr += "nil";
             break;
         case undef_m:
-            tablestr += "undef, ";
+            tablestr += "undef";
             break;
         default:
-            tablestr += "[], ";
+            tablestr += "[]";
     }
+    if (flag) tablestr += ", ";
 
     return tablestr;
 }
@@ -183,12 +146,13 @@ string avm_printtable(const avm_table* table) {
     }
     
     for (const auto& pair : table->indexedDouble) {
-        tablestr = print_avm_memcell(pair.second, tablestr);
+        tablestr += "{ "  + to_string((int)pair.first) + " : " + print_avm_memcell(pair.second, "", 0) + " }, ";
     }
     
     for (const auto& pair : table->indexedStrVal) {
-        tablestr =  print_avm_memcell(pair.second, tablestr);
+        tablestr += "{ \""  + pair.first + "\" : " + print_avm_memcell(pair.second, "", 0) + " }, ";
     }
+    tablestr = tablestr.substr(0, tablestr.size() - 2);
 
-    return tablestr.substr(0, tablestr.size() - 2) + " ";
+    return tablestr += " ";
 }

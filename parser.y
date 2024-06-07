@@ -373,8 +373,7 @@ primary: lvalue {
   if (from_elist) from_elist = 0;
 }
 | call { 
-  printf("curr scope space :: %d\n",currscopespace());
-  entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
+   entry = lookup(symtable, lists, $1->sym->value.varVal->name, (lookup_lib_func($1->sym->value.varVal->name) == TRUE) ? LIBFUNC : USERFUNC , scope, HASH);
   manage_call(symtable, lists, entry, $1->sym->value.varVal->name, print_errors, yylineno);
 }
 | objectdef {;}
@@ -453,8 +452,8 @@ methodcall: DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
   $$->name = strdup($2);
 };
 
-elist: expr { $$->next = NULL; $$ = manage_bool_expr($1,symtable,lists,scope,yylineno); }
-| expr COMMA elist { $1->next = $3; $$=$1; }
+elist: expr { $$->next = NULL;  $$ = manage_bool_expr($1,symtable,lists,scope,yylineno); }
+| expr COMMA elist { $1->next = $3;  $1 = manage_bool_expr($1,symtable,lists,scope,yylineno); $$=$1; }
 | { $$ = NULL;};
 
 objectdef: tablemake {;};
@@ -682,7 +681,6 @@ void print_errors(const char *error_msg, char *token, const char *error_type) {
   int count = 1;
   int temp = yylineno;
 
-  printf("%p, %p\n", error_msg, token);
   fflush(stdout);
 
   fprintf(stderr, "%s:%d ",file_name + 1, yylineno);
@@ -747,13 +745,9 @@ int main(int argc, char **argv) {
 
   print_quads((fptr == NULL) ? stdout : fptr);
 
- generate_targetcode();
-// printInstructions();  
-
-  printf("NUMBER OF GLOBALS :: %d\n",global_vars_no );
+  generate_targetcode();
 
   convert_to_binary();
-  // write_to_file();
   free_table(symtable);
 
   return 0;
