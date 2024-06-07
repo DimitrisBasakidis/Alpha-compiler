@@ -51,30 +51,3 @@ comment_t* pop_comment(comment_stack* stack, unsigned int end_line, int flag) {
 void free_stack(comment_stack* stack) {
     free(stack);
 }
-
-// int main() {
-//     comment_stack *stack;
-//     stack = create_stack(stack);
-
-//     stack = insert_comment(stack, 1);
-//     stack = insert_comment(stack, 6);
-//     stack = insert_comment(stack, 11);
-
-//     displayStack(stack);
-
-//     comment_t* comment = pop(stack, 14);
-//     printf("Popped Comment: Start Line: %u, End Line: %u\n", comment->start_line, comment->end_line);
-//     free(comment);
-
-//      comment = pop(stack, 15);
-//     printf("Popped Comment: Start Line: %u, End Line: %u\n", comment->start_line, comment->end_line);
-//     free(comment);
-    
-//      comment = pop(stack, 20);
-//     printf("Popped Comment: Start Line: %u, End Line: %u\n", comment->start_line, comment->end_line);
-//     free(comment);
-
-//     free_stack(stack);
-
-//     return 0;
-// }
