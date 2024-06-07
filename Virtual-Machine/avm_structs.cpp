@@ -1,4 +1,6 @@
 #include "avm_structs.hpp"
+#include <iostream>
+using namespace std;
 
 
 void avm_initstack(void){
@@ -7,6 +9,3 @@ void avm_initstack(void){
         stack[i].type = undef_m;
     }
 }
-
-
-

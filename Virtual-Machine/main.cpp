@@ -18,8 +18,6 @@ unsigned totalActuals=0;
 
 avm_memcell stack[AVM_STACKSIZE];
 
-
-
 instruction* code = (instruction *)0;
 
 int main(int argc, char **argv) {
@@ -38,6 +36,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-
-
-/*tests 23 24 hercules*/

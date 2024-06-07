@@ -96,24 +96,22 @@ void execute_assign(instruction* inst){
     avm_memcell *rv = avm_translate_operand(&(inst->arg1),&ax);
     
     assert(lv && ((&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] )|| lv == &retval));
-    // cout << "PROGRAM COUNTER = " << pc << endl; 
     fflush(stdout);
-    // cout << "rv = " << rv << " lv = " << lv << endl;
     assert(rv || lv  == &retval); 
     
     if(rv) avm_assign(lv,rv);
 }
 
-void execute_uminus(instruction* inst){
+void execute_uminus(instruction* inst) {
     
 }
-void execute_and(instruction* inst){
+void execute_and(instruction* inst) {
     
 }
 void execute_or(instruction* inst){
     
 }
-void execute_not(instruction* inst){
+void execute_not(instruction* inst) {
     
 }
 
@@ -125,11 +123,10 @@ void execute_jump(instruction* inst){
 void execute_jeq(instruction* inst){
   
     assert(inst->result.type == label_a);
-   // cout << "arg1 " << inst->arg1.type << " arg2 " << inst->arg2.type << " result " << inst->result.type << endl;
     avm_memcell *rv1 = avm_translate_operand(&(inst->arg1),&ax);
     avm_memcell *rv2 = avm_translate_operand(&(inst->arg2),&bx);
-  // cout << "rv1 type ::  " << rv1->type << " rv2 type " << rv2->type << endl;
     unsigned char result = 0;
+
     if(rv1->type == undef_m || rv2->type == undef_m){
         printf("error ! undef involved in equality");
         exit(-1);
