@@ -219,6 +219,9 @@ char* print_expr(expr* e, FILE *ptr){
         case assignexpr_e:
             fprintf(ptr, "%s", e->sym->value.funcVal->name);
         return e->sym->value.funcVal->name;
+        case nil_e:
+            fprintf(ptr, "%s", "nil");
+            return "nil";        
         default:
         return "";
     }

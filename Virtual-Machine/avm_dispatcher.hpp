@@ -127,6 +127,12 @@ unsigned char avm_tobool(avm_memcell *m);
 void avm_initialize(void);
 void libfunc_totalarguments(void);
 library_func_t avm_getlibraryfunc(char *id);
+void libfunc_sqrt();
+void libfunc_strtonum();
+void libfunc_objectcopy(void);
+void libfunc_objecttotalmembers(void);
+void libfunc_input(void);
+void libfunc_objectmemberkeys(void);
 
 void print_stack();
 void print_memcell(avm_memcell *m);

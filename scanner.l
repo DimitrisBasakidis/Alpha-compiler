@@ -283,11 +283,10 @@ real            [0-9]+[.][0-9]+
 
 [ \n\t\r\v\f] {
 lineptr = strdup(yytext);
-    if (lineptr == NULL) {
-        fprintf(stderr, "Error: Failed to allocate memory\n");
-        exit(EXIT_FAILURE);
-    }
-
+  if (lineptr == NULL) {
+      fprintf(stderr, "Error: Failed to allocate memory\n");
+      exit(EXIT_FAILURE);
+  }
 }
 
 "\"" {

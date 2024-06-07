@@ -25,4 +25,6 @@ expr* member_item(expr* lvalue, char* name,SymTable *symtable, scopeLists *lists
 
 expr* reverse_elist(expr* head);
 
+int get_count(expr* head);
+
 #endif

@@ -39,8 +39,6 @@ extern avm_memcell stack[AVM_STACKSIZE];
 
 void avm_initstack(void);
 
-void avm_memclear(avm_memcell* m);
-
 typedef void (*memclear_func_t) (avm_memcell*);
 
 extern memclear_func_t memclearFuncs[];

@@ -3,6 +3,10 @@
 
 #include "../Compiler/utilities/final_code.h"
 
+
+#define NO_ACTIVATION_RECORDS 4096-2-globalVarsNo
+
+
 #include <vector>
 #include <string>
 #include <iostream>
